@@ -1,3 +1,4 @@
+import time
 import numpy as np
 
 import torch
@@ -24,10 +25,13 @@ class Train:
     while timesteps_done < total_timesteps:
       state, _ = env.reset()
       done = False
+      start_time = time.time()
       episode_states, episode_actions, episode_rewards, episode_next_states, episode_dones, episode_successes = [], [], [], [], [], []
 
       # Collect transitions for one episode
       while not done:
+        start_time = time.time()
+
         action = model.select_action(state) * env.action_space.high[0]
         next_state, reward, terminated, truncated, info = env.step(action)
         done = terminated or truncated
@@ -44,8 +48,7 @@ class Train:
         state = next_state
         timesteps_done += 1
 
-        if timesteps_done >= total_timesteps:
-          break
+        model.log_step(reward, time.time() - start_time)
 
       # Add episode transitions to the buffer
       buffer_states.extend(episode_states)
@@ -76,7 +79,16 @@ class Train:
         successes = torch.tensor(np.array(buffer_successes), dtype=torch.float32)
 
         # Train the model
-        model.train(states, actions, rewards, next_states, dones, successes, **params)
+        all_params = {
+            "states": states,
+            "actions": actions,
+            "rewards": rewards,
+            "next_states": next_states,
+            "dones": dones,
+            "successes": successes,
+            **params
+        }
+        model.train(**all_params)
 
         # Clear the buffer after training
         buffer_states, buffer_actions, buffer_rewards, buffer_next_states, buffer_dones = [], [], [], [], []

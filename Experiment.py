@@ -60,8 +60,8 @@ class Experiment:
     results_df = pd.concat([results_df, pd.DataFrame([metrics])], ignore_index=True)
     results_df.to_csv(csv_path, index=False)
 
-    print(f"Experiment logged in folder: {result_folder}]\n")
-    print(f"    python Metrics.py {result_folder}\n")
+    print(f"Experiment logged in folder: {result_folder}\n")
+    print(f"    make metrics folder={result_folder}\n")
 
 
 

@@ -1,71 +1,80 @@
 import os
 import sys
 import json
-import pandas as pd
+import math
 import matplotlib.pyplot as plt
 
 
 class Metrics:
-    def __init__(self, result_path):
-        self.result_path = result_path
-        self.metrics_file = os.path.join(result_path, "Experiments.csv")
-        self.config_file = os.path.join(result_path, "config.json")
+  def __init__(self, result_path):
+    self.result_path = result_path
+    self.config_file = os.path.join(result_path, "config.json")
+    self.history_file = os.path.join(result_path, "history.json")
 
-        if not os.path.exists(self.metrics_file):
-            raise FileNotFoundError(f"Metrics file not found at {self.metrics_file}")
-        if not os.path.exists(self.config_file):
-            raise FileNotFoundError(f"Configuration file not found at {self.config_file}")
+    if not os.path.exists(self.config_file):
+      raise FileNotFoundError(f"Configuration file not found at {self.config_file}")
+    if not os.path.exists(self.history_file):
+      raise FileNotFoundError(f"History file not found at {self.history_file}")
 
-        # Load metrics and configuration
-        self.metrics = pd.read_csv(self.metrics_file)
-        with open(self.config_file, "r") as f:
-            self.config = json.load(f)
+    # Load configuration and history data
+    with open(self.config_file, "r") as f:
+      self.config = json.load(f)
+    with open(self.history_file, "r") as f:
+      self.history = json.load(f)
 
-    def plot_metric(self, metric_name, title=None, xlabel="Episodes", ylabel=None):
-        """
-        Plot a specific metric over episodes.
-        """
-        if metric_name not in self.metrics.columns:
-            raise ValueError(f"Metric '{metric_name}' not found in the metrics file.")
+  def plot_all_metrics(self):
+    """
+    Plot all metrics available in the history file in a grid layout.
+    """
+    metrics = list(self.history.keys())
+    num_metrics = len(metrics)
+    cols = 2  # Number of columns in the grid
+    rows = math.ceil(num_metrics / cols)
 
-        plt.figure(figsize=(10, 6))
-        plt.plot(self.metrics.index, self.metrics[metric_name], label=metric_name)
-        plt.title(title or f"{metric_name} over Episodes")
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel or metric_name)
-        plt.legend()
-        plt.grid()
-        plt.show()
+    fig, axes = plt.subplots(rows, cols, figsize=(10, 3 * rows), constrained_layout=True)
 
-    def plot_all(self):
-        """
-        Plot all metrics available in the metrics file.
-        """
-        for metric in self.metrics.columns:
-            if metric != "Episode":  # Skip episode index column
-                self.plot_metric(metric_name=metric, title=f"{metric} over Episodes")
+    # Flatten axes for easy indexing
+    axes = axes.flatten() if rows > 1 else [axes]
 
-    def summary(self):
-        """
-        Print a summary of the metrics and configuration.
-        """
-        print("\nConfiguration:")
-        for key, value in self.config.items():
-            print(f"  {key}: {value}")
+    for idx, metric in enumerate(metrics):
+      ax = axes[idx]
+      ax.plot(range(len(self.history[metric])), self.history[metric], label=metric, color="blue")
+      ax.set_title(f"{metric} Over Time", fontsize=12)
+      ax.set_ylabel(metric, fontsize=10)
+      ax.set_xlabel("Timesteps", fontsize=10)
+      ax.legend()
+      ax.grid()
 
-        print("\nMetrics Overview:")
-        print(self.metrics.describe())
+    # Hide unused subplots
+    for idx in range(len(metrics), len(axes)):
+      axes[idx].axis("off")
+
+    plt.suptitle("Metrics Overview", fontsize=16)
+    plt.show()
+
+  def summary(self):
+    """
+    Print a summary of the configuration and available metrics.
+    """
+    print("\nConfiguration:")
+    for key, value in self.config.items():
+      print(f"  {key}: {value}")
+
+    print("\nMetrics Overview:")
+    print("Available metrics in history:")
+    for metric in self.history.keys():
+      print(f"  {metric}")
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python Metrics.py [result_path]")
-        sys.exit(1)
+  if len(sys.argv) != 2:
+    print("Usage: python Metrics.py [result_path]")
+    sys.exit(1)
 
-    result_path = sys.argv[1]
-    try:
-        metrics = Metrics(result_path)
-        metrics.summary()
-        metrics.plot_all()
-    except Exception as e:
-        print(f"Error: {e}")
+  result_path = sys.argv[1]
+  try:
+    metrics = Metrics(result_path)
+    metrics.summary()
+    metrics.plot_all_metrics()
+  except Exception as e:
+    print(f"Error: {e}")

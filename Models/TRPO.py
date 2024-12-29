@@ -4,31 +4,9 @@ import torch.optim as optim
 from torch.distributions import Normal, kl
 from collections import namedtuple
 
+from Common.GaussianPolicy import GaussianPolicy
 from Specs import ModelSpec
 from Train import Train
-
-
-class GaussianPolicy(nn.Module):
-  """
-      Gaussian policy network for continuous action spaces.
-  """
-
-  def __init__(self, input_dim, hidden_layer_sizes, output_dim):
-    super(GaussianPolicy, self).__init__()
-    layers = []
-    for size in hidden_layer_sizes:
-      layers.append(nn.Linear(input_dim, size))
-      layers.append(nn.Tanh())
-      input_dim = size
-    self.hidden_layers = nn.Sequential(*layers)
-    self.mean_layer = nn.Linear(input_dim, output_dim)
-    self.log_std = nn.Parameter(torch.zeros(1, output_dim))
-
-  def forward(self, state):
-    hidden_output = self.hidden_layers(state)
-    mean = self.mean_layer(hidden_output)
-    std = torch.exp(self.log_std)
-    return mean, std
 
 
 class TRPO(ModelSpec):
@@ -76,7 +54,7 @@ class TRPO(ModelSpec):
       selected_action = distribution.sample()
     return selected_action.cpu().numpy()[0]
 
-  def compute_advantages(self, rewards, state_values, next_state_values, done_flags, success_flags, discount_factor, lambda_value):
+  def compute_advantages(self, rewards, state_values, next_state_values, dones, successes, discount_factor, lambda_value):
     """
     Compute advantages using Generalized Advantage Estimation (GAE), factoring in success flags.
     """
@@ -86,14 +64,14 @@ class TRPO(ModelSpec):
       # Temporal difference error with success influence
       temporal_difference_error = (
           rewards[time_step]
-          + discount_factor * next_state_values[time_step] * (1 - done_flags[time_step])
+          + discount_factor * next_state_values[time_step] * (1 - dones[time_step])
           - state_values[time_step]
       )
       # Amplify GAE for successes, dampen for failures
       generalized_advantage_estimation = (
           temporal_difference_error
-          + discount_factor * lambda_value * (1 - done_flags[time_step]) * generalized_advantage_estimation
-      ) * (1 + success_flags[time_step])  # Scale based on success
+          + discount_factor * lambda_value * (1 - dones[time_step]) * generalized_advantage_estimation
+      ) * (1 + successes[time_step])  # Scale based on success
       advantages.insert(0, generalized_advantage_estimation)
     return torch.tensor(advantages, dtype=torch.float32).to(self.device)
 
@@ -110,7 +88,10 @@ class TRPO(ModelSpec):
   def train_critic(self, states, targets):
     self.critic_optimizer.zero_grad()
     predictions = self.critic(states).squeeze()
+
     loss = ((predictions - targets) ** 2).mean()
+    self.critic_loss = loss.item()
+
     loss.backward()
     self.critic_optimizer.step()
 
@@ -152,11 +133,14 @@ class TRPO(ModelSpec):
     Train the actor network using the trust region policy optimization step.
     """
     # Compute gradients of the loss
-    gradients = torch.autograd.grad(self.compute_loss(states, actions, advantages), self.actor.parameters())
+    loss = self.compute_loss(states, actions, advantages)
+    self.actor_loss = loss.item()
+    gradients = torch.autograd.grad(loss, self.actor.parameters())
     flattened_loss_gradient = torch.cat([gradient.view(-1) for gradient in gradients]).detach()
 
     def fisher_vector_product(vector):
       kl_divergence = self.compute_kl_divergence(states).mean()
+      self.kl_loss = kl_divergence.item()
       gradients = torch.autograd.grad(kl_divergence, self.actor.parameters(), create_graph=True)
       flattened_gradients = torch.cat([gradient.view(-1) for gradient in gradients])
       kl_vector = (flattened_gradients * vector).sum()
@@ -172,7 +156,7 @@ class TRPO(ModelSpec):
     # Apply the update step
     self.apply_policy_step(full_step)
 
-  def train(self, states, actions, rewards, next_states, done_flags, success_flags, **parameters):
+  def train(self, states, actions, rewards, next_states, dones, successes, **parameters):
     discount_factor = parameters.get("gamma", 0.99)
     lambda_value = parameters.get("lam", 0.95)
 
@@ -180,14 +164,14 @@ class TRPO(ModelSpec):
     next_states = next_states.to(self.device)
     actions = actions.to(self.device)
     rewards = rewards.to(self.device)
-    done_flags = done_flags.to(self.device)
-    success_flags = success_flags.to(self.device)
+    dones = dones.to(self.device)
+    successes = successes.to(self.device)
 
     state_values = self.critic(states).squeeze()
     next_state_values = self.critic(next_states).squeeze()
 
-    advantages = self.compute_advantages(rewards, state_values.detach(), next_state_values.detach(), done_flags, success_flags, discount_factor, lambda_value)
-    targets = rewards + discount_factor * next_state_values * (1 - done_flags)
+    advantages = self.compute_advantages(rewards, state_values.detach(), next_state_values.detach(), dones, successes, discount_factor, lambda_value)
+    targets = rewards + discount_factor * next_state_values * (1 - dones)
 
     self.train_critic(states, targets)
 
@@ -196,6 +180,8 @@ class TRPO(ModelSpec):
 
     # Train the actor
     self.train_actor(states, actions, advantages)
+
+    self.log_loss(self.actor_loss, self.critic_loss, self.kl_divergence_loss)
 
   def clone_actor(self):
     self.old_actor = GaussianPolicy(
@@ -212,7 +198,8 @@ if __name__ == "__main__":
   from itertools import product
 
   # Initialize environment
-  env = gym.make("Pendulum-v1")
+  from Environments.Pendulum import make_pendulum
+  env = make_pendulum()
   state_dim = env.observation_space.shape[0]
   action_dim = env.action_space.shape[0]
 
@@ -236,7 +223,7 @@ if __name__ == "__main__":
   # Training params
   batch_size = 128
   episodes_per_batch = 10
-  factor = 1000
+  factor = 100
 
   for i, param_values in enumerate(param_combinations):
     # Create parameter dictionary for this combination

@@ -60,6 +60,8 @@ class EnTRPOTrace(EnTRPO):
     # Train actor
     self.train_actor(states, actions, advantages)
 
+    self.log_loss(self.actor_loss, self.critic_loss, self.kl_divergence_loss)
+
 
 if __name__ == "__main__":
   import gymnasium as gym
@@ -68,7 +70,8 @@ if __name__ == "__main__":
   from itertools import product
 
   # Initialize environment
-  env = gym.make("Pendulum-v1")
+  from Environments.Pendulum import make_pendulum
+  env = make_pendulum()
   state_dim = env.observation_space.shape[0]
   action_dim = env.action_space.shape[0]
 
@@ -94,7 +97,7 @@ if __name__ == "__main__":
   # Training parameters
   batch_size = 128
   episodes_per_batch = 10
-  factor = 1000
+  factor = 100
 
   for i, param_values in enumerate(param_combinations):
     # Create parameter dictionary for this combination

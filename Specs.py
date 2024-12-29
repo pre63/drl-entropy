@@ -21,6 +21,19 @@ class ModelSpec(torch.nn.Module):
     self.episode_successes = []  # Success indicator for each episode
     self.total_obs = []  # Observations per episode
 
+
+    # Losses
+    self.actor_loss, self.critic_loss, self.kl_divergence_loss = 0, 0, 0
+
+    self.actor_loss_history = []
+    self.critic_loss_history = []
+    self.kl_divergence_loss_history = []
+
+  def log_loss(self, actor_loss, critic_loss, kl_loss):
+    self.actor_loss_history.append(actor_loss)
+    self.critic_loss_history.append(critic_loss)
+    self.kl_divergence_loss_history.append(kl_loss)
+
   @property
   def name(self):
     return self.__class__.__name__
@@ -59,6 +72,11 @@ class ModelSpec(torch.nn.Module):
     avg_obs_per_episode = sum(self.total_obs) / len(self.total_obs) if self.total_obs else 0
     success_rate = sum(self.episode_successes) / len(self.episode_successes) if self.episode_successes else 0
 
+    # Loss
+    actor_loss = sum(self.actor_loss_history) / len(self.actor_loss_history) if self.actor_loss_history else 0
+    critic_loss = sum(self.critic_loss_history) / len(self.critic_loss_history) if self.critic_loss_history else 0
+    kl_divergence = sum(self.kl_divergence_loss_history) / len(self.kl_divergence_loss_history) if self.kl_divergence_loss_history else 0
+
     return {
         "Model Name": self.name,
         "Params": self.params,
@@ -69,6 +87,9 @@ class ModelSpec(torch.nn.Module):
         "Average Rewards (Episode)": avg_episode_reward,
         "Average Observations Per Episode": avg_obs_per_episode,
         "Success Rate": success_rate,
+        "Actor Loss": actor_loss,
+        "Critic Loss": critic_loss,
+        "KL Divergence": kl_divergence,
     }
 
   def get_history(self):
@@ -82,4 +103,7 @@ class ModelSpec(torch.nn.Module):
         "Episode Step Times": self.episode_step_times,
         "Episode Successes": self.episode_successes,
         "Episode Observations": self.total_obs,
+        "KL Divergence": self.kl_divergence_loss_history,
+        "Actor Loss": self.actor_loss_history,
+        "Critic Loss": self.critic_loss_history,
     }

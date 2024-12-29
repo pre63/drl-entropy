@@ -1,13 +1,8 @@
 import torch
-import torch.nn as nn
-import torch.optim as optim
-from Models.TRPO import TRPO, GaussianPolicy
-
-import torch
-import torch.nn as nn
-import torch.optim as optim
-from Models.TRPO import TRPO, GaussianPolicy
 from torch.distributions import Normal
+
+from Models.TRPO import TRPO
+from Common.GaussianPolicy import GaussianPolicy
 
 
 class EnTRPO(TRPO):
@@ -45,6 +40,7 @@ class EnTRPO(TRPO):
     surrogate_loss = -(log_probabilities * advantages).mean()
     entropy_regularization = -self.entropy_coeff * entropy.mean()
     total_loss = surrogate_loss + entropy_regularization
+    self.actor_loss = total_loss.item()
 
     # Compute gradients and apply updates
     gradients = torch.autograd.grad(total_loss, self.actor.parameters())
@@ -52,6 +48,8 @@ class EnTRPO(TRPO):
 
     def fisher_vector_product(vector):
       kl_divergence = self.compute_kl_divergence(states).mean()
+      self.kl_divergence_loss = kl_divergence.item()
+
       gradients = torch.autograd.grad(kl_divergence, self.actor.parameters(), create_graph=True)
       flattened_gradients = torch.cat([gradient.view(-1) for gradient in gradients])
       kl_vector = (flattened_gradients * vector).sum()
@@ -67,7 +65,7 @@ class EnTRPO(TRPO):
     # Apply the policy update step
     self.apply_policy_step(full_step)
 
-  def train(self, states, actions, rewards, next_states, done_flags, success_flags, **parameters):
+  def train(self, states, actions, rewards, next_states, dones, successes, **parameters):
     gamma = parameters.get("gamma", 0.99)
     lambda_value = parameters.get("lam", 0.95)
 
@@ -75,15 +73,15 @@ class EnTRPO(TRPO):
     next_states = next_states.to(self.device)
     actions = actions.to(self.device)
     rewards = rewards.to(self.device)
-    done_flags = done_flags.to(self.device)
-    success_flags = success_flags.to(self.device)
+    dones = dones.to(self.device)
+    successes = successes.to(self.device)
 
     # Compute values and advantages
     state_values = self.critic(states).squeeze()
     next_state_values = self.critic(next_states).squeeze()
 
-    advantages = self.compute_advantages(rewards, state_values.detach(), next_state_values.detach(), done_flags, success_flags, gamma, lambda_value)
-    targets = rewards + gamma * next_state_values * (1 - done_flags)
+    advantages = self.compute_advantages(rewards, state_values.detach(), next_state_values.detach(), dones, successes, gamma, lambda_value)
+    targets = rewards + gamma * next_state_values * (1 - dones)
 
     # Train critic
     self.train_critic(states, targets)
@@ -94,6 +92,8 @@ class EnTRPO(TRPO):
     # Train actor using the cloned old actor
     self.train_actor(states, actions, advantages)
 
+    self.log_loss(self.actor_loss, self.critic_loss, self.kl_divergence_loss)
+
 
 if __name__ == "__main__":
   import gymnasium as gym
@@ -102,7 +102,8 @@ if __name__ == "__main__":
   from itertools import product
 
   # Initialize environment
-  env = gym.make("Pendulum-v1")
+  from Environments.Pendulum import make_pendulum
+  env = make_pendulum()
   state_dim = env.observation_space.shape[0]
   action_dim = env.action_space.shape[0]
 
@@ -127,7 +128,7 @@ if __name__ == "__main__":
   # Training parameters
   batch_size = 128
   episodes_per_batch = 10
-  factor = 1000
+  factor = 100
 
   for i, param_values in enumerate(param_combinations):
     # Create parameter dictionary for this combination
