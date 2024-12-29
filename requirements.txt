@@ -1,0 +1,11 @@
+wheel
+ipykernel
+numpy
+matplotlib
+torch
+torchvision
+pandas
+gymnasium
+gymnasium[box2d]
+gymnasium[classic_control]
+gymnasium[mujoco]
