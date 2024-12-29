@@ -30,6 +30,7 @@ metrics:
 
 
 install:
+	@sudo apt-get -y install swig || brew install swig
 	@test -d .venv || python3.12 -m venv .venv
 	@. .venv/bin/activate && pip install -r requirements.txt
 	@mkdir -p log
