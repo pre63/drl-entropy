@@ -5,6 +5,7 @@ matplotlib
 torch
 torchvision
 pandas
+seaborn
 gymnasium
 gymnasium[box2d]
 gymnasium[classic_control]

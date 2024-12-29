@@ -6,10 +6,11 @@ import gymnasium as gym
 def make_lunar_lander(reward_strategy="default", render_mode=None, continuous=True):
   env = gym.make("LunarLanderContinuous-v3" if continuous else "LunarLander-v3", render_mode=render_mode)
   env = LunarLanderRewardWrapper(env, reward_strategy)
-  env.make_func_name = "make_frozen_lake" if continuous else "make_lunar_lander_continuous"
+  env.make_func_name = "make"
+  env.name = "LunarLander-v3"
   return env
 
-def make_lunar_lander_continuous(reward_strategy="default", render_mode=None):
+def make(reward_strategy="default", render_mode=None):
   return make_lunar_lander(reward_strategy, render_mode, continuous=True)
 
 class LunarLanderRewardWrapper(gym.Wrapper):

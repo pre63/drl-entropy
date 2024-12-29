@@ -76,7 +76,7 @@ class TRPO3(ModelSpec):
   def hessian_vector_product(self, states, vector):
     kl = self.compute_kl_divergence(states).mean()
     self.kl_divergence_loss = kl.item()
-    
+
     gradients = torch.autograd.grad(kl, self.actor.parameters(), create_graph=True)
     flat_grad = torch.cat([grad.view(-1) for grad in gradients])
     kl_v = (flat_grad * vector).sum()
@@ -240,6 +240,6 @@ if __name__ == "__main__":
     Train.batch(model, env, total_timesteps, batch_size, **model_params)
 
     # Save the experiment
-    Experiment.save(model)
+    Experiment.save(model, env)
 
     print(f"Experiment {i + 1}/{len(param_combinations)} completed.")

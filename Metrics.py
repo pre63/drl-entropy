@@ -2,7 +2,10 @@ import os
 import sys
 import json
 import math
+import matplotlib
 import matplotlib.pyplot as plt
+
+matplotlib.use("TkAgg")  # Replace "TkAgg" with "Qt5Agg" or another backend if necessary
 
 
 class Metrics:
@@ -26,12 +29,16 @@ class Metrics:
     """
     Plot all metrics available in the history file in a grid layout.
     """
+    params = ", ".join([f"{key}={value}" for key, value in self.config.items()])
+    
+   
     metrics = list(self.history.keys())
     num_metrics = len(metrics)
     cols = 2  # Number of columns in the grid
     rows = math.ceil(num_metrics / cols)
 
     fig, axes = plt.subplots(rows, cols, figsize=(10, 3 * rows), constrained_layout=True)
+    plt.suptitle(f"{params}", fontsize=12)
 
     # Flatten axes for easy indexing
     axes = axes.flatten() if rows > 1 else [axes]
@@ -49,7 +56,7 @@ class Metrics:
     for idx in range(len(metrics), len(axes)):
       axes[idx].axis("off")
 
-    plt.suptitle("Metrics Overview", fontsize=16)
+    plt.tight_layout()
     plt.show()
 
   def summary(self):

@@ -30,6 +30,8 @@ class PendulumWrapper(gym.Wrapper):
     info["success"] = success
     reward += 10 if success else 0
     reward = min(0, reward) 
+    if success:
+      terminated = True
 
     # Update tracking variables
     self.last_angle = angle
@@ -68,9 +70,9 @@ def is_success(state, action, angle_threshold=0.2, velocity_threshold=0.5, torqu
   return is_upright and is_stable and is_low_torque
 
 
-def make_pendulum(render_mode=None, max_episode_steps=200):
-  env = gym.make("Pendulum-v1", render_mode=render_mode)
+def make(render_mode=None, max_episode_steps=200):
+  env = gym.make("Pendulum-v1", render_mode=render_mode, g=9.81)
   env = TimeLimit(env, max_episode_steps=max_episode_steps)
   env = PendulumWrapper(env)
-  env.make_func_name = "make_pendulum"
+  env.make_func_name = "make"
   return env

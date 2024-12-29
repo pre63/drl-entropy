@@ -115,6 +115,6 @@ if __name__ == "__main__":
     Train.batch(model, env, total_timesteps, batch_size, **model_params)
 
     # Save the experiment
-    Experiment.save(model)
+    Experiment.save(model, env)
 
     print(f"Experiment {i + 1}/{len(param_combinations)} completed.")

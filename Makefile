@@ -19,10 +19,8 @@ trace:
 	@PYTHONPATH=. python Models/EnTRPOTrace.py | tee -a log/trace.log
 
 
-all_experiments:
-	@PYTHONPATH=. python Models/TRPO.py | tee -a log/trpo.log
-	@PYTHONPATH=. python Models/EnTRPO.py | tee -a log/entropy.log
-	@PYTHONPATH=. python Models/EnTRPOTrace.py | tee -a log/trace.log
+run:
+	@PYTHONPATH=. python run.py | tee -a log/run.log
 
 
 metrics:

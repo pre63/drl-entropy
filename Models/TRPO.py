@@ -140,7 +140,8 @@ class TRPO(ModelSpec):
 
     def fisher_vector_product(vector):
       kl_divergence = self.compute_kl_divergence(states).mean()
-      self.kl_loss = kl_divergence.item()
+      self.kl_divergence_loss = kl_divergence.item()
+
       gradients = torch.autograd.grad(kl_divergence, self.actor.parameters(), create_graph=True)
       flattened_gradients = torch.cat([gradient.view(-1) for gradient in gradients])
       kl_vector = (flattened_gradients * vector).sum()
@@ -198,15 +199,16 @@ if __name__ == "__main__":
   from itertools import product
 
   # Initialize environment
-  from Environments.Pendulum import make_pendulum
-  env = make_pendulum()
+  from Environments.LunarLander import make
+  env = make()
+
   state_dim = env.observation_space.shape[0]
   action_dim = env.action_space.shape[0]
 
   # Define parameter grid
   param_grid = {
       "gamma": [0.95, 0.99],
-      "lam": [0.9, 0.95],
+      "lam": [0.5, 0.9, 0.95],
       "critic_lr": [1e-3, 1e-4],
       "hidden_sizes": [[64, 64], [128, 128]],
       "kl_threshold": [1e-2, 5e-3],
@@ -223,7 +225,7 @@ if __name__ == "__main__":
   # Training params
   batch_size = 128
   episodes_per_batch = 10
-  factor = 100
+  factor = 10
 
   for i, param_values in enumerate(param_combinations):
     # Create parameter dictionary for this combination
@@ -241,6 +243,6 @@ if __name__ == "__main__":
     Train.batch(model, env, total_timesteps, batch_size, **model_params)
 
     # Save the experiment
-    Experiment.save(model)
+    Experiment.save(model, env)
 
     print(f"Experiment {i + 1}/{len(param_combinations)} completed.")

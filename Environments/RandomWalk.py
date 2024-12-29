@@ -305,27 +305,9 @@ class ContinuousWalkEnv(WalkEnv):
     return int(self.s), reward, terminated, truncated, info
 
 
-def make_random_walk(n_states=19, p_stay=0.1, p_backward=0.4, max_blocks=40, render_mode=None, verbose=0, continuous=False):
-  """
-  Create a Random Walk environment.
-
-  Parameters:
-  - n_states (int): Number of intermediate states.
-  - p_stay (float): Probability of staying in the same state.
-  - p_backward (float): Probability of moving backward.
-  - max_blocks (int): Maximum steps per episode.
-  - render_mode (str): Rendering mode.
-  - verbose (int): Verbosity level for logging.
-  - continuous (bool): Whether to use a continuous observation and action space.
-
-  Returns:
-  - env (WalkEnv or ContinuousWalkEnv): The configured Random Walk environment.
-  """
-  if continuous:
-    env = ContinuousWalkEnv(n_states, p_stay, p_backward, max_blocks, render_mode, verbose)
-  else:
-    env = WalkEnv(n_states, p_stay, p_backward, max_blocks, render_mode, verbose)
-  env.make_func_name = "make_random_walk"
+def make(n_states=19, p_stay=0.1, p_backward=0.4, max_blocks=40, render_mode=None, verbose=0):
+  env = ContinuousWalkEnv(n_states, p_stay, p_backward, max_blocks, render_mode, verbose)
+  env.make_func_name = "make"
   return env
 
 
@@ -421,7 +403,7 @@ def estimate_goal_probability(env, num_simulations=1000):
 
 
 if __name__ == "__main__":
-  env = make_random_walk(n_states=19, p_stay=0.0, p_backward=0.5, max_blocks=50)
+  env = make(n_states=19, p_stay=0.0, p_backward=0.5, max_blocks=50)
   estimate_goal_probability(env)
   plot_transition_matrix(env)
   plot_rewards(env)

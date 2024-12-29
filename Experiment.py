@@ -16,9 +16,13 @@ class Experiment:
   @staticmethod
   def save_config(model, folder):
     """Save the model's parameters."""
+    data = {
+        "model_name": model.name,
+        **model.params
+    }
     config_path = os.path.join(folder, "config.json")
     with open(config_path, "w") as config_file:
-      json.dump(model.params, config_file, indent=4)
+      json.dump(data, config_file, indent=4)
     return config_path
 
   @staticmethod
@@ -30,7 +34,7 @@ class Experiment:
     return history_path
 
   @staticmethod
-  def save(model, base_dir="results"):
+  def save(model, env, base_dir="results"):
     """
     Save the model, configuration, metrics, and history.
     Log the experiment results to a CSV file.
@@ -49,6 +53,9 @@ class Experiment:
     metrics = model.get_metrics()
     metrics["Result Folder"] = result_folder
 
+    # Environment Name
+    metrics["Environment"] = env.name
+
     # Log results to Experiments.csv
     csv_path = "Experiments.csv"
     if not os.path.exists(csv_path):
@@ -63,6 +70,7 @@ class Experiment:
     print(f"Experiment logged in folder: {result_folder}\n")
     print(f"    make metrics folder={result_folder}\n")
 
+    return result_folder
 
 
 # Example Usage
@@ -86,4 +94,4 @@ if __name__ == "__main__":
   model.log_episode(rewards=[10, 12, 15], step_times=[0.02, 0.018, 0.021], total_obs=100, success=1)
 
   # Save the experiment
-  Experiment.save(model)
+  Experiment.save(model, env=None)
