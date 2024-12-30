@@ -42,7 +42,7 @@ class PendulumWrapper(gym.Wrapper):
     return state, reward, terminated, truncated, info
 
 
-def is_success(state, action, angle_threshold=0.2, velocity_threshold=0.5, torque_threshold=0.1):
+def is_success(state, action, angle_threshold=0.1, velocity_threshold=0.5, torque_threshold=0.1):
   """
   Determines if the pendulum is in a successful state.
 

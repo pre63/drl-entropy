@@ -38,12 +38,12 @@ def default_reward(state, reward, action, done, info):
   """
   Default reward strategy from the environment.
   """
-  info["landed"] = False if "landed" not in info else info["landed"]
+  info["success"] = False if "success" not in info else info["success"]
 
   if done:
     success = check_success(state, done)
     if success:
-      info["landed"] = True
+      info["success"] = True
       reward = max(reward + 200.0, 200.0)
 
   return reward
@@ -53,14 +53,14 @@ def proximity_reward(state, reward, action, done, info):
   """
   Reward strategy prioritizing proximity to the target and low velocity.
   """
-  info["landed"] = False if "landed" not in info else info["landed"]
+  info["success"] = False if "success" not in info else info["success"]
 
   x_position = state[0]
 
   if done:
     success = check_success(state, done)
     if success:
-      info["landed"] = True
+      info["success"] = True
       award = 200.0 + -x_position**2
       reward = max(reward + award, 200.0)
     else:
@@ -73,7 +73,7 @@ def energy_efficient_reward(state, reward, action, done, info):
   """
   Reward strategy prioritizing energy efficiency during landing.
   """
-  info["landed"] = False if "landed" not in info else info["landed"]
+  info["success"] = False if "success" not in info else info["success"]
   fuel_usage = np.linalg.norm(action)  # Action magnitude as a proxy for fuel usage
   x_position = state[0]
 
@@ -83,7 +83,7 @@ def energy_efficient_reward(state, reward, action, done, info):
   if done:
     success = check_success(state, done)
     if success:
-      info["landed"] = True
+      info["success"] = True
 
       award = 200.0 + -x_position**2 * 0.1 * (fuel_usage - 1.0)
 

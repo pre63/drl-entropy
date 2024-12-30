@@ -67,7 +67,7 @@ class EnTRPO(TRPO):
 
   def train(self, states, actions, rewards, next_states, dones, successes, **parameters):
     gamma = parameters.get("gamma", 0.99)
-    lambda_value = parameters.get("lam", 0.95)
+    lambda_value = parameters.get("lambd", 0.95)
 
     states = states.to(self.device)
     next_states = next_states.to(self.device)
@@ -102,15 +102,15 @@ if __name__ == "__main__":
   from itertools import product
 
   # Initialize environment
-  from Environments.Pendulum import make_pendulum
-  env = make_pendulum()
+  from Environments.Pendulum import make
+  env = make()
   state_dim = env.observation_space.shape[0]
   action_dim = env.action_space.shape[0]
 
   # Define parameter grid
   param_grid = {
       "gamma": [0.95, 0.99],
-      "lam": [0.9, 0.95],
+      "lambd": [0.9, 0.95],
       "critic_lr": [1e-3, 1e-4],
       "hidden_sizes": [[64, 64], [128, 128]],
       "kl_threshold": [1e-2, 5e-3],
@@ -127,8 +127,7 @@ if __name__ == "__main__":
 
   # Training parameters
   batch_size = 128
-  episodes_per_batch = 10
-  factor = 100
+  num_batches = 1000
 
   for i, param_values in enumerate(param_combinations):
     # Create parameter dictionary for this combination
@@ -138,7 +137,7 @@ if __name__ == "__main__":
     model = EnTRPO(**model_params)
 
     # Define total timesteps for training
-    total_timesteps = batch_size * episodes_per_batch * factor
+    total_timesteps = batch_size * num_batches
 
     print(f"Starting experiment {i + 1}/{len(param_combinations)} with params: {model_params}")
 

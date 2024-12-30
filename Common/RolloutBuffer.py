@@ -1,74 +1,72 @@
 import torch
-from collections import namedtuple
+
 
 class RolloutBuffer:
-    """
-    Rollout buffer for storing trajectories in on-policy algorithms like TRPO.
+  """
+  Rollout buffer for storing trajectories in on-policy algorithms like TRPO,
+  without a fixed size constraint. All transitions are appended to lists
+  and converted to tensors in get().
 
-    Args:
-        buffer_size (int): Maximum number of steps to store in the buffer.
-        state_dim (int): Dimensionality of the state space.
-        action_dim (int): Dimensionality of the action space.
-        device (torch.device): Device to store the buffer data.
-    """
-    def __init__(self, buffer_size, state_dim, action_dim, device):
-        self.buffer_size = buffer_size
-        self.state_dim = state_dim
-        self.action_dim = action_dim
-        self.device = device
+  Args:
+      device (torch.device): Device to store the buffer data.
+  """
 
-        self.reset()
+  def __init__(self, device):
+    self.device = device
+    self.reset()
 
-    def reset(self):
-        """Reset the buffer to an empty state."""
-        self.states = torch.zeros((self.buffer_size, self.state_dim), device=self.device)
-        self.actions = torch.zeros((self.buffer_size, self.action_dim), device=self.device)
-        self.rewards = torch.zeros(self.buffer_size, device=self.device)
-        self.next_states = torch.zeros((self.buffer_size, self.state_dim), device=self.device)
-        self.dones = torch.zeros(self.buffer_size, dtype=torch.bool, device=self.device)
+  def reset(self):
+    self.states = []
+    self.actions = []
+    self.rewards = []
+    self.next_states = []
+    self.dones = []
+    self.successes = []
 
-        self.size = 0
+  def add(self, state, action, reward, next_state, done, success):
+    if isinstance(state, torch.Tensor):
+      state = state.clone().detach().to(self.device)
+    else:
+      state = torch.tensor(state, dtype=torch.float32, device=self.device)
 
-    def add(self, state, action, reward, next_state, done):
-        """
-        Add a transition to the buffer.
+    if isinstance(action, torch.Tensor):
+      action = action.clone().detach().to(self.device)
+    else:
+      action = torch.tensor(action, dtype=torch.float32, device=self.device)
 
-        Args:
-            state (np.array or torch.Tensor): The current state.
-            action (np.array or torch.Tensor): The action taken.
-            reward (float): The reward received.
-            next_state (np.array or torch.Tensor): The next state.
-            done (bool): Whether the episode is done.
-        """
-        if self.size >= self.buffer_size:
-            raise ValueError("Buffer overflow: Attempted to add more transitions than buffer size.")
+    if isinstance(next_state, torch.Tensor):
+      next_state = next_state.clone().detach().to(self.device)
+    else:
+      next_state = torch.tensor(next_state, dtype=torch.float32, device=self.device)
 
-        idx = self.size
-        self.states[idx] = torch.tensor(state, dtype=torch.float32, device=self.device)
-        self.actions[idx] = torch.tensor(action, dtype=torch.float32, device=self.device)
-        self.rewards[idx] = torch.tensor(reward, dtype=torch.float32, device=self.device)
-        self.next_states[idx] = torch.tensor(next_state, dtype=torch.float32, device=self.device)
-        self.dones[idx] = torch.tensor(done, dtype=torch.bool, device=self.device)
+    reward = float(reward)
+    done = bool(done)
+    success = bool(success)
 
-        self.size += 1
+    self.states.append(state)
+    self.actions.append(action)
+    self.rewards.append(reward)
+    self.next_states.append(next_state)
+    self.dones.append(done)
+    self.successes.append(success)
 
-    def get(self):
-        """
-        Retrieve all stored transitions and reset the buffer.
+  def get(self):
+    states = torch.stack(self.states).to(self.device)
+    actions = torch.stack(self.actions).to(self.device)
+    rewards = torch.tensor(self.rewards, dtype=torch.float32, device=self.device)
+    next_states = torch.stack(self.next_states).to(self.device)
+    dones = torch.tensor(self.dones, dtype=torch.bool, device=self.device)
+    successes = torch.tensor(self.successes, dtype=torch.bool, device=self.device)
 
-        Returns:
-            dict: A dictionary containing the collected transitions.
-        """
-        data = {
-            "states": self.states[:self.size],
-            "actions": self.actions[:self.size],
-            "rewards": self.rewards[:self.size],
-            "next_states": self.next_states[:self.size],
-            "dones": self.dones[:self.size],
-        }
-        self.reset()
-        return data
+    self.reset()
+    return {
+        "states": states,
+        "actions": actions,
+        "rewards": rewards,
+        "next_states": next_states,
+        "dones": dones,
+        "successes": successes,
+    }
 
-    def __len__(self):
-        """Return the current size of the buffer."""
-        return self.size
+  def __len__(self):
+    return len(self.states)

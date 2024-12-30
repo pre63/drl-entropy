@@ -13,7 +13,7 @@ class EnTRPOTrace(EnTRPO):
     super(EnTRPOTrace, self).__init__(device=device, **params)
     self.trace_decay = params.get("trace_decay", 0.9)  # Decay rate for eligibility traces
 
-  def compute_advantages_with_traces(self, rewards, values, next_values, dones, successes, gamma, lam):
+  def compute_advantages_with_traces(self, rewards, values, next_values, dones, successes, gamma, lambd):
     """
     Compute advantages using eligibility traces, factoring in successes.
     """
@@ -22,7 +22,7 @@ class EnTRPOTrace(EnTRPO):
     for t in reversed(range(len(rewards))):
       delta = rewards[t] + gamma * next_values[t] * (1 - dones[t]) - values[t]
       # Amplify eligibility trace for successes, dampen for failures
-      eligibility_trace = (delta + gamma * lam * (1 - dones[t]) * eligibility_trace) * (1 + successes[t])
+      eligibility_trace = (delta + gamma * lambd * (1 - dones[t]) * eligibility_trace) * (1 + successes[t])
       advantages.insert(0, eligibility_trace)
     return torch.tensor(advantages, dtype=torch.float32).to(self.device)
 
@@ -31,7 +31,7 @@ class EnTRPOTrace(EnTRPO):
     Override train to include eligibility-trace-based advantage calculation.
     """
     gamma = params.get("gamma", 0.99)
-    lam = params.get("lam", 0.95)
+    lambd = params.get("lambd", 0.95)
 
     # Move tensors to device
     states = states.to(self.device)
@@ -47,7 +47,7 @@ class EnTRPOTrace(EnTRPO):
 
     # Calculate advantages using eligibility traces
     advantages = self.compute_advantages_with_traces(
-        rewards, values.detach(), next_values.detach(), dones, successes, gamma, lam
+        rewards, values.detach(), next_values.detach(), dones, successes, gamma, lambd
     )
     targets = rewards + gamma * next_values * (1 - dones)
 
@@ -70,15 +70,15 @@ if __name__ == "__main__":
   from itertools import product
 
   # Initialize environment
-  from Environments.Pendulum import make_pendulum
-  env = make_pendulum()
+  from Environments.Pendulum import make
+  env = make()
   state_dim = env.observation_space.shape[0]
   action_dim = env.action_space.shape[0]
 
   # Define parameter grid
   param_grid = {
       "gamma": [0.95, 0.99],
-      "lam": [0.9, 0.95],
+      "lambd": [0.9, 0.95],
       "critic_lr": [1e-3, 1e-4],
       "hidden_sizes": [[64, 64], [128, 128]],
       "kl_threshold": [1e-2, 5e-3],
@@ -96,8 +96,7 @@ if __name__ == "__main__":
 
   # Training parameters
   batch_size = 128
-  episodes_per_batch = 10
-  factor = 100
+  num_batch = 1000
 
   for i, param_values in enumerate(param_combinations):
     # Create parameter dictionary for this combination
@@ -107,7 +106,7 @@ if __name__ == "__main__":
     model = EnTRPOTrace(**model_params)
 
     # Define total timesteps for training
-    total_timesteps = batch_size * episodes_per_batch * factor
+    total_timesteps = batch_size * num_batch
 
     print(f"Starting experiment {i + 1}/{len(param_combinations)} with params: {model_params}")
 

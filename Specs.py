@@ -4,35 +4,35 @@ import torch
 import pandas as pd
 from datetime import datetime
 
+import numpy as np
 import torch
 
 
 class ModelSpec(torch.nn.Module):
+  """
+  Base class for RL Models, providing consistent logging of training and evaluation metrics.
+  Subclasses should implement their specific RL algorithms (e.g., TRPO).
+  """
+
   def __init__(self, **params):
-    super(ModelSpec, self).__init__()
+    super().__init__()
     self.params = params
 
-    # Metrics for logging
+    # Running tally of timesteps (step-based counter)
     self.timesteps = 0
-    self.rewards = []  # Full history of rewards
-    self.step_times = []  # Full history of step times
-    self.episode_rewards = []  # Total reward per episode
-    self.episode_step_times = []  # Average step time per episode
-    self.episode_successes = []  # Success indicator for each episode
-    self.total_obs = []  # Observations per episode
 
+    self.step_logs = []
+    self.loss_log = []
 
-    # Losses
-    self.actor_loss, self.critic_loss, self.kl_divergence_loss = 0, 0, 0
+    self.episode_logs = []
+    self.episode_count = 0
 
-    self.actor_loss_history = []
-    self.critic_loss_history = []
-    self.kl_divergence_loss_history = []
+    self.eval_logs = ([],[])
 
-  def log_loss(self, actor_loss, critic_loss, kl_loss):
-    self.actor_loss_history.append(actor_loss)
-    self.critic_loss_history.append(critic_loss)
-    self.kl_divergence_loss_history.append(kl_loss)
+    # For storing the most recent losses (actor, critic, KL)
+    self.actor_loss = 0.0
+    self.critic_loss = 0.0
+    self.kl_divergence_loss = 0.0
 
   @property
   def name(self):
@@ -40,70 +40,94 @@ class ModelSpec(torch.nn.Module):
 
   def log_step(self, reward, step_time):
     """
-    Log data for a single step in the environment.
+    Log a single environment step.
+    - reward: The immediate reward at this step.
+    - step_time: How long this step took to run (for profiling).
     """
     self.timesteps += 1
-    self.rewards.append(reward)
-    self.step_times.append(step_time)
+    # Record step logs
+    self.step_logs.append({
+        "timestep": self.timesteps,
+        "reward": reward,
+        "step_time": step_time
+    })
 
-  def log_episode(self, rewards, step_times, total_obs, success):
+  def log_episode(self, episode_rewards, avg_step_time, success, episode_steps):
     """
-    Log data for a single episode.
-    - rewards: List of rewards for each step in the episode.
-    - step_times: List of times taken for each step.
-    - total_obs: Total observations (data points) used in this episode.
-    - success: Whether the episode was successful (1 for success, 0 for failure).
+    Log a single episode.
+    - episode_rewards: Sum of rewards in this episode
+    - avg_step_time: Average step time across the steps in this episode
+    - success: 1 if success, else 0
+    - episode_steps: Number of steps in this episode
     """
-    self.episode_rewards.append(sum(rewards))
-    self.episode_step_times.append(sum(step_times) / len(step_times) if step_times else 0)
-    self.total_obs.append(total_obs)
-    self.episode_successes.append(success)
+    self.episode_count += 1
+    self.episode_logs.append({
+        "episode_index": self.episode_count,
+        "episode_rewards": episode_rewards,
+        "avg_step_time": avg_step_time,
+        "success": success,
+        "episode_steps": episode_steps
+    })
 
-  def get_metrics(self):
-    """
-    Compute and return aggregate metrics for the model.
-    """
-    avg_reward = sum(self.rewards) / len(self.rewards) if self.rewards else 0
-    reward_variance = (
-        sum((r - avg_reward) ** 2 for r in self.rewards) / len(self.rewards) if self.rewards else 0
-    )
-    avg_step_time = sum(self.step_times) / len(self.step_times) if self.step_times else 0
-    avg_episode_reward = sum(self.episode_rewards) / len(self.episode_rewards) if self.episode_rewards else 0
-    avg_obs_per_episode = sum(self.total_obs) / len(self.total_obs) if self.total_obs else 0
-    success_rate = sum(self.episode_successes) / len(self.episode_successes) if self.episode_successes else 0
+  def log_loss(self, actor_loss, critic_loss, kl_div):
+    self.actor_loss = actor_loss
+    self.critic_loss = critic_loss
+    self.kl_divergence_loss = kl_div
 
-    # Loss
-    actor_loss = sum(self.actor_loss_history) / len(self.actor_loss_history) if self.actor_loss_history else 0
-    critic_loss = sum(self.critic_loss_history) / len(self.critic_loss_history) if self.critic_loss_history else 0
-    kl_divergence = sum(self.kl_divergence_loss_history) / len(self.kl_divergence_loss_history) if self.kl_divergence_loss_history else 0
+    self.loss_log.append({
+        "actor_loss": actor_loss,
+        "critic_loss": critic_loss,
+        "kl_divergence": kl_div
+    })
 
+  def log_evaluation(self, episode_rewards, episode_successes):
+    self.eval_logs = (episode_rewards, episode_successes)
+
+  def get_step_metrics(self):
+    """
+    Return step-wise logs.
+    """
+    return self.step_logs
+
+  def get_episode_metrics(self):
+    """
+    Return episode-wise logs.
+    """
+    return self.episode_logs
+
+  def get_eval_metrics(self):
+    """
+    Return all evaluation logs.
+    """
+    return self.eval_logs
+
+  def get_loss_metrics(self):
+    """
+    Return all loss logs.
+    """
+    return self.loss_log
+
+  def get_training_summary(self):
+    """
+    Compute overall training metrics that are meaningful for an RL setting.
+    You might compute an average episode return, success rate, etc.
+    """
     return {
         "Model Name": self.name,
         "Params": self.params,
         "Timesteps": self.timesteps,
-        "Average Step Time": avg_step_time,
-        "Average Rewards (Step)": avg_reward,
-        "Reward Variance (Step)": reward_variance,
-        "Average Rewards (Episode)": avg_episode_reward,
-        "Average Observations Per Episode": avg_obs_per_episode,
-        "Success Rate": success_rate,
-        "Actor Loss": actor_loss,
-        "Critic Loss": critic_loss,
-        "KL Divergence": kl_divergence,
+        "Average Step Time": np.mean([step["step_time"] for step in self.step_logs]),
+        "Average Rewards (Step)": np.mean([step["reward"] for step in self.step_logs]),
+        "Reward Variance (Step)": np.var([step["reward"] for step in self.step_logs]),
+        "Average Rewards (Episode)": np.mean([ep["episode_rewards"] for ep in self.episode_logs]),
+        "Average Observations Per Episode": np.mean([ep["episode_steps"] for ep in self.episode_logs]),
+        "Eval Success Rate": np.mean(self.eval_logs[1]),
+        "Eval Average Rewards": np.mean(self.eval_logs[0]),
+        "Episode Count": self.episode_count,
+        "Actor Loss": self.actor_loss,
+        "Critic Loss": self.critic_loss,
+        "KL Divergence": self.kl_divergence_loss,
     }
 
-  def get_history(self):
-    """
-    Return the full history of metrics for analysis and plotting.
-    """
-    return {
-        "Step Rewards": self.rewards,
-        "Step Times": self.step_times,
-        "Episode Rewards": self.episode_rewards,
-        "Episode Step Times": self.episode_step_times,
-        "Episode Successes": self.episode_successes,
-        "Episode Observations": self.total_obs,
-        "KL Divergence": self.kl_divergence_loss_history,
-        "Actor Loss": self.actor_loss_history,
-        "Critic Loss": self.critic_loss_history,
-    }
+  def __len__(self):
+    return self.episode_count

@@ -22,6 +22,9 @@ class WalkEnv(gym.Env):
   """
   Random Walk Environment for Reinforcement Learning.
 
+  Defaults are meant to be hard enough to create an environment where we can train a model without 
+  it randomly converging to the optimal policy.
+
   The environment represents a 1D grid with a start state, terminal states at both ends,
   and intermediate navigable states. The agent can move left, right, or stay in the same position.
   Rewards are provided for reaching the terminal states.
@@ -261,11 +264,6 @@ class WalkEnv(gym.Env):
 
 
 class ContinuousWalkEnv(WalkEnv):
-  """
-  Continuous Random Walk Environment for Reinforcement Learning.
-  Extends the base WalkEnv to use continuous state and action spaces.
-  """
-
   def __init__(self, n_states, p_stay, p_backward, max_blocks, render_mode, verbose):
     super().__init__(n_states, p_stay, p_backward, max_blocks, render_mode, verbose)
     self.observation_space = spaces.Box(
@@ -275,10 +273,11 @@ class ContinuousWalkEnv(WalkEnv):
         low=-1.0, high=1.0, shape=(1,), dtype=np.float32
     )
 
+  def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None):
+    super().reset(seed=seed, options=options)
+    return np.array([self.s], dtype=np.float32), {"prob": self.isd[self.s]}
+
   def step(self, action):
-    """
-    Override the step function to handle continuous actions.
-    """
     self.current_step += 1
 
     if not self.action_space.contains(action):
@@ -302,7 +301,7 @@ class ContinuousWalkEnv(WalkEnv):
     self.s = next_state
 
     info = {"success": terminated and next_state == self.nS - 1}
-    return int(self.s), reward, terminated, truncated, info
+    return np.array([self.s], dtype=np.float32), reward, terminated, truncated, info
 
 
 def make(n_states=19, p_stay=0.1, p_backward=0.4, max_blocks=40, render_mode=None, verbose=0):
