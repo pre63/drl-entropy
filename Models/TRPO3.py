@@ -19,7 +19,7 @@ class TRPO3(ModelSpec):
     self.gamma = params.get("gamma", 0.99)
     self.lambd = params.get("gae_lambda", 0.95)
     self.kl_threshold = params.get("kl_threshold", 1e-2)
-    self.critic_lr = params.get("critic_lr", 1e-3)
+    self.critic_alpha = params.get("critic_alpha", 1e-3)
     self.n_steps = params.get("n_steps", 2048)
 
     self.actor = self.build_actor().to(self.device)
@@ -27,7 +27,7 @@ class TRPO3(ModelSpec):
     self.old_actor.load_state_dict(self.actor.state_dict())
 
     self.critic = self.build_critic().to(self.device)
-    self.critic_optimizer = optim.Adam(self.critic.parameters(), lr=self.critic_lr)
+    self.critic_optimizer = optim.Adam(self.critic.parameters(), lr=self.critic_alpha)
 
     self.rollout_buffer = RolloutBuffer(
         device=self.device
@@ -212,7 +212,7 @@ if __name__ == "__main__":
   param_grid = {
       "gamma": [0.95, 0.99],
       "lambd": [0.9, 0.95],
-      "critic_lr": [1e-3, 1e-4],
+      "critic_alpha": [1e-3, 1e-4],
       "hidden_sizes": [[64, 64], [128, 128]],
       "kl_threshold": [1e-2, 5e-3],
       "state_dim": [state_dim],  # Fixed for the environment

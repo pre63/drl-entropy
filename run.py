@@ -57,7 +57,7 @@ if __name__ == "__main__":
   param_grid = {
       "gamma": [0.95, 0.99],
       "lambd": [0.9, 0.95],
-      "critic_lr": [1e-2],
+      "critic_alpha": [1e-2],
       "hidden_sizes": [[64, 64], [128, 128], [256, 256]],
       "kl_threshold": [1e-1, 1e-2, 1e-3, 1e-4],
       "state_dim": [state_dim],

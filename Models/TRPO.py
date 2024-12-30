@@ -24,7 +24,7 @@ class TRPO(ModelSpec):
     self.action_dim = params.get("action_dim")
     self.hidden_layer_sizes = params.get("hidden_sizes", [64, 64])
     self.kl_divergence_threshold = params.get("kl_threshold", 1e-2)
-    self.critic_learning_rate = params.get("critic_lr", 1e-3)
+    self.critic_learning_rate = params.get("critic_alpha", 1e-3)
     self.lambd = params.get("lambd", 0.95)
     self.gamma = params.get("gamma", 0.99)
 
@@ -253,7 +253,7 @@ if __name__ == "__main__":
   param_grid = {
       "gamma": [0.99],
       "lambd": [0.95],
-      "critic_lr": [1e-3],
+      "critic_alpha": [1e-3],
       "hidden_sizes": [[64, 64]],
       "kl_threshold": [1e-2],
       "state_dim": [state_dim],  # Fixed for the environment
@@ -268,7 +268,7 @@ if __name__ == "__main__":
 
   # Training params
   batch_size = 128
-  num_batches = 1000
+  num_batches = 10
 
   for i, param_values in enumerate(param_combinations):
     # Create parameter dictionary for this combination

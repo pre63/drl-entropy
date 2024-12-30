@@ -123,7 +123,7 @@ class ModelSpec(torch.nn.Module):
         "Average Observations Per Episode": np.mean([ep["episode_steps"] for ep in self.episode_logs]),
         "Eval Success Rate": np.mean(self.eval_logs[1]),
         "Eval Average Rewards": np.mean(self.eval_logs[0]),
-        "Episode Count": self.episode_count,
+        "Episodes": self.episode_count,
         "Actor Loss": self.actor_loss,
         "Critic Loss": self.critic_loss,
         "KL Divergence": self.kl_divergence_loss,

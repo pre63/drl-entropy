@@ -79,7 +79,7 @@ if __name__ == "__main__":
   param_grid = {
       "gamma": [0.95, 0.99],
       "lambd": [0.9, 0.95],
-      "critic_lr": [1e-3, 1e-4],
+      "critic_alpha": [1e-3, 1e-4],
       "hidden_sizes": [[64, 64], [128, 128]],
       "kl_threshold": [1e-2, 5e-3],
       "entropy_coeff": [0.01, 0.001],

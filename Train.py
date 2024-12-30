@@ -139,6 +139,6 @@ class Train:
     # Log and print evaluation
     model.log_evaluation(eval_rewards, eval_successes)
 
-    print(f"Rewards: {sum(eval_rewards)} / {episodes} episodes")
-    print(f"Successes: {sum(eval_successes)} / {episodes} episodes")
+    print(f"Rewards: {sum(eval_rewards)/(episodes)} per epsode")
+    print(f"Success: {sum(eval_successes)/(episodes)}%")
     return eval_rewards, eval_successes
