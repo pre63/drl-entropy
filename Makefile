@@ -4,7 +4,7 @@ experiment:
 
 
 trpo:
-	@PYTHONPATH=. python Models/TRPO.py | tee -a log/trpo.log
+	@PYTHONPATH=. python Models/TRPO.py $(FROM) | tee -a log/trpo.log
 
 
 trpo3:

@@ -79,9 +79,6 @@ class Train:
           buffer_dones.clear()
           buffer_successes.clear()
 
-        if done or timesteps_done >= total_timesteps:
-          break
-
       # Episode is over, record aggregated metrics for the episode
       success = episode_success_flags[-1] if episode_success_flags else 0
       model.log_episode(
@@ -94,7 +91,7 @@ class Train:
       # Print an occasional summary
       # In a real codebase, you might do this every N episodes or M timesteps
       summary = model.get_training_summary()
-      print(f"[Training Summary] {summary}")
+      print(summary)
 
   @staticmethod
   def _train_on_batch(model, states, actions, rewards, next_states, dones, successes, **params):

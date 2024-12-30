@@ -1,7 +1,11 @@
+import os
+import sys
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.distributions import Normal, kl
+
 from collections import namedtuple
 
 from Common.GaussianPolicy import GaussianPolicy
@@ -237,6 +241,35 @@ class TRPO(ModelSpec):
     self.log_loss(self.actor_loss, self.critic_loss, self.kl_divergence_loss)
 
 
+def load_model_if_available(model_folder, model_class, **model_params):
+  """
+  Load a model from a file if provided, or initialize a new model otherwise.
+  """
+  model_file = os.path.join(model_folder, "model.pth") if model_folder else None
+  config_file = os.path.join(model_folder, "config.json") if model_folder else None
+
+  if model_file and os.path.exists(model_file):
+    print(f"Loading model from {model_file}")
+
+    if config_file and os.path.exists(config_file):
+      print(f"Loading model configuration from {config_file}")
+      try:
+        with open(config_file, "r") as f:
+          loaded_params = json.load(f)
+          model_params.update(loaded_params)  # Merge loaded params with existing ones
+      except json.JSONDecodeError as e:
+        print(f"Error reading configuration file: {e}")
+        raise
+
+    model = model_class(**model_params)
+    model.load_state_dict(torch.load(model_file))
+    return model
+
+  else:
+    print("No model file provided or file not found. Initializing a new model.")
+    return model_class(**model_params)
+
+
 if __name__ == "__main__":
   import gymnasium as gym
   from Experiment import Experiment
@@ -245,6 +278,12 @@ if __name__ == "__main__":
   # Initialize environment
   from Environments.LunarLander import make
   env = make()
+
+  if len(sys.argv) < 2:
+    print("Usage: python TRPO.py [model_folder (optional)]")
+    sys.exit(1)
+
+  model_folder = sys.argv[1] if len(sys.argv) > 1 else None
 
   state_dim = env.observation_space.shape[0]
   action_dim = env.action_space.shape[0]
@@ -268,20 +307,19 @@ if __name__ == "__main__":
 
   # Training params
   batch_size = 128
-  num_batches = 10
+  num_batches = 100000
 
   for i, param_values in enumerate(param_combinations):
     # Create parameter dictionary for this combination
     model_params = dict(zip(param_keys, param_values))
 
     # Initialize model
-    model = TRPO(**model_params)
+    model = load_model_if_available(model_folder, TRPO, **model_params)
 
     # Define total timesteps for training
     total_timesteps = batch_size * num_batches
 
-    if debug:
-      print(f"Starting experiment {i + 1}/{len(param_combinations)} with params: {model_params}")
+    print(f"Starting experiment {i + 1}/{len(param_combinations)} with params: {model_params}")
 
     # Train the model
     Train.batch(model, env, total_timesteps, batch_size, **model_params)
@@ -292,5 +330,4 @@ if __name__ == "__main__":
     # Save the experiment
     Experiment.save(model, env)
 
-    if debug:
-      print(f"Experiment {i + 1}/{len(param_combinations)} completed.")
+    print(f"Experiment {i + 1}/{len(param_combinations)} completed.")
