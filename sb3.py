@@ -15,6 +15,80 @@ from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.callbacks import EvalCallback, CheckpointCallback, BaseCallback
 
 
+class SuccessEvalCallback(EvalCallback):
+  def __init__(self, eval_env, **kwargs):
+    super().__init__(eval_env, **kwargs)
+    self.success_count = 0
+    self.total_episodes = 0
+    self.success_rate = 0.0
+
+  def _evaluate_policy(self):
+    # Perform evaluation using the evaluation environment
+    episode_rewards, episode_lengths = [], []
+    success_count = 0
+
+    for _ in range(self.n_eval_episodes):
+      obs = self.eval_env.reset()
+      done = False
+      episode_reward = 0.0
+
+      while not done:
+        action, _ = self.model.predict(obs, deterministic=self.deterministic)
+        obs, reward, done, info = self.eval_env.step(action)
+        episode_reward += reward
+
+        # Check for 'success' in info
+        if "success" in info[0] and info[0]["success"]:
+          success_count += 1
+
+      episode_rewards.append(episode_reward)
+      episode_lengths.append(info[0].get("episode", {}).get("l", 0))
+
+    # Update success metrics
+    self.success_count += success_count
+    self.total_episodes += self.n_eval_episodes
+    if self.total_episodes > 0:
+      self.success_rate = self.success_count / self.total_episodes
+
+    # Log success metrics
+    if self.logger:
+      self.logger.record("eval/success_total", self.success_count)
+      self.logger.record("eval/success_rate", self.success_rate)
+
+    return episode_rewards, episode_lengths
+
+
+class SuccessMetricsCallback(BaseCallback):
+  """
+  Custom callback to track success and success rate during training.
+  """
+
+  def __init__(self, verbose=0):
+    super().__init__(verbose)
+    self.success_count = 0
+    self.total_episodes = 0
+    self.success_rate = 0
+
+  def _on_step(self):
+    # Check for success in the current episode
+    infos = self.locals.get("infos", [])
+    for info in infos:
+      if info.get("success", False):
+        self.success_count += 1
+    return True
+
+  def _on_rollout_end(self):
+    # Update the total episodes count and success rate
+    self.total_episodes += len(self.locals.get("infos", []))
+    if self.total_episodes > 0:
+      self.success_rate = self.success_count / self.total_episodes
+
+    # Log success metrics to TensorBoard
+    if self.logger:
+      self.logger.record("success/total_success", self.success_count)
+      self.logger.record("success/success_rate", self.success_rate)
+
+
 def make_env(rank, seed=0):
   def _init():
     env = make()
@@ -22,6 +96,17 @@ def make_env(rank, seed=0):
     env = Monitor(env, f"./.logs/env_{rank}")
     return env
   return _init
+
+
+def make_eval_env(seed=0):
+  """
+  Create a SubprocVecEnv for evaluation to match the training environment type.
+  """
+  def _init():
+    env = make()
+    env.seed(seed)
+    return Monitor(env, f"./.logs/eval_env")
+  return SubprocVecEnv([_init])
 
 
 def init_tensorboard(model_name):
@@ -78,7 +163,7 @@ class TrialPruningCallback(BaseCallback):
 
 def optimal_trpo(trial):
   """
-
+  {'gamma': 0.991067322494488, 'gae_lambda': 0.9239071133310828, 'target_kl': 0.007793948758802845, 'cg_damping': 0.08320338221830197, 'cg_max_steps': 18, 'line_search_max_iter': 7, 'n_steps': 2048, 'batch_size': 256, 'total_timesteps': 500000}
   """
   # Define the TRPO-specific optimization space
   params = {
@@ -117,7 +202,7 @@ def optimal_entrpo(trial):
 
 def optimal_ppo(trial):
   """
-  
+
   """
   # Define the PPO-specific optimization space
   params = {
@@ -146,7 +231,7 @@ def get_model():
 
 
 def optimize_model(trial, model_class, optimal_function, model_name):
-  # Get suggested parameters for the trial
+    # Get suggested parameters for the trial
   trial_params = optimal_function(trial)
 
   # Extract total timesteps
@@ -155,6 +240,7 @@ def optimize_model(trial, model_class, optimal_function, model_name):
   # Set up environment
   num_envs = 12
   env = SubprocVecEnv([make_env(i) for i in range(num_envs)])
+  eval_env = make_eval_env()
   tensorboard_log_dir = init_tensorboard(model_name)
 
   # Initialize model
@@ -168,15 +254,19 @@ def optimize_model(trial, model_class, optimal_function, model_name):
   )
 
   # Set up callbacks
-  checkpoint_callback, eval_callback = init_eval(env, model_name)
-  pruning_callback = TrialPruningCallback(trial, eval_callback)
+  checkpoint_callback, _ = init_eval(env, model_name)
+  success_eval_callback = SuccessEvalCallback(eval_env, eval_freq=5000, n_eval_episodes=10, deterministic=True)
+  success_metrics_callback = SuccessMetricsCallback()
 
   # Train the model
-  model.learn(total_timesteps=total_timesteps, callback=[checkpoint_callback, eval_callback, pruning_callback])
+  model.learn(
+      total_timesteps=total_timesteps,
+      callback=[checkpoint_callback, success_eval_callback, success_metrics_callback, TrialPruningCallback(trial, success_eval_callback)]
+  )
 
-  # Evaluate the model
-  mean_reward, _ = evaluate_policy(model, model.get_env(), n_eval_episodes=10)
-  return mean_reward
+  # Use success rate from evaluation as the optimization objective
+  success_rate = success_eval_callback.success_rate
+  return success_rate
 
 
 if __name__ == "__main__":
