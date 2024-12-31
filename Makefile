@@ -1,36 +1,16 @@
-
-experiment:
-	@python Experiment.py
+default: trial
 
 
-trpo:
-	@PYTHONPATH=. python Models/TRPO.py $(FROM) | tee -a .logs/trpo.logs
+trial:
+	@echo "Usage: make trial model=ppo trials=30 envs=4"
+	@mkdir -p .logs
+	@PYTHONPATH=. python trial.py $(model) | tee -a .logs/sb3-$(date)
 
-
-trpo3:
-	@PYTHONPATH=. python Models/TRPO3.py | tee -a .logs/trpo3.logs
-
-
-entropy:
-	@PYTHONPATH=. python Models/EnTRPO.py | tee -a .logs/entropy.logs
-
-
-trace:
-	@PYTHONPATH=. python Models/EnTRPOTrace.py | tee -a .logs/trace.logs
-
-
-run:
-	@PYTHONPATH=. python run.py | tee -a .logs/run.logs
-
-
-metrics:
-	@PYTHONPATH=. python Metrics.py $(folder)
-
-sb3:
-	@PYTHONPATH=. python sb3.py $(model) | tee -a .logs/sb3.logs
 
 board:
+	@mkdir -p .logs
 	@PYTHONPATH=. tensorboard --logdir=./.logs/tensorboard/ --port 6006
+
 
 install:
 	@sudo apt-get -y install swig || brew install swig

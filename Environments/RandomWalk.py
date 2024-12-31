@@ -307,6 +307,7 @@ class ContinuousWalkEnv(WalkEnv):
 def make(n_states=19, p_stay=0.1, p_backward=0.4, max_blocks=40, render_mode=None, verbose=0):
   env = ContinuousWalkEnv(n_states, p_stay, p_backward, max_blocks, render_mode, verbose)
   env.make_func_name = "make"
+  env.max_reward = 1
   return env
 
 

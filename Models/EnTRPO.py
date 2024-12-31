@@ -1,150 +1,184 @@
-import torch
-from torch.distributions import Normal
-
-from Models.TRPO import TRPO
-from Common.GaussianPolicy import GaussianPolicy
+import torch as th
+from torch import nn
+from typing import List, Tuple
+from stable_baselines3.common.distributions import kl_divergence
+from sb3_contrib.trpo.trpo import TRPO
 
 
 class EnTRPO(TRPO):
+  def __init__(
+      self,
+      *args,
+      ent_coef: float = 0.01,
+      **kwargs,
+  ):
+    super().__init__(*args, **kwargs)
+    self.ent_coef = ent_coef
+    self.tb_log_name = "EnTRPO"
+
+  def learn(self, **params):
+    params["tb_log_name"] = self.tb_log_name
+    return super().learn(**params)
+
+  def train(self) -> None:
+    self.policy.set_training_mode(True)
+    self._update_learning_rate(self.policy.optimizer)
+
+    policy_objective_values = []
+    kl_divergences = []
+    line_search_results = []
+    value_losses = []
+
+    for rollout_data in self.rollout_buffer.get(batch_size=None):
+      if self.sub_sampling_factor > 1:
+        rollout_data = type(rollout_data)(
+            rollout_data.observations[:: self.sub_sampling_factor],
+            rollout_data.actions[:: self.sub_sampling_factor],
+            None,
+            rollout_data.old_log_prob[:: self.sub_sampling_factor],
+            rollout_data.advantages[:: self.sub_sampling_factor],
+            None,
+        )
+
+      actions = rollout_data.actions
+      if self.action_space.__class__.__name__ == "Discrete":
+        actions = rollout_data.actions.long().flatten()
+
+      with th.no_grad():
+        old_distribution = self.policy.get_distribution(rollout_data.observations)
+
+      distribution = self.policy.get_distribution(rollout_data.observations)
+      log_prob = distribution.log_prob(actions)
+      ent = distribution.entropy().mean()
+
+      advantages = rollout_data.advantages
+      if self.normalize_advantage:
+        advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
+
+      ratio = th.exp(log_prob - rollout_data.old_log_prob)
+      policy_objective = (advantages * ratio).mean() + self.ent_coef * ent
+      kl_div = kl_divergence(distribution, old_distribution).mean()
+
+      self.policy.optimizer.zero_grad()
+
+      actor_params, policy_objective_gradients, grad_kl, grad_shape = self._compute_actor_grad(
+          kl_div, policy_objective
+      )
+
+      def hessian_vector_product_fn(vec, rg=True): return self.hessian_vector_product(
+          actor_params, grad_kl, vec, retain_graph=rg
+      )
+
+      search_direction = self._solve_conjugate_gradient(
+          hessian_vector_product_fn, policy_objective_gradients
+      )
+
+      line_search_max_step_size = 2 * self.target_kl
+      line_search_max_step_size /= th.matmul(
+          search_direction, hessian_vector_product_fn(search_direction, rg=False)
+      )
+      line_search_max_step_size = th.sqrt(line_search_max_step_size)
+
+      line_search_backtrack_coeff = 1.0
+      original_actor_params = [param.detach().clone() for param in actor_params]
+      is_line_search_success = False
+
+      with th.no_grad():
+        for _ in range(self.line_search_max_iter):
+          start_idx = 0
+          for param, orig, shape in zip(actor_params, original_actor_params, grad_shape):
+            n_params = param.numel()
+            param.data = orig.data + line_search_backtrack_coeff * line_search_max_step_size * \
+                search_direction[start_idx: (start_idx + n_params)].view(shape)
+            start_idx += n_params
+
+          distribution = self.policy.get_distribution(rollout_data.observations)
+          log_prob = distribution.log_prob(actions)
+          ratio = th.exp(log_prob - rollout_data.old_log_prob)
+          new_ent = distribution.entropy().mean()
+          new_policy_objective = (advantages * ratio).mean() + self.ent_coef * new_ent
+          kl_div_new = kl_divergence(distribution, old_distribution).mean()
+
+          if (kl_div_new < self.target_kl) and (new_policy_objective > policy_objective):
+            is_line_search_success = True
+            break
+          line_search_backtrack_coeff *= self.line_search_shrinking_factor
+
+        line_search_results.append(is_line_search_success)
+        if not is_line_search_success:
+          for param, orig in zip(actor_params, original_actor_params):
+            param.data = orig.data.clone()
+          policy_objective_values.append(policy_objective.item())
+          kl_divergences.append(0.0)
+        else:
+          policy_objective_values.append(new_policy_objective.item())
+          kl_divergences.append(kl_div_new.item())
+
+    for _ in range(self.n_critic_updates):
+      for rollout_data in self.rollout_buffer.get(self.batch_size):
+        values_pred = self.policy.predict_values(rollout_data.observations)
+        value_loss = nn.functional.mse_loss(rollout_data.returns, values_pred.flatten())
+        value_losses.append(value_loss.item())
+        self.policy.optimizer.zero_grad()
+        value_loss.backward()
+        for param in actor_params:
+          param.grad = None
+        self.policy.optimizer.step()
+
+    self._n_updates += 1
+    explained_var = self._get_explained_variance()
+    self.logger.record("train/policy_objective", float(th.mean(th.tensor(policy_objective_values))))
+    self.logger.record("train/value_loss", float(th.mean(th.tensor(value_losses))))
+    self.logger.record("train/kl_divergence_loss", float(th.mean(th.tensor(kl_divergences))))
+    self.logger.record("train/explained_variance", explained_var)
+    self.logger.record("train/is_line_search_success", float(th.mean(th.tensor(line_search_results, dtype=th.float32))))
+    if hasattr(self.policy, "log_std"):
+      self.logger.record("train/std", th.exp(self.policy.log_std).mean().item())
+    self.logger.record("train/n_updates", self._n_updates, exclude="tensorboard")
+
+  def _solve_conjugate_gradient(self, f_Ax, b):
+    x = th.zeros_like(b)
+    r = b.clone()
+    p = b.clone()
+    rr = th.dot(r, r)
+    for _ in range(self.cg_max_steps):
+      Ap = f_Ax(p)
+      alpha = rr / (th.dot(p, Ap) + 1e-8)
+      x += alpha * p
+      r -= alpha * Ap
+      rr_new = th.dot(r, r)
+      if rr_new < 1e-10:
+        break
+      beta = rr_new / rr
+      p = r + beta * p
+      rr = rr_new
+    return x
+
+  def _get_explained_variance(self):
+    # Convert returns and values to PyTorch tensors
+    returns = th.tensor(self.rollout_buffer.returns, dtype=th.float32, device=self.device)
+    values = th.tensor(self.rollout_buffer.values, dtype=th.float32, device=self.device)
+
+    # Calculate explained variance
+    explained_var = 1 - th.var(returns - values) / th.var(returns)
+    return explained_var
+
+
+def optimal(trial):
   """
-      EnTRPO: TRPO with entropy regularization for exploration.
+    {'gamma': 0.984822325244406, 'gae_lambda': 0.9558315622252784, 'target_kl': 0.011111159461187507, 'cg_damping': 0.07451122406533858, 'cg_max_steps': 20, 'line_search_max_iter': 8, 'ent_coef': 0.007312508870093316, 'n_steps': 1024, 'batch_size': 64, 'total_timesteps': 200000}
   """
-
-  def __init__(self, device=None, **params):
-    super(EnTRPO, self).__init__(device=device, **params)
-    self.entropy_coeff = params.get("entropy_coeff", 0.01)  # Coefficient for entropy regularization
-
-  def compute_entropy(self, states):
-    """
-    Compute entropy of the current policy for the given states.
-    Entropy encourages exploration by regularizing the policy.
-    """
-    action_mean, action_std = self.actor(states)
-    action_distribution = Normal(action_mean, action_std)
-    entropy = action_distribution.entropy()
-    return entropy.sum(dim=-1)  # Sum entropy over action dimensions
-
-  def train_actor(self, states, actions, advantages):
-    """
-    Modified train_actor to include entropy regularization.
-    """
-    # Compute log probabilities
-    action_mean, action_std = self.actor(states)
-    action_distribution = Normal(action_mean, action_std)
-    log_probabilities = action_distribution.log_prob(actions).sum(dim=-1)
-
-    # Compute entropy for the current policy
-    entropy = self.compute_entropy(states)
-
-    # Compute surrogate loss with entropy regularization
-    surrogate_loss = -(log_probabilities * advantages).mean()
-    entropy_regularization = -self.entropy_coeff * entropy.mean()
-    total_loss = surrogate_loss + entropy_regularization
-    self.actor_loss = total_loss.item()
-
-    # Compute gradients and apply updates
-    gradients = torch.autograd.grad(total_loss, self.actor.parameters())
-    flattened_loss_gradient = torch.cat([gradient.view(-1) for gradient in gradients]).detach()
-
-    def fisher_vector_product(vector):
-      kl_divergence = self.compute_kl_divergence(states).mean()
-      self.kl_divergence_loss = kl_divergence.item()
-
-      gradients = torch.autograd.grad(kl_divergence, self.actor.parameters(), create_graph=True)
-      flattened_gradients = torch.cat([gradient.view(-1) for gradient in gradients])
-      kl_vector = (flattened_gradients * vector).sum()
-      second_gradients = torch.autograd.grad(kl_vector, self.actor.parameters())
-      return torch.cat([gradient.view(-1) for gradient in second_gradients]).detach() + 1e-2 * vector
-
-    # Conjugate gradient to find the search direction
-    search_direction = self.conjugate_gradient_method(fisher_vector_product, -flattened_loss_gradient)
-    shs = 0.5 * (search_direction * fisher_vector_product(search_direction)).sum(0, keepdim=True)
-    lagrange_multiplier = torch.sqrt(shs / self.kl_divergence_threshold)
-    full_step = search_direction / lagrange_multiplier[0]
-
-    # Apply the policy update step
-    self.apply_policy_step(full_step)
-
-  def train(self, states, actions, rewards, next_states, dones, successes, **parameters):
-    gamma = parameters.get("gamma", 0.99)
-    lambda_value = parameters.get("lambd", 0.95)
-
-    states = states.to(self.device)
-    next_states = next_states.to(self.device)
-    actions = actions.to(self.device)
-    rewards = rewards.to(self.device)
-    dones = dones.to(self.device)
-    successes = successes.to(self.device)
-
-    # Compute values and advantages
-    state_values = self.critic(states).squeeze()
-    next_state_values = self.critic(next_states).squeeze()
-
-    advantages = self.compute_advantages(rewards, state_values.detach(), next_state_values.detach(), dones, successes, gamma, lambda_value)
-    targets = rewards + gamma * next_state_values * (1 - dones)
-
-    # Train critic
-    self.train_critic(states, targets)
-
-    # Clone the current actor to old_actor
-    self.clone_actor()
-
-    # Train actor using the cloned old actor
-    self.train_actor(states, actions, advantages)
-
-    self.log_loss(self.actor_loss, self.critic_loss, self.kl_divergence_loss)
-
-
-if __name__ == "__main__":
-  import gymnasium as gym
-  from Experiment import Experiment
-  from Train import Train
-  from itertools import product
-
-  # Initialize environment
-  from Environments.Pendulum import make
-  env = make()
-  state_dim = env.observation_space.shape[0]
-  action_dim = env.action_space.shape[0]
-
-  # Define parameter grid
-  param_grid = {
-      "gamma": [0.95, 0.99],
-      "lambd": [0.9, 0.95],
-      "critic_alpha": [1e-3, 1e-4],
-      "hidden_sizes": [[64, 64], [128, 128]],
-      "kl_threshold": [1e-2, 5e-3],
-      "entropy_coeff": [0.01, 0.001],
-      "state_dim": [state_dim],  # Fixed for the environment
-      "action_dim": [action_dim],  # Fixed for the environment
+  # Define the EnTRPO-specific optimization space
+  params = {
+      "gamma": trial.suggest_float("gamma", 0.98, 0.999, log=True),
+      "gae_lambda": trial.suggest_float("gae_lambda", 0.9, 0.99),
+      "target_kl": trial.suggest_float("target_kl", 0.005, 0.02),
+      "cg_damping": trial.suggest_float("cg_damping", 0.01, 0.1),
+      "cg_max_steps": trial.suggest_int("cg_max_steps", 10, 20),
+      "line_search_max_iter": trial.suggest_int("line_search_max_iter", 5, 15),
+      "ent_coef": trial.suggest_float("ent_coef", 0.0, 0.05),
+      "n_steps": trial.suggest_int("n_steps", 1024, 4096, step=1024),
+      "batch_size": trial.suggest_int("batch_size", 64, 256, step=64),
+      "total_timesteps": trial.suggest_int("total_timesteps", 100_000, 500_000, step=100_000),
   }
-
-  # Generate all combinations of parameters
-  param_combinations = list(product(*param_grid.values()))
-
-  # Map parameter names to combinations
-  param_keys = list(param_grid.keys())
-
-  # Training parameters
-  batch_size = 128
-  num_batches = 1000
-
-  for i, param_values in enumerate(param_combinations):
-    # Create parameter dictionary for this combination
-    model_params = dict(zip(param_keys, param_values))
-
-    # Initialize model
-    model = EnTRPO(**model_params)
-
-    # Define total timesteps for training
-    total_timesteps = batch_size * num_batches
-
-    print(f"Starting experiment {i + 1}/{len(param_combinations)} with params: {model_params}")
-
-    # Train the model
-    Train.batch(model, env, total_timesteps, batch_size, **model_params)
-
-    # Save the experiment
-    Experiment.save(model)
-
-    print(f"Experiment {i + 1}/{len(param_combinations)} completed.")
+  return params

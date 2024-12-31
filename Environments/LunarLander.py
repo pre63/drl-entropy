@@ -12,7 +12,9 @@ def make_lunar_lander(reward_strategy="default", render_mode=None, continuous=Tr
 
 
 def make(reward_strategy="default", render_mode=None):
-  return make_lunar_lander(reward_strategy, render_mode, continuous=True)
+  env = make_lunar_lander(reward_strategy, render_mode, continuous=True)
+  env.max_reward = 200
+  return env
 
 
 class LunarLanderRewardWrapper(gym.Wrapper):
