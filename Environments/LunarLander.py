@@ -10,8 +10,10 @@ def make_lunar_lander(reward_strategy="default", render_mode=None, continuous=Tr
   env.name = "LunarLander-v3"
   return env
 
+
 def make(reward_strategy="default", render_mode=None):
   return make_lunar_lander(reward_strategy, render_mode, continuous=True)
+
 
 class LunarLanderRewardWrapper(gym.Wrapper):
   def __init__(self, env, reward_strategy):
@@ -23,6 +25,13 @@ class LunarLanderRewardWrapper(gym.Wrapper):
       raise ValueError(f"Unknown reward strategy: {reward_strategy}")
 
     self.reward_fn = REWARD_STRATEGIES[reward_strategy]
+
+  def seed(self, seed=None):
+    env = self.env
+    while hasattr(env, "env"):
+      env = env.env
+    if hasattr(env, "seed"):
+      env.seed(seed)
 
   def step(self, action):
     try:

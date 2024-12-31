@@ -1,122 +1,195 @@
-"""
-    This script is to benchmark the TRPO algorithm from Stable Baselines3 Contrib on the environments.
-"""
-
+import os
+import sys
+from datetime import datetime
+import optuna
+from optuna.pruners import MedianPruner
+import matplotlib.pyplot as plt
 import gymnasium as gym
-from sb3_contrib import TRPO
+from Models.EnTRPO3 import EnTRPO
 from Environments.LunarLander import make
+from sb3_contrib import TRPO
+from stable_baselines3 import PPO
+from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.vec_env import SubprocVecEnv
+from stable_baselines3.common.evaluation import evaluate_policy
+from stable_baselines3.common.callbacks import EvalCallback, CheckpointCallback, BaseCallback
+
+
+def make_env(rank, seed=0):
+  def _init():
+    env = make()
+    env.seed(seed + rank)
+    env = Monitor(env, f"./.logs/env_{rank}")
+    return env
+  return _init
+
+
+def init_tensorboard(model_name):
+  log_dir = "./.logs/"
+  tensorboard_log_dir = os.path.join(log_dir, "tensorboard")
+  os.makedirs(tensorboard_log_dir, exist_ok=True)
+  return tensorboard_log_dir
+
+
+def init_eval(env, model_name):
+  log_dir = f"./.logs/{model_name}"
+  os.makedirs(log_dir, exist_ok=True)
+
+  # Set up callbacks for evaluation and saving models
+  checkpoint_callback = CheckpointCallback(save_freq=10000, save_path=log_dir, name_prefix=model_name)
+  eval_callback = EvalCallback(
+      env,
+      best_model_save_path=log_dir,
+      log_path=log_dir,
+      eval_freq=5000,
+      n_eval_episodes=5,
+      deterministic=True,
+  )
+  return checkpoint_callback, eval_callback
+
+
+def save(model, model_name):
+  date_time = datetime.now().strftime("%Y%m%d-%H%M%S")
+  model.save(os.path.join(f"results/{model_name}{date_time}", f"{model_name}_lunarlander_final"))
+
+
+class TrialPruningCallback(BaseCallback):
+  """
+  A custom callback that integrates Optuna trial pruning.
+  """
+
+  def __init__(self, trial, eval_callback, verbose=0):
+    super().__init__(verbose)
+    self.trial = trial
+    self.eval_callback = eval_callback  # Reference to the EvalCallback to access evaluation results
+
+  def _on_step(self):
+    # Access the latest evaluation results
+    if len(self.eval_callback.evaluations_results) > 0:
+      # Get the latest mean reward from the EvalCallback
+      mean_reward = self.eval_callback.evaluations_results[-1][0]  # Mean reward of the last evaluation
+      self.trial.report(mean_reward, self.n_calls)
+
+      # Check if the trial should be pruned
+      if self.trial.should_prune():
+        raise optuna.TrialPruned()
+    return True
+
+
+def optimal_trpo(trial):
+  """
+
+  """
+  # Define the TRPO-specific optimization space
+  params = {
+      "gamma": trial.suggest_float("gamma", 0.98, 0.999, log=True),
+      "gae_lambda": trial.suggest_float("gae_lambda", 0.9, 0.99),
+      "target_kl": trial.suggest_float("target_kl", 0.005, 0.02),
+      "cg_damping": trial.suggest_float("cg_damping", 0.01, 0.1),
+      "cg_max_steps": trial.suggest_int("cg_max_steps", 10, 20),
+      "line_search_max_iter": trial.suggest_int("line_search_max_iter", 5, 15),
+      "n_steps": trial.suggest_categorical("n_steps", [1024, 2048, 4096]),
+      "batch_size": trial.suggest_int("batch_size", 64, 256, step=64),
+      "total_timesteps": trial.suggest_int("total_timesteps", 100_000, 500_000, step=100_000),
+  }
+  return params
+
+
+def optimal_entrpo(trial):
+  """
+    {'gamma': 0.984822325244406, 'gae_lambda': 0.9558315622252784, 'target_kl': 0.011111159461187507, 'cg_damping': 0.07451122406533858, 'cg_max_steps': 20, 'line_search_max_iter': 8, 'ent_coef': 0.007312508870093316, 'n_steps': 1024, 'batch_size': 64, 'total_timesteps': 200000}
+  """
+  # Define the EnTRPO-specific optimization space
+  params = {
+      "gamma": trial.suggest_float("gamma", 0.98, 0.999, log=True),
+      "gae_lambda": trial.suggest_float("gae_lambda", 0.9, 0.99),
+      "target_kl": trial.suggest_float("target_kl", 0.005, 0.02),
+      "cg_damping": trial.suggest_float("cg_damping", 0.01, 0.1),
+      "cg_max_steps": trial.suggest_int("cg_max_steps", 10, 20),
+      "line_search_max_iter": trial.suggest_int("line_search_max_iter", 5, 15),
+      "ent_coef": trial.suggest_float("ent_coef", 0.0, 0.05),
+      "n_steps": trial.suggest_int("n_steps", 1024, 4096, step=1024),
+      "batch_size": trial.suggest_int("batch_size", 64, 256, step=64),
+      "total_timesteps": trial.suggest_int("total_timesteps", 100_000, 500_000, step=100_000),
+  }
+  return params
+
+
+def optimal_ppo(trial):
+  """
+  
+  """
+  # Define the PPO-specific optimization space
+  params = {
+      "gamma": trial.suggest_float("gamma", 0.98, 0.999, log=True),
+      "gae_lambda": trial.suggest_float("gae_lambda", 0.9, 0.99),
+      "n_steps": trial.suggest_int("n_steps", 1024, 4096, step=1024),
+      "batch_size": trial.suggest_int("batch_size", 64, 256, step=64),
+      "ent_coef": trial.suggest_float("ent_coef", 0.0, 0.05),
+      "total_timesteps": trial.suggest_int("total_timesteps", 100_000, 500_000, step=100_000),
+  }
+  return params
+
+
+def get_model():
+  model_name = sys.argv[1].upper() if len(sys.argv) > 1 else "TRPO"
+
+  match model_name:
+    case "TRPO":
+      return TRPO, model_name, optimal_trpo
+    case "ENTRPO":
+      return EnTRPO, model_name, optimal_entrpo
+    case "PPO":
+      return PPO, model_name, optimal_ppo
+    case _:
+      raise ValueError(f"Invalid model name: {model_name}")
+
+
+def optimize_model(trial, model_class, optimal_function, model_name):
+  # Get suggested parameters for the trial
+  trial_params = optimal_function(trial)
+
+  # Extract total timesteps
+  total_timesteps = trial_params.pop("total_timesteps")
+
+  # Set up environment
+  num_envs = 12
+  env = SubprocVecEnv([make_env(i) for i in range(num_envs)])
+  tensorboard_log_dir = init_tensorboard(model_name)
+
+  # Initialize model
+  model = model_class(
+      "MlpPolicy",
+      env,
+      tensorboard_log=tensorboard_log_dir,
+      verbose=1,
+      device="cpu",
+      **trial_params
+  )
+
+  # Set up callbacks
+  checkpoint_callback, eval_callback = init_eval(env, model_name)
+  pruning_callback = TrialPruningCallback(trial, eval_callback)
+
+  # Train the model
+  model.learn(total_timesteps=total_timesteps, callback=[checkpoint_callback, eval_callback, pruning_callback])
+
+  # Evaluate the model
+  mean_reward, _ = evaluate_policy(model, model.get_env(), n_eval_episodes=10)
+  return mean_reward
+
 
 if __name__ == "__main__":
+  model_class, model_name, optimal_function = get_model()
 
-  env = make()
+  # Set up Optuna study
+  study = optuna.create_study(direction="maximize", pruner=MedianPruner())
+  study.optimize(lambda trial: optimize_model(trial, model_class, optimal_function, model_name), n_trials=20)
 
-  model = TRPO('MlpPolicy', env, verbose=1)
+  # Print best trial
+  print("Best trial:")
+  print(study.best_trial.params)
 
-  total_timesteps = 10000000
-  model.learn(total_timesteps=total_timesteps)
-
-  eval_timesteps = total_timesteps
-  t = 0
-
-  successes = []
-  while t < eval_timesteps:
-    state, _ = env.reset()
-    done = False
-    while not done:
-      action, _ = model.predict(state)
-      state, reward, terminated, truncated, info = env.step(action)
-
-      done = terminated or truncated
-      t += 1
-    successes.append(info["success"])
-
-  print(f"Environment: {env.name}")
-  print(f"Success rate: {sum(successes) / len(successes)}")
-
-  successes = []
-
-  env = make(render_mode='human')
-  state, _ = env.reset()
-  done = False
-
-  while not done:
-    env.render()
-    action, _ = model.predict(state)
-    state, reward, terminated, truncated, info = env.step(action)
-    done = terminated or truncated
-
-  print(f"State: {state}, Reward: {reward}, Done: {done}, Info: {info}")
-
-
-"""
-----------------------------------------
-| rollout/                  |          |
-|    ep_len_mean            | 68.2     |
-|    ep_rew_mean            | -212     |
-| time/                     |          |
-|    fps                    | 482      |
-|    iterations             | 49       |
-|    time_elapsed           | 207      |
-|    total_timesteps        | 100352   |
-| train/                    |          |
-|    explained_variance     | 0.919    |
-|    is_line_search_success | 1        |
-|    kl_divergence_loss     | 0.00626  |
-|    learning_rate          | 0.001    |
-|    n_updates              | 48       |
-|    policy_objective       | 0.0193   |
-|    std                    | 0.743    |
-|    value_loss             | 587      |
-----------------------------------------
-Environment: Pendulum-v1
-Success rate: 0.9954248366013072
-State: [ 0.99910307 -0.04234432  0.0348728 ], Reward: 0, Done: True, Info: {'success': True}
----
-----------------------------------------
-| rollout/                  |          |
-|    ep_len_mean            | 17.1     |
-|    ep_rew_mean            | 0        |
-| time/                     |          |
-|    fps                    | 697      |
-|    iterations             | 49       |
-|    time_elapsed           | 143      |
-|    total_timesteps        | 100352   |
-| train/                    |          |
-|    explained_variance     | 0.104    |
-|    is_line_search_success | 1        |
-|    kl_divergence_loss     | 0.00962  |
-|    learning_rate          | 0.001    |
-|    n_updates              | 48       |
-|    policy_objective       | 0.0199   |
-|    std                    | 0.742    |
-|    value_loss             | 3.34e-05 |
-----------------------------------------
-Environment: RandomWalk
-Success rate: 0.0
-State: [0.], Reward: 0.0, Done: True, Info: {'success': False}
----
-
-----------------------------------------
-| rollout/                  |          |
-|    ep_len_mean            | 811      |
-|    ep_rew_mean            | -50.1    |
-| time/                     |          |
-|    fps                    | 741      |
-|    iterations             | 49       |
-|    time_elapsed           | 135      |
-|    total_timesteps        | 100352   |
-| train/                    |          |
-|    explained_variance     | 0.67     |
-|    is_line_search_success | 1        |
-|    kl_divergence_loss     | 0.00712  |
-|    learning_rate          | 0.001    |
-|    n_updates              | 48       |
-|    policy_objective       | 0.0238   |
-|    std                    | 0.774    |
-|    value_loss             | 60.9     |
-----------------------------------------
-Environment: LunarLander-v3
-Success rate: 0.019230769230769232
-State: [-0.39279193  0.02852891  0.          0.         -0.2508642   0.
-  1.          1.        ], Reward: 100, Done: True, Info: {'success': False}
-"""
+  # Save Optuna results
+  os.makedirs("./results", exist_ok=True)
+  study.trials_dataframe().to_csv(f"./results/optuna_results_{model_name}.csv")

@@ -12,3 +12,6 @@ gymnasium[classic_control]
 gymnasium[mujoco]
 stable-baselines3
 sb3-contrib
+tensorboard
+optuna
+optuna-integration

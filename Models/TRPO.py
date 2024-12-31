@@ -12,7 +12,7 @@ from Common.GaussianPolicy import GaussianPolicy
 from Specs import ModelSpec
 from Train import Train
 
-debug = True
+debug = False # Set to True to enable debug prints
 
 
 class TRPO(ModelSpec):
@@ -278,10 +278,6 @@ if __name__ == "__main__":
   # Initialize environment
   from Environments.LunarLander import make
   env = make()
-
-  if len(sys.argv) < 2:
-    print("Usage: python TRPO.py [model_folder (optional)]")
-    sys.exit(1)
 
   model_folder = sys.argv[1] if len(sys.argv) > 1 else None
 
