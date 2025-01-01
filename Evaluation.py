@@ -9,63 +9,61 @@ from stable_baselines3.common.callbacks import EvalCallback, BaseCallback, Check
 
 from Environments.LunarLander import make
 
-
 class EvaluationMetricsCallback(EvalCallback):
-  """
-  A callback to track evaluation metrics during periodic evaluation runs.
-  """
+    def __init__(self, eval_env, eval_freq=5000, n_eval_episodes=10, verbose=0, **kwargs):
+        super().__init__(eval_env, eval_freq=eval_freq, n_eval_episodes=n_eval_episodes, verbose=verbose, **kwargs)
+        self.eval_success_count = 0
+        self.eval_total_episodes = 0
+        self.eval_success_rate = 0.0
+        self.eval_mean_reward = -1
+        self.eval_mean_ep_length = -1
+        self.eval_mean_success_rate = -1
 
-  def __init__(self, eval_env, eval_freq=5000, n_eval_episodes=10, verbose=0, **kwargs):
-    super().__init__(eval_env, eval_freq=eval_freq, n_eval_episodes=n_eval_episodes, **kwargs)
+    def _on_step(self) -> bool:
+        if self.eval_freq > 0 and self.n_calls % self.eval_freq == 0:
+            episode_rewards, episode_lengths = self.evaluate()
+            self.log_metrics(episode_rewards, episode_lengths)
+        return True
 
-    # Evaluation metrics
-    self.eval_success_count = 0
-    self.eval_total_episodes = 0
-    self.eval_success_rate = 0.0
-    self.eval_mean_reward = -1
-    self.eval_mean_ep_length = -1
-    self.eval_mean_success_rate = -1
+    def evaluate(self):
+        print("Evaluating model for {} episodes".format(self.n_eval_episodes))
+        episode_rewards, episode_lengths = [], []
+        success_count = 0
 
-  def _evaluate_policy(self):
-    """
-    Perform periodic evaluation and update evaluation metrics.
-    """
-    episode_rewards, episode_lengths = [], []
-    success_count = 0
+        for _ in range(self.n_eval_episodes):
+            obs = self.eval_env.reset()
+            done = False
+            episode_reward = 0.0
 
-    for _ in range(self.n_eval_episodes):
-      obs = self.eval_env.reset()
-      done = False
-      episode_reward = 0.0
+            while not done:
+                action, _ = self.model.predict(obs, deterministic=self.deterministic)
+                obs, reward, done, info = self.eval_env.step(action)
+                info = info[0]
+                episode_reward += reward
 
-      while not done:
-        action, _ = self.model.predict(obs, deterministic=self.deterministic)
-        obs, reward, done, info = self.eval_env.step(action)
-        episode_reward += reward
+                if "success" in info and info["success"]:
+                    success_count += 1
 
-        if "success" in info[0] and info[0]["success"]:
-          success_count += 1
+            episode_rewards.append(episode_reward)
+            episode_lengths.append(info.get("episode", {}).get("l", 0))
 
-      episode_rewards.append(episode_reward)
-      episode_lengths.append(info[0].get("episode", {}).get("l", 0))
+        self.eval_success_count += success_count
+        self.eval_total_episodes += self.n_eval_episodes
+        self.eval_success_rate = self.eval_success_count / self.eval_total_episodes if self.eval_total_episodes > 0 else 0
+        self.eval_mean_reward = np.mean(episode_rewards)
+        self.eval_mean_ep_length = np.mean(episode_lengths)
+        self.eval_mean_success_rate = success_count / self.n_eval_episodes
 
-    # Update evaluation metrics
-    self.eval_success_count += success_count
-    self.eval_total_episodes += self.n_eval_episodes
-    self.eval_success_rate = self.eval_success_count / self.eval_total_episodes if self.eval_total_episodes > 0 else 0
-    self.eval_mean_reward = np.mean(episode_rewards)
-    self.eval_mean_ep_length = np.mean(episode_lengths)
-    self.eval_mean_success_rate = success_count / self.n_eval_episodes
+        return episode_rewards, episode_lengths
 
-    # Log metrics
-    if self.logger:
-      self.logger.record("eval/success_count", self.eval_success_count)
-      self.logger.record("eval/success_rate", self.eval_success_rate)
-      self.logger.record("eval/mean_reward", self.eval_mean_reward)
-      self.logger.record("eval/mean_ep_length", self.eval_mean_ep_length)
-      self.logger.record("eval/mean_success_rate", self.eval_mean_success_rate)
+    def log_metrics(self, episode_rewards, episode_lengths):
+        if self.logger:
+            self.logger.record("eval/success_count", self.eval_success_count)
+            self.logger.record("eval/success_rate", self.eval_success_rate)
+            self.logger.record("eval/mean_reward", self.eval_mean_reward)
+            self.logger.record("eval/mean_ep_length", self.eval_mean_ep_length)
+            self.logger.record("eval/mean_success_rate", self.eval_mean_success_rate)
 
-    return episode_rewards, episode_lengths
 
 
 class TrainingMetricsCallback(BaseCallback):
@@ -95,10 +93,13 @@ class TrainingMetricsCallback(BaseCallback):
     self.rollout_reward_variance = None
     self.rollout_converged = False
 
+    self.steps = 0
+
   def _on_step(self):
     """
     Update step-level metrics during training.
     """
+    self.steps += 1
     rewards = self.locals.get("rewards", [])
     self.reward_history.extend(rewards)
 
@@ -135,7 +136,7 @@ class TrainingMetricsCallback(BaseCallback):
       self.logger.record("rollout/total_episodes", self.step_total_episodes)
       self.logger.record("rollout/success_count", self.step_success_count)
 
-  def get_convergence_metric(self, total_timesteps):
+  def get_convergence_metric(self):
     """
     Compute a scalar metric representing training convergence, normalized to [0, 1].
     """
@@ -161,8 +162,8 @@ class TrainingMetricsCallback(BaseCallback):
     convergence_metric = w1 * auc + w2 * stability + w3 * final_avg_reward
 
     # Normalize convergence metric
-    max_possible_convergence = total_timesteps * self.max_reward  # Maximum possible sum of rewards
-    convergence_metric_norm = min(convergence_metric / max_possible_convergence, 1.0)
+    max_possible_convergence = self.steps * self.max_reward  # Maximum possible sum of rewards
+    convergence_metric_norm = np.clip(convergence_metric / max_possible_convergence, 0, 1)
 
     return convergence_metric_norm
 
@@ -177,8 +178,7 @@ class TrainingMetricsCallback(BaseCallback):
       rollout_reward_variance_norm = 1.0
 
     # Normalize convergence_metric
-    convergence_metric = self.get_convergence_metric()
-    convergence_metric_norm = convergence_metric / self.max_convergence_metric
+    convergence_metric_norm = self.get_convergence_metric()
 
     return rollout_reward_variance_norm, convergence_metric_norm
 
@@ -253,6 +253,18 @@ def init_tensorboard(model_name):
 def optimize_model(trial, model_class, optimal_function, model_name, num_envs=4):
   trial_params = optimal_function(trial)
   total_timesteps = trial_params.pop("total_timesteps")
+  n_steps = trial_params.get("n_steps", 2048)
+  buffer_size = n_steps * num_envs
+
+  # Adjust batch size to be a divisor of the buffer size
+  batch_size = trial_params.get("batch_size", 64)
+  if buffer_size % batch_size != 0:
+      # Find the largest divisor of buffer_size close to the original batch size
+    divisors = [i for i in range(1, buffer_size + 1) if buffer_size % i == 0]
+    batch_size = min(divisors, key=lambda x: abs(x - batch_size))
+    trial_params["batch_size"] = batch_size
+    print(f"Adjusted batch_size to {batch_size} to match buffer_size {buffer_size}")
+
   n_eval_episodes = max(100, total_timesteps // 200 // 5)
   env = SubprocVecEnv([make_env(i) for i in range(num_envs)])
   eval_env = make_eval_env()
@@ -286,7 +298,7 @@ def optimize_model(trial, model_class, optimal_function, model_name, num_envs=4)
   rollout_reward_variance_norm, convergence_metric_norm = training_callback.get_normalized_metrics()
   success_rate = eval_callback.eval_success_rate
 
-  objective = success_rate * (1 - rollout_reward_variance_norm) * (1 - convergence_metric_norm)
+  objective = success_rate
   print(f"Trial {trial.number} - Success Rate: {success_rate}, Reward Variance: {rollout_reward_variance_norm}, Convergence metric: {convergence_metric_norm}, Objective: {objective}")
 
   metrics = {

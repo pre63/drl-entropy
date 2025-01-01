@@ -55,6 +55,7 @@ def default_reward(state, reward, action, done, info):
     success = check_success(state, done)
     if success:
       info["success"] = True
+      info["is_success"] = True
       reward = max(reward + 200.0, 200.0)
 
   return reward
@@ -72,6 +73,7 @@ def proximity_reward(state, reward, action, done, info):
     success = check_success(state, done)
     if success:
       info["success"] = True
+      info["is_success"] = True
       award = 200.0 + -x_position**2
       reward = max(reward + award, 200.0)
     else:
@@ -95,7 +97,7 @@ def energy_efficient_reward(state, reward, action, done, info):
     success = check_success(state, done)
     if success:
       info["success"] = True
-
+      info["is_success"] = True
       award = 200.0 + -x_position**2 * 0.1 * (fuel_usage - 1.0)
 
       reward = max(reward + award, 200.0)

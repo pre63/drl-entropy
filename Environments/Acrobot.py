@@ -28,6 +28,7 @@ class AcrobotContinuousWrapper(gym.Wrapper):
 
     success = is_success(state, action)
     info["success"] = success
+    info["is_success"] = success
     reward += 10 if success else 0
     reward = min(0, reward)
     if success:

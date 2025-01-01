@@ -70,7 +70,7 @@ def add_to_trials(trials):
 
 
 if __name__ == "__main__":
-  num_envs = get_num_envs(8)
+  num_envs = get_num_envs(14)
   n_trials = get_num_trials(30)
   print(f"Running {n_trials} trials for {num_envs} environments")
 
