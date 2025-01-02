@@ -7,63 +7,98 @@ from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import SubprocVecEnv
 from stable_baselines3.common.callbacks import EvalCallback, BaseCallback, CheckpointCallback
 
+
 from Environments.LunarLander import make
 
+
+class TimestepsProgressCallback(BaseCallback):
+  """
+  A callback to dynamically adjust total timesteps if exceeded
+  and log the overall progress of training.
+  """
+
+  def __init__(self, total_timesteps, verbose = 0):
+    super().__init__(verbose)
+    self.total_timesteps = total_timesteps
+    self.interval = 1000 if total_timesteps > 1000000 else 100 if total_timesteps > 100000 else 10
+    self.progress_step = total_timesteps // self.interval
+    self.next_update = self.progress_step
+
+  def _on_step(self) -> bool:
+    current_timesteps = self.model.num_timesteps
+
+    # Adjust total timesteps if exceeded
+    if current_timesteps > self.total_timesteps:
+      self.total_timesteps = current_timesteps
+      self.progress_step = self.total_timesteps// self.interval
+      self.next_update = current_timesteps + self.progress_step
+
+    # Log progress if the next update step is reached
+    if current_timesteps >= self.next_update:
+      progress_percentage = (current_timesteps / self.total_timesteps) * 100
+      print(f"[Progress: {progress_percentage:.2f}% ({current_timesteps}/{self.total_timesteps} timesteps)]")
+      self.next_update += self.progress_step
+
+    return True
+
+  def _on_training_end(self) -> None:
+    print(f"Training completed. Total timesteps: {self.model.num_timesteps}.")
+
+
 class EvaluationMetricsCallback(EvalCallback):
-    def __init__(self, eval_env, eval_freq=5000, n_eval_episodes=10, verbose=0, **kwargs):
-        super().__init__(eval_env, eval_freq=eval_freq, n_eval_episodes=n_eval_episodes, verbose=verbose, **kwargs)
-        self.eval_success_count = 0
-        self.eval_total_episodes = 0
-        self.eval_success_rate = 0.0
-        self.eval_mean_reward = -1
-        self.eval_mean_ep_length = -1
-        self.eval_mean_success_rate = -1
+  def __init__(self, eval_env, eval_freq=5000, n_eval_episodes=10, verbose=0, **kwargs):
+    super().__init__(eval_env, eval_freq=eval_freq, n_eval_episodes=n_eval_episodes, verbose=verbose, **kwargs)
+    self.eval_success_count = 0
+    self.eval_total_episodes = 0
+    self.eval_success_rate = 0.0
+    self.eval_mean_reward = -1
+    self.eval_mean_ep_length = -1
+    self.eval_mean_success_rate = -1
 
-    def _on_step(self) -> bool:
-        if self.eval_freq > 0 and self.n_calls % self.eval_freq == 0:
-            episode_rewards, episode_lengths = self.evaluate()
-            self.log_metrics(episode_rewards, episode_lengths)
-        return True
+  def _on_step(self) -> bool:
+    if self.eval_freq > 0 and self.n_calls % self.eval_freq == 0:
+      episode_rewards, episode_lengths = self.evaluate()
+      self.log_metrics(episode_rewards, episode_lengths)
+    return True
 
-    def evaluate(self):
-        print("Evaluating model for {} episodes".format(self.n_eval_episodes))
-        episode_rewards, episode_lengths = [], []
-        success_count = 0
+  def evaluate(self):
+    print("Evaluating model for {} episodes".format(self.n_eval_episodes))
+    episode_rewards, episode_lengths = [], []
+    success_count = 0
 
-        for _ in range(self.n_eval_episodes):
-            obs = self.eval_env.reset()
-            done = False
-            episode_reward = 0.0
+    for _ in range(self.n_eval_episodes):
+      obs = self.eval_env.reset()
+      done = False
+      episode_reward = 0.0
 
-            while not done:
-                action, _ = self.model.predict(obs, deterministic=self.deterministic)
-                obs, reward, done, info = self.eval_env.step(action)
-                info = info[0]
-                episode_reward += reward
+      while not done:
+        action, _ = self.model.predict(obs, deterministic=self.deterministic)
+        obs, reward, done, info = self.eval_env.step(action)
+        info = info[0]
+        episode_reward += reward
 
-                if "success" in info and info["success"]:
-                    success_count += 1
+        if "success" in info and info["success"]:
+          success_count += 1
 
-            episode_rewards.append(episode_reward)
-            episode_lengths.append(info.get("episode", {}).get("l", 0))
+      episode_rewards.append(episode_reward)
+      episode_lengths.append(info.get("episode", {}).get("l", 0))
 
-        self.eval_success_count += success_count
-        self.eval_total_episodes += self.n_eval_episodes
-        self.eval_success_rate = self.eval_success_count / self.eval_total_episodes if self.eval_total_episodes > 0 else 0
-        self.eval_mean_reward = np.mean(episode_rewards)
-        self.eval_mean_ep_length = np.mean(episode_lengths)
-        self.eval_mean_success_rate = success_count / self.n_eval_episodes
+    self.eval_success_count += success_count
+    self.eval_total_episodes += self.n_eval_episodes
+    self.eval_success_rate = self.eval_success_count / self.eval_total_episodes if self.eval_total_episodes > 0 else 0
+    self.eval_mean_reward = np.mean(episode_rewards)
+    self.eval_mean_ep_length = np.mean(episode_lengths)
+    self.eval_mean_success_rate = success_count / self.n_eval_episodes
 
-        return episode_rewards, episode_lengths
+    return episode_rewards, episode_lengths
 
-    def log_metrics(self, episode_rewards, episode_lengths):
-        if self.logger:
-            self.logger.record("eval/success_count", self.eval_success_count)
-            self.logger.record("eval/success_rate", self.eval_success_rate)
-            self.logger.record("eval/mean_reward", self.eval_mean_reward)
-            self.logger.record("eval/mean_ep_length", self.eval_mean_ep_length)
-            self.logger.record("eval/mean_success_rate", self.eval_mean_success_rate)
-
+  def log_metrics(self, episode_rewards, episode_lengths):
+    if self.logger:
+      self.logger.record("eval/success_count", self.eval_success_count)
+      self.logger.record("eval/success_rate", self.eval_success_rate)
+      self.logger.record("eval/mean_reward", self.eval_mean_reward)
+      self.logger.record("eval/mean_ep_length", self.eval_mean_ep_length)
+      self.logger.record("eval/mean_success_rate", self.eval_mean_success_rate)
 
 
 class TrainingMetricsCallback(BaseCallback):
@@ -163,6 +198,7 @@ class TrainingMetricsCallback(BaseCallback):
 
     # Normalize convergence metric
     max_possible_convergence = self.steps * self.max_reward  # Maximum possible sum of rewards
+    max_possible_convergence = max(max_possible_convergence, 1e-6)  # Avoid division by zero
     convergence_metric_norm = np.clip(convergence_metric / max_possible_convergence, 0, 1)
 
     return convergence_metric_norm
@@ -290,10 +326,17 @@ def optimize_model(trial, model_class, optimal_function, model_name, num_envs=4)
       max_reward=env.max_reward if hasattr(env, "max_reward") else 0,
   )
 
+  progressCallback = TimestepsProgressCallback(total_timesteps)
+
+  callbacks = [eval_callback, training_callback, progressCallback, TrialPruningCallback(trial, eval_callback)]
+
   model.learn(
       total_timesteps=total_timesteps,
-      callback=[eval_callback, training_callback, TrialPruningCallback(trial, eval_callback)],
+      callback=callbacks,
   )
+
+  trial_params_string = "_".join([f"{key}-{value}" for key, value in trial_params.items()])
+  model.save(os.path.join(f".models/{model_name}", f"{model_name}_{trial_params_string}"))
 
   rollout_reward_variance_norm, convergence_metric_norm = training_callback.get_normalized_metrics()
   success_rate = eval_callback.eval_success_rate
