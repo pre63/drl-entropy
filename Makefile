@@ -52,8 +52,8 @@ venv:
 install: ubuntu mac venv
 
 sync:
-	aws s3 sync ./.logs s3://entrpo/.logs
-	aws s3 sync ./.models s3://entrpo/.models
+	aws s3 sync ./.logs s3://entrpo/.logs || true
+	aws s3 sync ./.models s3://entrpo/.models || true
 	aws s3 cp ./Experiments.csv s3://entrpo/ || true
 	aws s3 cp ./Trials.csv s3://entrpo/ || true
 
