@@ -49,19 +49,24 @@ def get_num_trials(default):
 
 
 def add_to_experiments(metrics):
-    filename = "Experiments.csv"
-    file_exists = os.path.isfile(filename)
+  filename = "Experiments.csv"
+  file_exists = os.path.isfile(filename)
 
-    # Write trial outcome to the CSV
-    with open(filename, mode="a", newline="") as csv_file:
-        writer = csv.writer(csv_file, quotechar='"', quoting=csv.QUOTE_ALL)
+  # Write trial outcome to the CSV
+  with open(filename, mode="a", newline="") as csv_file:
+    if not file_exists:
+      # Write headers if file does not exist
+      headers = list(metrics.keys())
+      writer = csv.DictWriter(csv_file, fieldnames=headers, quotechar='"', quoting=csv.QUOTE_ALL)
+      writer.writeheader()
+    else:
+      # Ensure the file has headers and maintain column order
+      with open(filename, mode="r") as check_file:
+        existing_headers = next(csv.reader(check_file, quotechar='"', quoting=csv.QUOTE_ALL))
+      writer = csv.DictWriter(csv_file, fieldnames=existing_headers, quotechar='"', quoting=csv.QUOTE_ALL)
 
-        if not file_exists:
-            headers = list(metrics.keys())
-            writer.writerow(headers)
-
-        row = list(metrics.values())
-        writer.writerow(row)
+    # Write the row with proper alignment
+    writer.writerow(metrics)
 
 
 def add_to_trials(trials):
@@ -79,8 +84,13 @@ if __name__ == "__main__":
   model_class, model_name, optimal_function = get_model()
   print(f"\nRunning {n_trials} trials for {num_envs} environments with {model_name}\n")
 
+  storage = optuna.storages.JournalStorage(
+      optuna.storages.journal.JournalFileBackend(".optuna/storage"),
+  )
+
   # Set up Optuna study
-  study = optuna.create_study(direction="maximize", pruner=MedianPruner())
+  study_name = f"{model_name}_study"
+  study = optuna.create_study(study_name=study_name, direction="maximize", pruner=MedianPruner(), storage=storage, load_if_exists=True)
 
   def objective(trial):
     return optimize_model(trial, model_class, optimal_function, model_name, num_envs=num_envs)

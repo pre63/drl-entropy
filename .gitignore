@@ -1,7 +1,11 @@
 __pycache__
+
 .venv
-results/*
 .logs
-.vscode/*
-Models/sb3_trpo.py
+.vscode
 .models
+.optuna
+
+results
+
+Models/sb3_trpo.py
