@@ -140,6 +140,6 @@ def optimal(trial):
       "line_search_max_iter": trial.suggest_int("line_search_max_iter", 5, 15, step=5),
       "n_steps": trial.suggest_categorical("n_steps", [1024, 2048, 4096]),
       "batch_size": trial.suggest_int("batch_size", 32, 256, step=32),
-      "total_timesteps": trial.suggest_int("total_timesteps", 1_000_000, 10_000_000, step=500_000),
+      "total_timesteps": trial.suggest_int("total_timesteps", 1_000_000, 1_000_000),
   }
   return params
