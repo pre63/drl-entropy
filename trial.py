@@ -13,6 +13,7 @@ from stable_baselines3 import PPO
 from Models.TRPO import optimal as optimal_trpo
 from Models.PPO import optimal as optimal_ppo
 from Models.EnTRPO import EnTRPO, optimal as optimal_entrpo
+from Models.EnTRPOR import EnTRPOR, optimal as optimal_entrpor
 
 
 from Evaluation import optimize_model
@@ -35,6 +36,8 @@ def get_model(default="PPO"):
       return TRPO, model_name, optimal_trpo
     case "ENTRPO":
       return EnTRPO, model_name, optimal_entrpo
+    case "ENTRPOR":
+      return EnTRPOR, model_name, optimal_entrpor
     case "PPO":
       return PPO, model_name, optimal_ppo
     case _:
@@ -70,11 +73,11 @@ def add_to_trials(trials):
 
 
 if __name__ == "__main__":
-  num_envs = get_num_envs(14)
-  n_trials = get_num_trials(30)
-  print(f"Running {n_trials} trials for {num_envs} environments")
+  num_envs = get_num_envs(4)
+  n_trials = get_num_trials(10)
 
   model_class, model_name, optimal_function = get_model()
+  print(f"\nRunning {n_trials} trials for {num_envs} environments with {model_name}\n")
 
   # Set up Optuna study
   study = optuna.create_study(direction="maximize", pruner=MedianPruner())

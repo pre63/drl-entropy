@@ -14,7 +14,7 @@ board:
 
 
 nightly:
-	@echo "Usage: make nightly models='ppo trpo entrpo'"
+	@echo "Usage: make nightly models='entrpor entrpo trpo ppo'"
 	@mkdir -p .logs
 	@i=1; while true; do \
 		for model in $(models); do \

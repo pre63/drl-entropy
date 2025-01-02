@@ -1,5 +1,6 @@
 import torch as th
 from torch import nn
+
 from stable_baselines3.common.distributions import kl_divergence
 from stable_baselines3.common.utils import explained_variance
 
@@ -7,7 +8,7 @@ from sb3_contrib.common.utils import conjugate_gradient_solver, flat_grad
 from sb3_contrib.trpo.trpo import TRPO
 
 
-class EnTRPO(TRPO):
+class EnTRPOR(TRPO):
   def __init__(
       self,
       *args,
@@ -16,7 +17,7 @@ class EnTRPO(TRPO):
   ):
     super().__init__(*args, **kwargs)
     self.ent_coef = ent_coef
-    self.tb_log_name = "EnTRPO"
+    self.tb_log_name = "EnTRPOR"
 
   def learn(self, **params):
     params["tb_log_name"] = self.tb_log_name
@@ -32,6 +33,16 @@ class EnTRPO(TRPO):
     value_losses = []
 
     for rollout_data in self.rollout_buffer.get(batch_size=None):
+      if self.sub_sampling_factor > 1:
+        rollout_data = type(rollout_data)(
+            rollout_data.observations[:: self.sub_sampling_factor],
+            rollout_data.actions[:: self.sub_sampling_factor],
+            None,
+            rollout_data.old_log_prob[:: self.sub_sampling_factor],
+            rollout_data.advantages[:: self.sub_sampling_factor],
+            None,
+        )
+
       actions = rollout_data.actions
       if self.action_space.__class__.__name__ == "Discrete":
         actions = rollout_data.actions.long().flatten()
@@ -41,14 +52,14 @@ class EnTRPO(TRPO):
 
       distribution = self.policy.get_distribution(rollout_data.observations)
       log_prob = distribution.log_prob(actions)
-      entropy = distribution.entropy().mean()
+      ent = distribution.entropy().mean()
 
       advantages = rollout_data.advantages
       if self.normalize_advantage:
         advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
 
       ratio = th.exp(log_prob - rollout_data.old_log_prob)
-      policy_objective = (advantages * ratio).mean() + self.ent_coef * entropy
+      policy_objective = (advantages * ratio).mean() + self.ent_coef * ent
       kl_div = kl_divergence(distribution, old_distribution).mean()
 
       self.policy.optimizer.zero_grad()
@@ -57,8 +68,9 @@ class EnTRPO(TRPO):
           kl_div, policy_objective
       )
 
-      def hessian_vector_product_fn(vec, rg=True):
-        return self.hessian_vector_product(actor_params, grad_kl, vec, retain_graph=rg)
+      def hessian_vector_product_fn(vec, rg=True): return self.hessian_vector_product(
+          actor_params, grad_kl, vec, retain_graph=rg
+      )
 
       search_direction = conjugate_gradient_solver(
           hessian_vector_product_fn,
@@ -88,8 +100,8 @@ class EnTRPO(TRPO):
           distribution = self.policy.get_distribution(rollout_data.observations)
           log_prob = distribution.log_prob(actions)
           ratio = th.exp(log_prob - rollout_data.old_log_prob)
-          new_entropy = distribution.entropy().mean()
-          new_policy_objective = (advantages * ratio).mean() + self.ent_coef * new_entropy
+          new_ent = distribution.entropy().mean()
+          new_policy_objective = (advantages * ratio).mean() + self.ent_coef * new_ent
           kl_div_new = kl_divergence(distribution, old_distribution).mean()
 
           if (kl_div_new < self.target_kl) and (new_policy_objective > policy_objective):
@@ -114,10 +126,13 @@ class EnTRPO(TRPO):
         value_losses.append(value_loss.item())
         self.policy.optimizer.zero_grad()
         value_loss.backward()
+        for param in actor_params:
+          param.grad = None
         self.policy.optimizer.step()
 
     self._n_updates += 1
     explained_var = explained_variance(self.rollout_buffer.values.flatten(), self.rollout_buffer.returns.flatten())
+
     self.logger.record("train/policy_objective", float(th.mean(th.tensor(policy_objective_values))))
     self.logger.record("train/value_loss", float(th.mean(th.tensor(value_losses))))
     self.logger.record("train/kl_divergence_loss", float(th.mean(th.tensor(kl_divergences))))
@@ -129,7 +144,7 @@ class EnTRPO(TRPO):
 
 
 def optimal(trial):
-  # Define the EnTRPO-specific optimization space
+  # Define the EnTRPOR-specific optimization space
   params = {
       "ent_coef": trial.suggest_float("ent_coef", 0.0, 0.05, step=0.01),
       "gamma": trial.suggest_float("gamma", 0.98, 0.999, log=True),
