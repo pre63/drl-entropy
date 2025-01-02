@@ -146,7 +146,7 @@ class EnTRPOR(TRPO):
 def optimal(trial):
   # Define the EnTRPOR-specific optimization space
   params = {
-      "ent_coef": trial.suggest_float("ent_coef", 0.0, 0.05, step=0.01),
+      "ent_coef": trial.suggest_float("ent_coef", 0.0, 0.001, step=0.0001),
       "gamma": trial.suggest_float("gamma", 0.98, 0.999, log=True),
       "gae_lambda": trial.suggest_float("gae_lambda", 0.9, 0.99, step=0.001),
       "target_kl": trial.suggest_float("target_kl", 0.001, 0.05, step=0.001),
