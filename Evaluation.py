@@ -39,20 +39,20 @@ def init_tensorboard(model_name):
   return tensorboard_log_dir
 
 
+def correct_batch_size(n_steps, n_envs):
+  valid_batch_sizes = [bs for bs in [64, 128, 256, 512] if (n_steps * n_envs) % bs == 0]
+  if not valid_batch_sizes:
+    print(f"Changing batch size from {n_steps * n_envs} to {n_envs}")
+    return n_steps * n_envs  # Fallback to full batch size if no valid batch size found
+  return max(valid_batch_sizes)  # Return the largest valid batch size for efficiency
+
+
 def optimize_model(trial, model_class, optimal_function, model_name, total_timesteps=10000, num_envs=4):
   hyperparams = optimal_function(trial, total_timesteps)
   total_timesteps = hyperparams.pop("total_timesteps")
-  n_steps = hyperparams.get("n_steps", 2048)
-  buffer_size = n_steps * num_envs
 
-  # Adjust batch size to be a divisor of the buffer size
-  batch_size = hyperparams.get("batch_size", 64)
-  if buffer_size % batch_size != 0:
-      # Find the largest divisor of buffer_size close to the original batch size
-    divisors = [i for i in range(1, buffer_size + 1) if buffer_size % i == 0]
-    batch_size = min(divisors, key=lambda x: abs(x - batch_size))
-    hyperparams["batch_size"] = batch_size
-    print(f"Adjusted batch_size to {batch_size} to match buffer_size {buffer_size}")
+  if "batch_size" in hyperparams and "n_steps" in hyperparams:
+    hyperparams["batch_size"] = correct_batch_size(hyperparams["n_steps"], 1)
 
   n_eval_episodes = max(100, total_timesteps // 200 // 5)
   env = SubprocVecEnv([make_env(i) for i in range(num_envs)])
@@ -123,7 +123,6 @@ def optimize_model(trial, model_class, optimal_function, model_name, total_times
       "total_timesteps": to_python_native(total_timesteps),
       "objective": to_python_native(objective),
   }
-
 
   trial.set_user_attr("metrics", metrics)
 

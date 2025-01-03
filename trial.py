@@ -21,6 +21,7 @@ from Evaluation import optimize_model
 
 from Reporting import add_to_experiments, add_to_trials
 
+
 def save(model, model_name):
   date_time = datetime.now().strftime("%Y%m%d-%H%M%S")
   model.save(os.path.join(f"results/{model_name}{date_time}", f"{model_name}_lunarlander_final"))
@@ -47,7 +48,6 @@ def get_model(model_name="PPO"):
 
 def get_num_trials(default):
   return int(sys.argv[2]) if len(sys.argv) > 2 else default
-
 
 
 if __name__ == "__main__":
