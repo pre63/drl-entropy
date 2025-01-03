@@ -3,6 +3,7 @@ SHELL := /bin/sh
 default: trial
 
 models = ppo trpo entrpo entrpo # Default models to train
+modelssbx = ppo sac crossq td3 tqc # Default models to train with SBX
 launches = 4 # Default number of launches per model
 timesteps = 10000 # Default number of timesteps per trial
 trials = 10 # Default number of trials per model
@@ -14,7 +15,6 @@ board:
 	@. .venv/bin/activate && PYTHONPATH=. tensorboard --logdir=./.logs/tensorboard/ --port 6006
 
 nightly:
-	@echo "Usage: make nightly models='entrpor entrpo trpo ppo' launches=10"
 	@mkdir -p .logs
 	@echo "Starting nightly training for models: $(models)"
 	@i=1; while true; do \
@@ -22,7 +22,6 @@ nightly:
 			echo "Launching $(launches) concurrent trials for model=$$model"; \
 			for j in $$(seq 1 $(launches)); do \
 				{ $(MAKE) trial model=$$model trials=1 envs=10 timesteps=$(timesteps) | tee -a .logs/sb3-$$model-$$j-$(shell date +"%Y%m%d").log & }; \
-				$(MAKE) sync; \
 			done; \
 		done; \
 		wait; \
@@ -30,7 +29,6 @@ nightly:
 	done
 
 trial:
-	@echo "Usage: make trial model=ppo trials=10 envs=4"
 	@mkdir -p .logs
 	@mkdir -p .optuna
 	@rm -f .optuna/storage.lock || true
@@ -38,12 +36,26 @@ trial:
 	@. .venv/bin/activate && PYTHONPATH=. python trial.py --model $(model) --trials $(trials) --envs $(envs) --timesteps $(timesteps) | tee -a .logs/sb3-$(model)-$(shell date +"%Y%m%d").log
 	$(MAKE) sync
 
+nightly-sbx:
+	@mkdir -p .logs
+	@mkdir -p .optuna-sbx
+	@echo "Starting nightly SBX training for models: $(modelssbx)"
+	@i=1; while true; do \
+		for model in $(modelssbx); do \
+			echo "Launching $(launches) concurrent SBX trials for model=$$model"; \
+			for j in $$(seq 1 $(launches)); do \
+				{ $(MAKE) sbx model=$$model trials=1 envs=10 timesteps=$(timesteps) | tee -a .logs/sbx-$$model-$$j-$(shell date +"%Y%m%d").log & }; \
+			done; \
+		done; \
+		wait; \
+		i=$$((i + 1)); \
+	done
+
 sbx:
-	@echo "Usage: make sbx model=ppo trials=10 timesteps=1000000 envs=4"
 	@mkdir -p .logs
 	@mkdir -p .optuna-sbx
 	@rm -f .optuna-sbx/storage.lock || true
-	@echo "Starting trial for model=$(model) with $(trials) trials and $(envs) environments..."
+	@echo "Starting sbx trial for model=$(model) with $(trials) trials and $(envs) environments..."
 	@. .venv/bin/activate && PYTHONPATH=. python trial-sbx.py --model $(model) --trials $(trials) --timesteps $(timesteps) --envs $(envs) | tee -a .logs/sbx-$(model)-$(shell date +"%Y%m%d").log
 
 ubuntu:
@@ -80,3 +92,10 @@ down:
 clean:
 	@rm -rf __pycache__/
 	@rm -rf .venv
+
+help:
+	@echo "Usage: make nightly models='entrpor entrpo trpo ppo' launches=10"
+	@echo "       make trial model=entrpo trials=10 envs=4 timesteps=10000"
+	@echo "       make nightly-sbx modelssbx='entrpor entrpo trpo ppo' launches=10"
+	@echo "       make sbx model=entrpo trials=10 envs=4 timesteps=10000"
+	
