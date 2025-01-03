@@ -5,7 +5,7 @@ def optimal(trial, total_timesteps):
       'policy': 'MlpPolicy',
       'learning_rate': trial.suggest_float('learning_rate', 1e-5, 1e-2, step=1e-5),
       'n_steps': trial.suggest_int('n_steps', 128, 2048, step=128),
-      'batch_size': trial.suggest_categorical('batch_size', [64, 128, 256, 512]),
+      'batch_size': trial.suggest_categorical("batch_size", [64, 128, 256, 512]),
       'n_epochs': trial.suggest_int('n_epochs', 1, 20),
       'gamma': trial.suggest_float('gamma', 0.9, 0.99, step=0.01),
       'gae_lambda': trial.suggest_float('gae_lambda', 0.8, 1.0, step=0.01),

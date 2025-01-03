@@ -39,12 +39,6 @@ trial:
 	$(MAKE) sync
 
 sbx:
-	# sbx:
-	# --model
-	# --trials
-	# --timesteps
-	# --envs
-
 	@echo "Usage: make sbx model=ppo trials=10 timesteps=1000000 envs=4"
 	@mkdir -p .logs
 	@mkdir -p .optuna-sbx

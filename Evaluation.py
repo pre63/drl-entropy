@@ -90,28 +90,40 @@ def optimize_model(trial, model_class, optimal_function, model_name, total_times
   objective = success_rate
   print(f"Trial {trial.number} - Success Rate: {success_rate}, Reward Variance: {rollout_reward_variance_norm}, Convergence metric: {convergence_metric_norm}, Objective: {objective}")
 
+  def to_python_native(value):
+    """Convert NumPy types to native Python types."""
+    if hasattr(value, "item"):  # Handles scalar NumPy values
+      return value.item()
+    elif isinstance(value, (float, int)):  # Already native types
+      return value
+    elif isinstance(value, (list, tuple)):  # Convert lists with NumPy types inside
+      return [to_python_native(v) for v in value]
+    return float(value) if "float" in str(type(value)) else int(value)
+
+  # Enforcing native types in the metrics dictionary
   metrics = {
-      "eval/success_count": eval_callback.eval_success_count,
-      "eval/success_rate": eval_callback.eval_success_rate,
-      "eval/mean_reward": eval_callback.eval_mean_reward,
-      "eval/mean_ep_length": eval_callback.eval_mean_ep_length,
-      "eval/mean_success_rate": eval_callback.eval_mean_success_rate,
-      "eval/total_rewards": eval_callback.eval_total_rewards,
+      "eval/success_count": to_python_native(eval_callback.eval_success_count),
+      "eval/success_rate": to_python_native(eval_callback.eval_success_rate),
+      "eval/mean_reward": to_python_native(eval_callback.eval_mean_reward),
+      "eval/mean_ep_length": to_python_native(eval_callback.eval_mean_ep_length),
+      "eval/mean_success_rate": to_python_native(eval_callback.eval_mean_success_rate),
+      "eval/total_rewards": to_python_native(eval_callback.eval_total_rewards),
 
-      "step/success_count": training_callback.step_success_count,
-      "step/total_episodes": training_callback.step_total_episodes,
-      "step/success_rate": training_callback.step_success_rate,
+      "step/success_count": to_python_native(training_callback.step_success_count),
+      "step/total_episodes": to_python_native(training_callback.step_total_episodes),
+      "step/success_rate": to_python_native(training_callback.step_success_rate),
 
-      "rollout/reward_variance": training_callback.rollout_reward_variance,
-      "rollout/success_rate": training_callback.step_success_rate,
-      "rollout/success_count": training_callback.step_success_count,
-      "rollout/total_episodes": training_callback.step_total_episodes,
+      "rollout/reward_variance": to_python_native(training_callback.rollout_reward_variance),
+      "rollout/success_rate": to_python_native(training_callback.step_success_rate),
+      "rollout/success_count": to_python_native(training_callback.step_success_count),
+      "rollout/total_episodes": to_python_native(training_callback.step_total_episodes),
 
-      "reward_variance_norm": rollout_reward_variance_norm,
-      "convergence_metric_norm": convergence_metric_norm,
-      "total_timesteps": total_timesteps,
-      "objective": objective,
+      "reward_variance_norm": to_python_native(rollout_reward_variance_norm),
+      "convergence_metric_norm": to_python_native(convergence_metric_norm),
+      "total_timesteps": to_python_native(total_timesteps),
+      "objective": to_python_native(objective),
   }
+
 
   trial.set_user_attr("metrics", metrics)
 
