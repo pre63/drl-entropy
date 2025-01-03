@@ -86,16 +86,28 @@ if __name__ == "__main__":
   def optimize(trial):
     model, eval_callback = learn(trial, hyperparameter_funcs[model_name], model_classes[model_name], timesteps, env)
     objective = eval_callback.eval_total_rewards
-    metrics = {
-        "eval/success_count": eval_callback.eval_success_count,
-        "eval/success_rate": eval_callback.eval_success_rate,
-        "eval/mean_reward": eval_callback.eval_mean_reward,
-        "eval/mean_ep_length": eval_callback.eval_mean_ep_length,
-        "eval/mean_success_rate": eval_callback.eval_mean_success_rate,
-        "eval/total_rewards": eval_callback.eval_total_rewards,
 
-        "total_timesteps": timesteps,
-        "objective": objective,
+    def to_python_native(value):
+      """Convert NumPy types to native Python types."""
+      if hasattr(value, "item"):  # Handles scalar NumPy values
+        return value.item()
+      elif isinstance(value, (float, int)):  # Already native types
+        return value
+      elif isinstance(value, (list, tuple)):  # Convert lists with NumPy types inside
+        return [to_python_native(v) for v in value]
+      return float(value) if "float" in str(type(value)) else int(value)
+
+    # Enforcing native types in the metrics dictionary
+    metrics = {
+        "eval/success_count": to_python_native(eval_callback.eval_success_count),
+        "eval/success_rate": to_python_native(eval_callback.eval_success_rate),
+        "eval/mean_reward": to_python_native(eval_callback.eval_mean_reward),
+        "eval/mean_ep_length": to_python_native(eval_callback.eval_mean_ep_length),
+        "eval/mean_success_rate": to_python_native(eval_callback.eval_mean_success_rate),
+        "eval/total_rewards": to_python_native(eval_callback.eval_total_rewards),
+
+        "total_timesteps": to_python_native(timesteps),
+        "objective": to_python_native(objective),
     }
 
     trial.set_user_attr("metrics", metrics)
