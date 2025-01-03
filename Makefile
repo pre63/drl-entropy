@@ -1,7 +1,7 @@
 default: trial
 
 models = ppo trpo entrpo entrpor	# Default models to train
-launches = 4  # Default number of launches per model
+launches = 4 # Default number of launches per model
 
 board:
 	@mkdir -p .logs
@@ -56,6 +56,12 @@ sync:
 	aws s3 sync ./.models s3://entrpo/.models || true
 	aws s3 cp ./Experiments.csv s3://entrpo/ || true
 	aws s3 cp ./Trials.csv s3://entrpo/ || true
+
+down:
+	aws s3 sync s3://entrpo/.logs ./.logs || true
+	aws s3 sync s3://entrpo/.models ./.models || true
+	aws s3 cp s3://entrpo/Experiments.csv ./ || true
+	aws s3 cp s3://entrpo/Trials.csv ./ || true
 
 clean:
 	@rm -rf __pycache__/
