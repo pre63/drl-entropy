@@ -1,11 +1,17 @@
+SHELL := /bin/sh
+
 default: trial
 
-models = ppo trpo entrpo entrpor	# Default models to train
+models = ppo trpo entrpo entrpo # Default models to train
 launches = 4 # Default number of launches per model
+timesteps = 10000 # Default number of timesteps per trial
+trials = 10 # Default number of trials per model
+envs = 4 # Default number of environments per trial
+model = ppo # Default model to train
 
 board:
 	@mkdir -p .logs
-	@PYTHONPATH=. tensorboard --logdir=./.logs/tensorboard/ --port 6006
+	@. .venv/bin/activate && PYTHONPATH=. tensorboard --logdir=./.logs/tensorboard/ --port 6006
 
 nightly:
 	@echo "Usage: make nightly models='entrpor entrpo trpo ppo' launches=10"
@@ -15,22 +21,36 @@ nightly:
 		for model in $(models); do \
 			echo "Launching $(launches) concurrent trials for model=$$model"; \
 			for j in $$(seq 1 $(launches)); do \
-				{ $(MAKE) trial model=$$model trials=1 envs=10 | tee -a .logs/sb3-$$model-$$j-$(shell date +"%Y%m%d").log & }; \
+				{ $(MAKE) trial model=$$model trials=1 envs=10 timesteps=$(timesteps) | tee -a .logs/sb3-$$model-$$j-$(shell date +"%Y%m%d").log & }; \
+				$(MAKE) sync; \
 			done; \
 		done; \
 		wait; \
-		$(MAKE) sync; \
 		i=$$((i + 1)); \
 	done
 
 trial:
-	@echo "Usage: make trial model=ppo trials=30 envs=4"
+	@echo "Usage: make trial model=ppo trials=10 envs=4"
 	@mkdir -p .logs
 	@mkdir -p .optuna
 	@rm -f .optuna/storage.lock || true
 	@echo "Starting trial for model=$(model) with $(trials) trials and $(envs) environments..."
-	@PYTHONPATH=. python trial.py $(model) $(trials) $(envs) | tee -a .logs/sb3-$(model)-$(shell date +"%Y%m%d").log
+	@. .venv/bin/activate && PYTHONPATH=. python trial.py --model $(model) --trials $(trials) --envs $(envs) --timesteps $(timesteps) | tee -a .logs/sb3-$(model)-$(shell date +"%Y%m%d").log
 	$(MAKE) sync
+
+sbx:
+	# sbx:
+	# --model
+	# --trials
+	# --timesteps
+	# --envs
+
+	@echo "Usage: make sbx model=ppo trials=10 timesteps=1000000 envs=4"
+	@mkdir -p .logs
+	@mkdir -p .optuna-sbx
+	@rm -f .optuna-sbx/storage.lock || true
+	@echo "Starting trial for model=$(model) with $(trials) trials and $(envs) environments..."
+	@. .venv/bin/activate && PYTHONPATH=. python trial-sbx.py --model $(model) --trials $(trials) --timesteps $(timesteps) --envs $(envs) | tee -a .logs/sbx-$(model)-$(shell date +"%Y%m%d").log
 
 ubuntu:
 	# if not ubuntu exit

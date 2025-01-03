@@ -5,6 +5,7 @@ __pycache__
 .vscode
 .models
 .optuna
+.optuna-sbx
 
 results
 

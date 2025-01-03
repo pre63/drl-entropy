@@ -1,6 +1,8 @@
 import os
 import sys
 
+import argparse
+
 import csv
 from datetime import datetime
 
@@ -15,9 +17,9 @@ from Models.PPO import optimal as optimal_ppo
 from Models.EnTRPO import EnTRPO, optimal as optimal_entrpo
 from Models.EnTRPOR import EnTRPOR, optimal as optimal_entrpor
 
-
 from Evaluation import optimize_model
 
+from Reporting import add_to_experiments, add_to_trials
 
 def save(model, model_name):
   date_time = datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -28,8 +30,7 @@ def get_num_envs(default=4):
   return int(sys.argv[3]) if len(sys.argv) > 3 else default
 
 
-def get_model(default="PPO"):
-  model_name = sys.argv[1].upper() if len(sys.argv) > 1 else default
+def get_model(model_name="PPO"):
 
   match model_name:
     case "TRPO":
@@ -48,40 +49,21 @@ def get_num_trials(default):
   return int(sys.argv[2]) if len(sys.argv) > 2 else default
 
 
-def add_to_experiments(metrics):
-  filename = "Experiments.csv"
-  file_exists = os.path.isfile(filename)
-
-  # Write trial outcome to the CSV
-  with open(filename, mode="a", newline="") as csv_file:
-    if not file_exists:
-      # Write headers if file does not exist
-      headers = list(metrics.keys())
-      writer = csv.DictWriter(csv_file, fieldnames=headers, quotechar='"', quoting=csv.QUOTE_ALL)
-      writer.writeheader()
-    else:
-      # Ensure the file has headers and maintain column order
-      with open(filename, mode="r") as check_file:
-        existing_headers = next(csv.reader(check_file, quotechar='"', quoting=csv.QUOTE_ALL))
-      writer = csv.DictWriter(csv_file, fieldnames=existing_headers, quotechar='"', quoting=csv.QUOTE_ALL)
-
-    # Write the row with proper alignment
-    writer.writerow(metrics)
-
-
-def add_to_trials(trials):
-  results_file = "Trials.csv"
-  if os.path.isfile(results_file):
-    trials.to_csv(results_file, mode="a", header=False, index=False)
-  else:
-    trials.to_csv(results_file, mode="w", index=False)
-
 
 if __name__ == "__main__":
-  num_envs = get_num_envs(4)
-  n_trials = get_num_trials(10)
+  parser = argparse.ArgumentParser(description="Optuna hyperparameter optimization with SB3 models.")
+  parser.add_argument("--model", type=str, required=True, choices=["ppo", "trpo", "entrpo", "entrpor"])
+  parser.add_argument("--trials", type=int, default=20)
+  parser.add_argument("--timesteps", type=int, default=10000)
+  parser.add_argument("--envs", type=int, default=4)
+  args = parser.parse_args()
 
-  model_class, model_name, optimal_function = get_model()
+  num_envs = args.envs
+  n_trials = args.trials
+  total_timesteps = args.timesteps
+  model_name = args.model.upper()
+
+  model_class, model_name, optimal_function = get_model(model_name)
   print(f"\nRunning {n_trials} trials for {num_envs} environments with {model_name}\n")
 
   storage = optuna.storages.JournalStorage(
@@ -93,7 +75,7 @@ if __name__ == "__main__":
   study = optuna.create_study(study_name=study_name, direction="maximize", pruner=MedianPruner(), storage=storage, load_if_exists=True)
 
   def objective(trial):
-    return optimize_model(trial, model_class, optimal_function, model_name, num_envs=num_envs)
+    return optimize_model(trial, model_class, optimal_function, model_name, num_envs=num_envs, total_timesteps=total_timesteps)
 
   study.optimize(objective, n_trials=n_trials)
 
