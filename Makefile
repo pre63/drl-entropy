@@ -15,9 +15,9 @@ board:
 	@. .venv/bin/activate && PYTHONPATH=. tensorboard --logdir=./.logs/tensorboard/ --port 6006
 
 nightly: 
-	@killall make & killall python || true
-	@$(MAKE) nightly-sb3 launches=2 & disown
-	@$(MAKE) nightly-sbx launches=4 & disown
+	@killall make || true
+	@killall python || true
+	@$(MAKE) nightly-sb3 launches=2 & disown & $(MAKE) nightly-sbx launches=4 & disown &
 
 nightly-sb3:
 	@mkdir -p .logs
