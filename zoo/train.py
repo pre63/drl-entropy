@@ -1,3 +1,4 @@
+import sys
 import argparse
 
 import rl_zoo3
@@ -17,6 +18,30 @@ rl_zoo3.ALGOS["crossq"] = CrossQ
 rl_zoo3.train.ALGOS = rl_zoo3.ALGOS
 rl_zoo3.exp_manager.ALGOS = rl_zoo3.ALGOS
 
-# python zoo/train.py --algo tqc --env LunarLanderContinuous-v3 -params train_freq:4 gradient_steps:4 -P
+import sys
+from rl_zoo3.train import train
+
 if __name__ == "__main__":
+  hyperparams = [
+      "batch_size:256",
+      "buffer_size:1000000",
+      "gamma:0.99",
+      "gradient_steps:1",
+      "learning_rate:'lin_7.3e-4'",
+      "learning_starts:10000",
+      "policy:'MlpPolicy'",
+      "policy_kwargs:dict(net_arch=[400,300])",
+      "tau:0.01",
+      "train_freq:1"
+  ]
+
+  sys.argv = [
+      "python",
+      "--algo", "tqc",
+      "--env", "LunarLanderContinuous-v3",
+      "--device", "cuda",
+      "--optimize-hyperparameters",
+      "--hyperparams"
+  ] + hyperparams
+
   train()

@@ -104,3 +104,6 @@ help:
 	@echo "       make nightly-sbx modelssbx='entrpor entrpo trpo ppo' launches=10"
 	@echo "       make sbx model=entrpo trials=10 envs=4 timesteps=10000"
 	
+
+train-zoo:
+	@. .venv/bin/activate && PYTHONPATH=. python zoo/train.py

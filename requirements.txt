@@ -16,3 +16,5 @@ optuna
 optuna-integration
 sbx-rl
 rl_zoo3
+jax
+jax[cuda12]
