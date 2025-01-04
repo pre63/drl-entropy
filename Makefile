@@ -2,7 +2,7 @@ SHELL := /bin/sh
 
 default: trial
 
-models = ppo trpo entrpo entrpo # Default models to train
+models = trpo entrpo entrpo # Default models to train
 modelssbx = ppo sac crossq td3 tqc # Default models to train with SBX
 launches = 4 # Default number of launches per model
 timesteps = 100000 # Default number of timesteps per trial
@@ -14,7 +14,12 @@ board:
 	@mkdir -p .logs
 	@. .venv/bin/activate && PYTHONPATH=. tensorboard --logdir=./.logs/tensorboard/ --port 6006
 
-nightly:
+nightly: 
+	@killall make & killall python || true
+	@$(MAKE) nightly-sb3 launches=2 & disown
+	@$(MAKE) nightly-sbx launches=4 & disown
+
+nightly-sb3:
 	@mkdir -p .logs
 	@echo "Starting nightly training for models: $(models)"
 	@i=1; while true; do \
