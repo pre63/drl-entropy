@@ -1,6 +1,5 @@
 import os
 
-from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import SubprocVecEnv
 from stable_baselines3.common.callbacks import EvalCallback, BaseCallback, CheckpointCallback
 
@@ -16,7 +15,6 @@ def make_env(rank, seed=0):
   def _init():
     env = make()
     env.seed(seed + rank)
-    env = Monitor(env, f"./.logs/env_{rank}")
     return env
   return _init
 
@@ -28,7 +26,6 @@ def make_eval_env(seed=0):
   def _init():
     env = make()
     env.seed(seed)
-    return Monitor(env, f"./.logs/eval_env")
   return SubprocVecEnv([_init])
 
 
