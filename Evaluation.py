@@ -101,6 +101,7 @@ def optimize_model(trial, model_class, optimal_function, model_name, total_times
 
   # Enforcing native types in the metrics dictionary
   metrics = {
+      "model_name": model_name,
       "eval/success_count": to_python_native(eval_callback.eval_success_count),
       "eval/success_rate": to_python_native(eval_callback.eval_success_rate),
       "eval/mean_reward": to_python_native(eval_callback.eval_mean_reward),
