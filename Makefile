@@ -106,4 +106,4 @@ help:
 	
 
 train-zoo:
-	@. .venv/bin/activate && PYTHONPATH=. python zoo/train.py
+	@. .venv/bin/activate && PYTHONPATH=. python zoo/train.py --model=$(model)
