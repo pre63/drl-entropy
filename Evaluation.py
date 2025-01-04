@@ -1,5 +1,6 @@
 import os
 
+from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import SubprocVecEnv
 from stable_baselines3.common.callbacks import EvalCallback, BaseCallback, CheckpointCallback
 
@@ -26,6 +27,7 @@ def make_eval_env(seed=0):
   def _init():
     env = make()
     env.seed(seed)
+    return env
   return SubprocVecEnv([_init])
 
 
