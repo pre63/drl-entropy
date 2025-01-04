@@ -13,6 +13,6 @@ def optimal(trial, total_timesteps):
       'gamma': trial.suggest_float('gamma', 0.9, 0.99, step=0.01),
       'train_freq': trial.suggest_int('train_freq', 1, 10),
       'gradient_steps': trial.suggest_int('gradient_steps', 1, 10),
-      'total_timesteps': trial.suggest_int('total_timesteps', total_timesteps // 10, total_timesteps, step=total_timesteps // 10),
+      'total_timesteps': total_timesteps,
   }
 

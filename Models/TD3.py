@@ -16,5 +16,5 @@ def optimal(trial, total_timesteps):
       'policy_delay': trial.suggest_int('policy_delay', 1, 5),
       'target_policy_noise': trial.suggest_float('target_policy_noise', 0.1, 0.5, step=0.05),
       'target_noise_clip': trial.suggest_float('target_noise_clip', 0.1, 0.5, step=0.05),
-      'total_timesteps': trial.suggest_int('total_timesteps', total_timesteps // 10, total_timesteps, step=total_timesteps // 10),
+      'total_timesteps': total_timesteps,
   }

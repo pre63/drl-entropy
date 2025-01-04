@@ -20,5 +20,5 @@ def optimal(trial, total_timesteps):
       'use_sde': trial.suggest_categorical('use_sde', [True, False]),
       'sde_sample_freq': trial.suggest_int('sde_sample_freq', -1, 99, step=10),
       'use_sde_at_warmup': trial.suggest_categorical('use_sde_at_warmup', [True, False]),
-      'total_timesteps': trial.suggest_int('total_timesteps', total_timesteps // 10, total_timesteps, step=total_timesteps // 10),
+      'total_timesteps': total_timesteps,
   }

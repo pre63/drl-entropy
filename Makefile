@@ -5,7 +5,7 @@ default: trial
 models = ppo trpo entrpo entrpo # Default models to train
 modelssbx = ppo sac crossq td3 tqc # Default models to train with SBX
 launches = 4 # Default number of launches per model
-timesteps = 10000 # Default number of timesteps per trial
+timesteps = 100000 # Default number of timesteps per trial
 trials = 10 # Default number of trials per model
 envs = 4 # Default number of environments per trial
 model = ppo # Default model to train
