@@ -106,4 +106,5 @@ help:
 	
 
 train-zoo:
-	@. .venv/bin/activate && PYTHONPATH=. python zoo/train.py --model=$(model)
+	@echo "Usage: make train-zoo model=ppo envs=4"
+	@. .venv/bin/activate && PYTHONPATH=. python zoo/train.py --model=$(model) --envs=$(envs) | tee -a .logs/zoo-$(model)-$(shell date +"%Y%m%d").log
