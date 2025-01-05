@@ -107,4 +107,6 @@ help:
 
 train-zoo:
 	@echo "Usage: make train-zoo model=ppo envs=4"
+	@mkdir -p .logs
+	@mkdir -p .optuna-zoo
 	@. .venv/bin/activate && PYTHONPATH=. python zoo/train.py --model=$(model) --envs=$(envs) | tee -a .logs/zoo-$(model)-$(shell date +"%Y%m%d").log

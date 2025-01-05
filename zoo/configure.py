@@ -123,7 +123,7 @@ def configure(**params):
       raise ImportError("Please install Weights & Biases via `pip install wandb`") from e
 
   if args['storage'] is None:
-    storage = JournalStorage(JournalFileBackend(".optuna-sbx/storage"))
+    storage = JournalStorage(JournalFileBackend(".optuna-zoo/storage"))
     study_name = f"{args['algo']}_study"
     args['storage'] = storage
     args['study_name'] = study_name

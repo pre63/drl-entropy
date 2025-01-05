@@ -6,6 +6,7 @@ __pycache__
 .models
 .optuna
 .optuna-sbx
+.optuna-zoo
 
 logs
 results

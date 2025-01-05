@@ -12,13 +12,8 @@ from Models.EnTRPO.EnTRPO import EnTRPO, sample_entrpo_params
 from Models.TRPOQ.TRPOQ import TRPOQ, sample_trpoq_params
 from Models.TRPOQ.TRPOQ2 import TRPOQ2
 
-rl_zoo3.ALGOS["ddpg"] = DDPG
-rl_zoo3.ALGOS["dqn"] = DQN
 rl_zoo3.ALGOS["sac"] = SAC
-rl_zoo3.ALGOS["ppo"] = PPO
-rl_zoo3.ALGOS["td3"] = TD3
 rl_zoo3.ALGOS["tqc"] = TQC
-rl_zoo3.ALGOS["crossq"] = CrossQ
 
 rl_zoo3.ALGOS["entrpo"] = EnTRPO
 rl_zoo3.hyperparams_opt.HYPERPARAMS_SAMPLER["entrpo"] = sample_entrpo_params
@@ -46,11 +41,12 @@ if __name__ == "__main__":
     conf_file = "Models/EnTRPO/EnTRPO.yml"
   elif model == "trpoq" or model == "trpoq2":
     conf_file = "Models/TRPOQ/TRPOQ.yml"
-
+  else:
+    conf_file = None
   configure(
       algo=model,
       env="LunarLanderContinuous-v3",
-      device="cuda",
+      device="cpu",
       optimize_hyperparameters=True,
       conf_file=conf_file,
       n_eval_envs=params.envs,
