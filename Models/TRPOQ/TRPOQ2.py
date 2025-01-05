@@ -23,6 +23,15 @@ Params:
     truncation_threshold: 20
     n_value_networks: 3
 Writing report to logs/trpoq2/report_LunarLanderContinuous-v3_500-trials-100000-tpe-median_1736117622
+[I 2025-01-05 10:49:17,654] Trial 20 finished with value: 234.45948559999997 and parameters: 
+{'batch_size': 128, 'n_steps': 512, 'gamma': 0.995, 'learning_rate': 0.0015285313400231586, 
+'n_critic_updates': 25, 'cg_max_steps': 20, 'target_kl': 0.001, 'gae_lambda': 1.0, 'net_arch': 'medium', 
+'activation_fn': 'tanh', 'n_quantiles': 10, 'truncation_threshold': 20, 'n_value_networks': 3}.
+ Best is trial 20 with value: 234.45948559999997.
+ 
+ [I 2025-01-05 13:03:09,205] Trial 52 finished with value: 261.5463718 and parameters: {'batch_size': 256, 'n_steps': 512, 'gamma': 0.9999, 'learning_rate': 0.0011772965012798017, 'n_critic_updates': 25, 'cg_max_steps': 5, 'target_kl': 0.001, 'gae_lambda': 0.98, 'net_arch': 'medium', 'activation_fn': 'relu', 'n_quantiles': 50, 'truncation_threshold': 20, 'n_value_networks': 7}. Best is trial 52 with value: 261.5463718.
+
+
 """
 
 import copy

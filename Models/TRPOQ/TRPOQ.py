@@ -33,6 +33,13 @@ Params:
     n_value_networks: 5
 
 Writing report to logs/trpoq/report_LunarLanderContinuous-v3_500-trials-100000-tpe-median_1736100309
+
+[I 2025-01-05 11:27:55,969] Trial 18 finished with value: -27.184341800000006 and parameters: 
+{'batch_size': 256, 'n_steps': 64, 'gamma': 0.95, 'learning_rate': 0.38179322504858076, 
+'n_critic_updates': 10, 'cg_max_steps': 5, 'target_kl': 0.01, 'gae_lambda': 0.92, 
+'net_arch': 'small', 'activation_fn': 'tanh', 'n_quantiles': 10, 'truncation_threshold': 5, 
+'n_value_networks': 5}. Best is trial 18 with value: -27.184341800000006.
+[I 2025-01-05 18:59:33,488] Trial 88 finished with value: 225.95682459999998 and parameters: {'batch_size': 32, 'n_steps': 512, 'gamma': 0.995, 'learning_rate': 0.0004530712764671448, 'n_critic_updates': 10, 'cg_max_steps': 5, 'target_kl': 0.001, 'gae_lambda': 0.98, 'net_arch': 'medium', 'activation_fn': 'tanh', 'n_quantiles': 25, 'truncation_threshold': 10, 'n_value_networks': 3}. Best is trial 88 with value: 225.95682459999998.
 """
 
 
