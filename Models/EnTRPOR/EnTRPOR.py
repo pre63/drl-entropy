@@ -4,11 +4,89 @@ from torch import nn
 from stable_baselines3.common.distributions import kl_divergence
 from stable_baselines3.common.utils import explained_variance
 
-from sb3_contrib.common.utils import conjugate_gradient_solver, flat_grad
+from sb3_contrib.common.utils import conjugate_gradient_solver
 from sb3_contrib.trpo.trpo import TRPO
 
 
 class EnTRPOR(TRPO):
+  """
+    EnTRPOR: Entropy-Regularized Trust Region Policy Optimization with Reinforcement Learning
+
+    Like TRPOR but with entropy regularization for line search.
+
+    This is an extension of the standard Trust Region Policy Optimization (TRPO) algorithm
+    that incorporates entropy regularization into the policy objective. The entropy bonus
+    encourages exploration and prevents premature convergence to deterministic policies.
+
+    Key Features:
+    - Adds an entropy bonus term to the policy objective to promote exploration.
+    - Retains the KL-divergence constraint from TRPO for stable policy updates.
+    - The entropy coefficient (`ent_coef`) is tunable for balancing exploration and exploitation.
+    - Suitable for environments with sparse rewards where additional exploration is needed.
+
+    Mathematical Formulation:
+    -------------------------
+    Standard TRPO objective:
+        L(θ) = E_t [ (π_θ(a_t | s_t) / π_θ_old(a_t | s_t)) * Â(s_t, a_t) ]
+
+    EnTRPOR modified objective:
+        L(θ) = E_t [ (π_θ(a_t | s_t) / π_θ_old(a_t | s_t)) * Â(s_t, a_t) + α * H(π_θ) ]
+
+    where:
+    - π_θ is the current policy.
+    - π_θ_old is the old policy.
+    - Â is the advantage function.
+    - α (`ent_coef`) is the entropy coefficient.
+    - H(π_θ) is the entropy of the policy.
+
+    Parameters:
+    -----------
+    policy : Union[str, type[ActorCriticPolicy]]
+        The policy model to be used (e.g., "MlpPolicy").
+    env : Union[GymEnv, str]
+        The environment to learn from.
+    ent_coef : float, optional
+        Entropy coefficient controlling the strength of the entropy bonus (default: 0.01).
+    learning_rate : Union[float, Schedule], optional
+        Learning rate for the optimizer (default: 1e-3).
+    n_steps : int, optional
+        Number of steps to run per update (default: 2048).
+    batch_size : int, optional
+        Minibatch size for the value function updates (default: 128).
+    gamma : float, optional
+        Discount factor for the reward (default: 0.99).
+    cg_max_steps : int, optional
+        Maximum steps for the conjugate gradient solver (default: 10).
+    target_kl : float, optional
+        Target KL divergence for policy updates (default: 0.01).
+
+    Methods:
+    --------
+    learn(**params)
+        Trains the agent with the specified parameters, logging results under `"EnTRPOR"`.
+
+    train()
+        Performs a single policy update using the KL-constrained optimization approach
+        with entropy regularization.
+
+    Differences from Standard TRPO:
+    -------------------------------
+    - **Entropy Bonus:** Adds entropy to the policy objective for better exploration.
+    - **Policy Objective:** Modified to include the entropy coefficient (`ent_coef`).
+    - **Line Search:** Considers the entropy term while checking policy improvement.
+    - **Logging:** Logs entropy-regularized objectives and KL divergence values.
+
+    Example:
+    --------
+    ```python
+    from sb3_contrib.trpo.trpo import TRPO
+    from sb3_contrib.trpo.entropor import EnTRPOR
+
+    model = EnTRPOR("MlpPolicy", "CartPole-v1", ent_coef=0.01, gamma=0.99)
+    model.learn(total_timesteps=100000)
+    ```
+  """
+
   def __init__(
       self,
       *args,
@@ -143,7 +221,7 @@ class EnTRPOR(TRPO):
     self.logger.record("train/n_updates", self._n_updates, exclude="tensorboard")
 
 
-def optimal(trial, total_timesteps):
+def sample_entrpor_params(trial, total_timesteps):
   # Define the EnTRPOR-specific optimization space
   params = {
       "policy": "MlpPolicy",

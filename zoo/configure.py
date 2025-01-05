@@ -36,7 +36,7 @@ def configure(**params):
       "n_eval_envs": 4,
       "save_freq": -1,
       "save_replay_buffer": False,
-      "log_folder": "logs",
+      "log_folder": ".logs",
       "seed": -1,
       "vec_env": "dummy",
       "device": "auto",
@@ -58,7 +58,7 @@ def configure(**params):
       "hyperparams": {},
       "conf_file": None,
       "uuid": False,
-      "track": False,
+      "track": True,
       "wandb_project_name": "sb3",
       "wandb_entity": None,
       "wandb_tags": [],
@@ -106,19 +106,8 @@ def configure(**params):
   # Track experiment with Weights & Biases
   if args["track"]:
     try:
-      import wandb
       run_name = f"{args['env']}__{args['algo']}__{args['seed']}__{int(time.time())}"
-      run = wandb.init(
-          name=run_name,
-          project=args["wandb_project_name"],
-          entity=args["wandb_entity"],
-          tags=args["wandb_tags"],
-          config=args,
-          sync_tensorboard=True,
-          monitor_gym=True,
-          save_code=True,
-      )
-      args["tensorboard_log"] = f"runs/{run_name}"
+      args["tensorboard_log"] = f".logs/tensorboard/{run_name}"
     except ImportError as e:
       raise ImportError("Please install Weights & Biases via `pip install wandb`") from e
 
@@ -172,8 +161,6 @@ def configure(**params):
   results = exp_manager.setup_experiment()
   if results is not None:
     model, saved_hyperparams = results
-    if args["track"]:
-      run.config.update(saved_hyperparams)
     if model is not None:
       exp_manager.learn(model)
       exp_manager.save_trained_model(model)

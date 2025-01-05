@@ -1,3 +1,10 @@
+"""
+[I 2025-01-05 01:04:03,668] Trial 21 finished with value: 264.79548 and parameters: {'batch_size': 128, 'n_steps': 64, 'gamma': 0.9999, 
+'learning_rate': 0.00041735117386320454, 'n_critic_updates': 30, 'cg_max_steps': 5, 'target_kl': 0.005, 
+'gae_lambda': 0.99, 'net_arch': 'small', 'activation_fn': 'relu', 'n_quantiles': 50, 
+'truncation_threshold': 20, 'n_value_networks': 5}. Best is trial 21 with value: 264.79548.
+"""
+
 import copy
 import warnings
 from functools import partial
@@ -39,6 +46,13 @@ class QuantileValueNetwork(nn.Module):
 
 
 class TRPOQ2(TRPO):
+  """
+  Trust Region Policy Optimization with Quantile Regression (TRPO-Q) implementation with guarantees.
+  - Corrective Penalties: Compensates for conservative bias with a penalty term.
+  - Dual Critics: Maintains both standard and truncated critics.
+  - Adaptive Truncation: Dynamically adjusts truncation based on value variance.
+  """
+
   def __init__(
       self,
       policy: Union[str, type[ActorCriticPolicy]],

@@ -1,3 +1,15 @@
+"""
+Trial 94 finished with value: 237.1082326 and parameters: {'batch_size': 32, 'n_steps': 512, 'gamma': 0.999, 'learning_rate': 0.0025646528377380093, 
+'n_critic_updates': 10, 'cg_max_steps': 10, 'target_kl': 0.01, 'gae_lambda': 0.98, 'net_arch': 'medium', 'activation_fn': 'tanh', 
+'n_quantiles': 100, 'truncation_threshold': 5, 'n_value_networks': 3}. Best is trial 94 with value: 237.1082326.
+
+
+[I 2025-01-05 11:23:28,327] Trial 164 finished with value: 174.29397979999996 and parameters: {'batch_size': 8, 'n_steps': 2048, 'gamma': 0.9999, 'learning_rate': 0.002617523928776761,
+ 'n_critic_updates': 30, 'cg_max_steps': 30, 'target_kl': 0.005, 'gae_lambda': 0.98, 'net_arch': 'small', 'activation_fn': 'tanh', 
+ 'n_quantiles': 50, 'truncation_threshold': 20, 'n_value_networks': 3}. Best is trial 148 with value: 243.184136.
+"""
+
+
 import copy
 import warnings
 from functools import partial
