@@ -54,8 +54,8 @@ train-zoo:
 	@mkdir -p .logs
 	@mkdir -p .optuna-zoo
 	@mkdir -p .logs/tensorboard
-	@for model in $(zoology); do \
-		for env in $(zoologyenvs); do \
+	@for env in $(zoologyenvs); do \
+		for model in $(zoology); do \
 			$(MAKE) train model=$$model env=$$env || true; \
 		done; \
 	done
