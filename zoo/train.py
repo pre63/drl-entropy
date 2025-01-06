@@ -19,6 +19,7 @@ models = {
     "trpoq": {"model": TRPOQ, "sample": sample_trpoq_params},
     "trpoq2": {"model": TRPOQ2, "sample": sample_trpoq_params},
     "trpor": {"model": TRPOR, "sample": sample_trpor_params},
+    "entrpor": {"model": EnTRPOR, "sample": sample_entrpor_params},
     "sac": {"model": SAC},
     "tqc": {"model": TQC},
 }

@@ -1,11 +1,13 @@
 SHELL := /bin/sh
 
-default: trial
-
-timesteps = 100000 # Default number of timesteps per trial
-trials = 10 # Default number of trials per model
 envs = 4 # Default number of environments per trial
 model = ppo # Default model to train
+optimize = False # Default to not optimize hyperparameters
+
+zoology = entrpo trpo ppo tqc sac
+zoologyenvs = LunarLanderContinuous-v3 Ant-v3 Humanoid-v3 InvertedDoublePendulum-v3 RocketLander-v0
+
+default: install
 
 board:
 	@mkdir -p .logs
@@ -40,8 +42,19 @@ clean:
 	@rm -rf __pycache__/
 	@rm -rf .venv
 
-train-zoo:
-	@echo "Usage: make train-zoo model=ppo envs=4"
+train:
+	@echo "Usage: make train model=ppo envs=4"
 	@mkdir -p .logs
 	@mkdir -p .optuna-zoo
-	@. .venv/bin/activate && PYTHONPATH=. python zoo/train.py --model=$(model) --envs=$(envs) | tee -a .logs/zoo-$(model)-$(shell date +"%Y%m%d").log
+	@. .venv/bin/activate && PYTHONPATH=. python zoo/train.py --model=$(model) --envs=$(envs) --env=$(env) --optimize=$(optimize) | tee -a .logs/zoo-$(model)-$(shell date +"%Y%m%d").log
+
+train-zoo:
+	@echo "Will train all models in zoo"
+	@mkdir -p .logs
+	@mkdir -p .optuna-zoo
+	@mkdir -p .logs/tensorboard
+	@for model in $(zoology); do \
+		for env in $(zoologyenvs); do \
+			$(MAKE) train model=$$model env=$$env; \
+		done; \
+	done
