@@ -3,27 +3,41 @@
 'learning_rate': 0.00041735117386320454, 'n_critic_updates': 30, 'cg_max_steps': 5, 'target_kl': 0.005, 
 'gae_lambda': 0.99, 'net_arch': 'small', 'activation_fn': 'relu', 'n_quantiles': 50, 
 'truncation_threshold': 20, 'n_value_networks': 5}. Best is trial 21 with value: 264.79548.
+
+[I 2025-01-05 16:04:38,557] Trial 209 finished with value: 265.7609142 and parameters: {'batch_size': 64, 'n_steps': 1024, 'gamma': 0.99, 'learning_rate': 0.0009913127150303867, 'n_critic_updates': 25, 'cg_max_steps': 30, 'target_kl': 0.005, 'gae_lambda': 0.99, 'net_arch': 'medium', 'activation_fn': 'tanh', 'n_quantiles': 10, 'truncation_threshold': 10, 'n_value_networks': 5}. Best is trial 209 with value: 265.7609142.
+Number of finished trials:  501
+Best trial:
+Value:  266.082071
+Params: 
+    batch_size: 256
+    n_steps: 1024
+    gamma: 0.99
+    learning_rate: 0.0001193459439628414
+    n_critic_updates: 20
+    cg_max_steps: 30
+    target_kl: 0.03
+    gae_lambda: 0.99
+    net_arch: small
+    activation_fn: relu
+    n_quantiles: 25
+    truncation_threshold: 20
+    n_value_networks: 3
+Writing report to logs/trpoq2/report_LunarLanderContinuous-v3_500-trials-100000-tpe-median_1736117622
 """
 
 import copy
-import warnings
 from functools import partial
-from typing import Any, ClassVar, Optional, TypeVar, Union
+from typing import TypeVar, Union
 
-import numpy as np
 import torch as th
 from gymnasium import spaces
-from stable_baselines3.common.buffers import RolloutBuffer
 from stable_baselines3.common.distributions import kl_divergence
-from stable_baselines3.common.on_policy_algorithm import OnPolicyAlgorithm
-from stable_baselines3.common.policies import ActorCriticPolicy, BasePolicy
-from stable_baselines3.common.type_aliases import GymEnv, MaybeCallback, RolloutBufferSamples, Schedule
-from stable_baselines3.common.utils import explained_variance
+from stable_baselines3.common.policies import ActorCriticPolicy
+from stable_baselines3.common.type_aliases import GymEnv, Schedule
 from torch import nn
 from torch.nn import functional as F
 
-from sb3_contrib.common.utils import conjugate_gradient_solver, flat_grad
-from sb3_contrib.trpo.policies import CnnPolicy, MlpPolicy, MultiInputPolicy
+from sb3_contrib.common.utils import conjugate_gradient_solver
 from sb3_contrib import TRPO
 
 SelfTRPO = TypeVar("SelfTRPO", bound="TRPO")

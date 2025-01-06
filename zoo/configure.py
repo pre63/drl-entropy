@@ -113,7 +113,7 @@ def configure(**params):
 
   if args['storage'] is None:
     storage = JournalStorage(JournalFileBackend(".optuna-zoo/storage"))
-    study_name = f"{args['algo']}_study"
+    study_name = f"{args['algo']}_{args['env']}_study"
     args['storage'] = storage
     args['study_name'] = study_name
 
