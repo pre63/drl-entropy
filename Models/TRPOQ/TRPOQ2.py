@@ -141,11 +141,6 @@ class TRPOQ2(TRPO):
     self.policy.set_training_mode(True)
     self._update_learning_rate(self.policy.optimizer)
 
-    policy_objective_values = []
-    kl_divergences = []
-    line_search_results = []
-    value_losses = []
-
     for rollout_data in self.rollout_buffer.get(batch_size=None):
       actions = rollout_data.actions
       if isinstance(self.action_space, spaces.Discrete):

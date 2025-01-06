@@ -1,23 +1,23 @@
 """
-Trial 94 finished with value: 237.1082326 and parameters: {'batch_size': 32, 'n_steps': 512, 'gamma': 0.999, 'learning_rate': 0.0025646528377380093, 
-'n_critic_updates': 10, 'cg_max_steps': 10, 'target_kl': 0.01, 'gae_lambda': 0.98, 'net_arch': 'medium', 'activation_fn': 'tanh', 
+Trial 94 finished with value: 237.1082326 and parameters: {'batch_size': 32, 'n_steps': 512, 'gamma': 0.999, 'learning_rate': 0.0025646528377380093,
+'n_critic_updates': 10, 'cg_max_steps': 10, 'target_kl': 0.01, 'gae_lambda': 0.98, 'net_arch': 'medium', 'activation_fn': 'tanh',
 'n_quantiles': 100, 'truncation_threshold': 5, 'n_value_networks': 3}. Best is trial 94 with value: 237.1082326.
 
 
 [I 2025-01-05 11:23:28,327] Trial 164 finished with value: 174.29397979999996 and parameters: {'batch_size': 8, 'n_steps': 2048, 'gamma': 0.9999, 'learning_rate': 0.002617523928776761,
- 'n_critic_updates': 30, 'cg_max_steps': 30, 'target_kl': 0.005, 'gae_lambda': 0.98, 'net_arch': 'small', 'activation_fn': 'tanh', 
+ 'n_critic_updates': 30, 'cg_max_steps': 30, 'target_kl': 0.005, 'gae_lambda': 0.98, 'net_arch': 'small', 'activation_fn': 'tanh',
  'n_quantiles': 50, 'truncation_threshold': 20, 'n_value_networks': 3}. Best is trial 148 with value: 243.184136.
 
-[I 2025-01-05 14:39:09,732] Trial 307 finished with value: 247.380802 and parameters: 
-{'batch_size': 512, 'n_steps': 512, 'gamma': 0.9999, 'learning_rate': 0.04385119617459363, 
-'n_critic_updates': 20, 'cg_max_steps': 20, 'target_kl': 0.001, 'gae_lambda': 0.98, 'net_arch': 'medium', 
-'activation_fn': 'tanh', 'n_quantiles': 100, 'truncation_threshold': 5, 'n_value_networks': 3}. 
+[I 2025-01-05 14:39:09,732] Trial 307 finished with value: 247.380802 and parameters:
+{'batch_size': 512, 'n_steps': 512, 'gamma': 0.9999, 'learning_rate': 0.04385119617459363,
+'n_critic_updates': 20, 'cg_max_steps': 20, 'target_kl': 0.001, 'gae_lambda': 0.98, 'net_arch': 'medium',
+'activation_fn': 'tanh', 'n_quantiles': 100, 'truncation_threshold': 5, 'n_value_networks': 3}.
 Best is trial 307 with value: 247.380802.
 
 [I 2025-01-05 15:13:01,602] Trial 325 finished with value: 272.1745024 and parameters: {'batch_size': 32, 'n_steps': 512, 'gamma': 0.9999, 'learning_rate': 0.0008963925548154116, 'n_critic_updates': 20, 'cg_max_steps': 25, 'target_kl': 0.005, 'gae_lambda': 0.99, 'net_arch': 'medium', 'activation_fn': 'relu', 'n_quantiles': 50, 'truncation_threshold': 5, 'n_value_networks': 5}. Best is trial 325 with value: 272.1745024.
 Best trial:
 Value:  272.1745024
-Params: 
+Params:
     batch_size: 32
     n_steps: 512
     gamma: 0.9999
@@ -81,6 +81,32 @@ class QuantileValueNetwork(nn.Module):
 
 
 class TRPOQ(TRPO):
+  """
+    Trust Region Policy Optimization with Quantile-Based Value Estimation (TRPOQ).
+
+    TRPOQ extends the standard TRPO algorithm by incorporating a quantile-based critic architecture for
+    value estimation. This method aims to reduce overestimation bias and stabilize advantage calculations
+    during policy optimization, making it suitable for continuous control tasks.
+
+    Key Features:
+    - Quantile-Based Value Function Estimation: Uses an ensemble of critics outputting multiple quantiles instead of point estimates.
+    - Conservative Truncation Strategy: The highest quantiles are discarded during advantage estimation to reduce overestimation bias.
+    - Multiple Value Networks: Maintains multiple value networks for improved stability and reduced variance.
+    - Trust Region Constraint: The standard TRPO KL-divergence constraint ensures stable policy updates.
+
+    Args:
+        policy (Union[str, type[ActorCriticPolicy]]): The policy model to use (e.g., "MlpPolicy").
+        env (Union[GymEnv, str]): The environment for training. Can be a gym environment or an environment ID string.
+        learning_rate (Union[float, Schedule], optional): Learning rate for the policy and value network optimization. Defaults to 1e-3.
+        n_steps (int, optional): Number of steps to collect per iteration. Defaults to 2048.
+        batch_size (int, optional): Mini-batch size for policy updates. Defaults to 128.
+        gamma (float, optional): Discount factor for reward calculation. Defaults to 0.99.
+        n_quantiles (int, optional): Number of quantiles used for value estimation. Defaults to 25.
+        truncation_threshold (int, optional): Number of lower quantiles retained for conservative advantage estimation. Defaults to 5.
+        n_value_networks (int, optional): Number of independent value networks used for ensemble estimation. Defaults to 3.
+        **kwargs: Additional arguments passed to the TRPO base class.
+  """
+
   def __init__(
       self,
       policy: Union[str, type[ActorCriticPolicy]],

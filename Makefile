@@ -4,7 +4,7 @@ envs = 4 # Default number of environments per trial
 model = ppo # Default model to train
 optimize = False # Default to not optimize hyperparameters
 
-zoology = entrpo trpo ppo tqc sac
+zoology = entrpo entrpor trpor trpo ppo tqc sac
 zoologyenvs = LunarLanderContinuous-v3 Ant-v3 Humanoid-v3 InvertedDoublePendulum-v3 RocketLander-v0
 
 default: install
@@ -39,11 +39,12 @@ down:
 	aws s3 sync s3://entrpo/.logs ./.logs || true
 
 clean:
+	@echo "Cleaning up"
 	@rm -rf __pycache__/
 	@rm -rf .venv
 
 train:
-	@echo "Usage: make train model=ppo envs=4"
+	@echo "Will train model $(model) on environment $(env) for $(envs) environments and we will optimize hyperparameters: $(optimize)"
 	@mkdir -p .logs
 	@mkdir -p .optuna-zoo
 	@. .venv/bin/activate && PYTHONPATH=. python zoo/train.py --model=$(model) --envs=$(envs) --env=$(env) --optimize=$(optimize) | tee -a .logs/zoo-$(model)-$(shell date +"%Y%m%d").log
@@ -58,3 +59,10 @@ train-zoo:
 			$(MAKE) train model=$$model env=$$env; \
 		done; \
 	done
+
+train-exp:
+	@mkdir -p .logs
+	@mkdir -p .optuna-zoo
+	@mkdir -p .logs/tensorboard
+	
+	@$(MAKE) train-zoo models="trpoq trpoq2" 
