@@ -36,12 +36,19 @@ LunarLander-v2:
 
 # Tuned
 LunarLanderContinuous-v3:
-  normalize: true
-  n_envs: 2
-  n_timesteps: !!float 1e5
-  policy: 'MlpPolicy'
-  n_steps: 1024
+  batch_size: 32
+  n_steps: 512
+  gamma: 0.9999
+  learning_rate: 0.0008963925548154116
   n_critic_updates: 20
+  cg_max_steps: 25
+  target_kl: 0.005
+  gae_lambda: 0.99
+  net_arch: medium
+  activation_fn: relu
+  n_quantiles: 50
+  truncation_threshold: 5
+  n_value_networks: 5
 
 # Tuned
 Acrobot-v1:

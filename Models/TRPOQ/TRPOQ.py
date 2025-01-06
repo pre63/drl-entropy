@@ -14,7 +14,12 @@ Trial 94 finished with value: 237.1082326 and parameters: {'batch_size': 32, 'n_
 'activation_fn': 'tanh', 'n_quantiles': 100, 'truncation_threshold': 5, 'n_value_networks': 3}.
 Best is trial 307 with value: 247.380802.
 
-[I 2025-01-05 15:13:01,602] Trial 325 finished with value: 272.1745024 and parameters: {'batch_size': 32, 'n_steps': 512, 'gamma': 0.9999, 'learning_rate': 0.0008963925548154116, 'n_critic_updates': 20, 'cg_max_steps': 25, 'target_kl': 0.005, 'gae_lambda': 0.99, 'net_arch': 'medium', 'activation_fn': 'relu', 'n_quantiles': 50, 'truncation_threshold': 5, 'n_value_networks': 5}. Best is trial 325 with value: 272.1745024.
+[I 2025-01-05 15:13:01,602] Trial 325 finished with value: 272.1745024 and parameters: 
+{'batch_size': 32, 'n_steps': 512, 'gamma': 0.9999, 'learning_rate': 0.0008963925548154116, 
+'n_critic_updates': 20, 'cg_max_steps': 25, 'target_kl': 0.005, 'gae_lambda': 0.99, 
+'net_arch': 'medium', 'activation_fn': 'relu', 'n_quantiles': 50, 'truncation_threshold': 5, 'n_value_networks': 5}. 
+Best is trial 325 with value: 272.1745024.
+
 Best trial:
 Value:  272.1745024
 Params:
