@@ -5,7 +5,7 @@ model = ppo # Default model to train
 optimize = False # Default to not optimize hyperparameters
 
 zoology = entrpo entrpor trpor trpo ppo tqc sac
-zoologyenvs = LunarLanderContinuous-v3 Ant-v3 Humanoid-v3 InvertedDoublePendulum-v3 RocketLander-v0
+zoologyenvs = LunarLanderContinuous-v3 Ant-v5 Humanoid-v3 InvertedDoublePendulum-v5 RocketLander-v0
 
 default: install
 
@@ -56,7 +56,7 @@ train-zoo:
 	@mkdir -p .logs/tensorboard
 	@for env in $(zoologyenvs); do \
 		for model in $(zoology); do \
-			$(MAKE) train model=$$model env=$$env || true; \
+			$(MAKE) train model=$$model env=$$env optimize=True || true; \
 		done; \
 	done
 
@@ -65,4 +65,4 @@ train-exp:
 	@mkdir -p .optuna-zoo
 	@mkdir -p .logs/tensorboard
 	
-	@$(MAKE) train-zoo models="trpoq trpoq2" 
+	@$(MAKE) train-zoo zoology="trpoq trpoq2"

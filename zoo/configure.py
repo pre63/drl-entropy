@@ -103,20 +103,21 @@ def configure(**params):
   print(f"\n{'=' * 10} Training {env_id} {'=' * 10}")
   print(f"Seed: {args['seed']}")
 
-  # Track experiment with Weights & Biases
+  # Track experiment using TensorBoard
   if args["track"]:
-    try:
-      run_name = f"{args['env']}__{args['algo']}__{args['seed']}__{int(time.time())}"
-      args["tensorboard_log"] = f".logs/tensorboard/{run_name}"
-    except ImportError as e:
-      raise ImportError("Please install Weights & Biases via `pip install wandb`") from e
+    run_name = f"{args['env']}__{args['algo']}__{args['seed']}__{int(time.time())}"
+    args["tensorboard_log"] = f".logs/tensorboard/{run_name}"
 
   if args['storage'] is None:
-    storage = JournalStorage(JournalFileBackend(".optuna-zoo/storage"))
-    study_name = f"{args['algo']}_{args['env']}_study"
+    optuna_dir = f".optuna-zoo/{args['algo']}_{args['env']}"
+    os.mkdir(optuna_dir) if not os.path.exists(optuna_dir) else None
+    storage = JournalStorage(JournalFileBackend(f"{optuna_dir}/storage"))
     args['storage'] = storage
+    
+    study_name = f"{args['algo']}_{args['env']}_study"
     args['study_name'] = study_name
 
+  print(f"Timesteps: {args['n_timesteps']}")
   # Initialize the experiment manager
   exp_manager = ExperimentManager(
       args=args,

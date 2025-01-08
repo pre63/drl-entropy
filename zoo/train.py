@@ -8,7 +8,7 @@ from sbx import SAC, TQC
 
 from Models.EnTRPO.EnTRPO import EnTRPO, sample_entrpo_params
 from Models.TRPOQ.TRPOQ import TRPOQ, sample_trpoq_params
-from Models.TRPOQ.TRPOQ2 import TRPOQ2
+from Models.TRPOQ.TRPOQ2 import TRPOQ2, sample_trpoq2_params
 from Models.TRPOR.TRPOR import TRPOR, sample_trpor_params
 from Models.EnTRPOR.EnTRPOR import EnTRPOR, sample_entrpor_params
 
@@ -17,7 +17,7 @@ from zoo.configure import configure
 models = {
     "entrpo": {"model": EnTRPO, "sample": sample_entrpo_params},
     "trpoq": {"model": TRPOQ, "sample": sample_trpoq_params},
-    "trpoq2": {"model": TRPOQ2, "sample": sample_trpoq_params},
+    "trpoq2": {"model": TRPOQ2, "sample": sample_trpoq2_params},
     "trpor": {"model": TRPOR, "sample": sample_trpor_params},
     "entrpor": {"model": EnTRPOR, "sample": sample_entrpor_params},
     "sac": {"model": SAC},
@@ -45,6 +45,7 @@ if __name__ == "__main__":
   parser.add_argument("--optimize", type=bool, default=True)
   parser.add_argument("--conf_file", type=str, default=None)
   parser.add_argument("--trials", type=int, default=100)
+  parser.add_argument("--n_timesteps", type=int, default=100000)
 
   params = parser.parse_args()
   model = params.model
@@ -61,4 +62,5 @@ if __name__ == "__main__":
       optimize_hyperparameters=params.optimize,
       conf_file=conf_file,
       n_trials=params.trials,
+      n_timesteps=params.n_timesteps,
   )

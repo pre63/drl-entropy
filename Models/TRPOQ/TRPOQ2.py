@@ -221,3 +221,51 @@ class TRPOQ2(TRPO):
             value_optimizer.zero_grad()
             quantile_loss.backward()
             value_optimizer.step()
+
+
+
+def sample_trpoq2_params(trial, n_actions, n_envs, additional_args):
+  """
+  Sampler for TRPO with Quantile Value Estimation hyperparameters.
+
+  :param trial: Optuna trial object
+  :param n_actions: Number of actions in the environment
+  :param n_envs: Number of parallel environments
+  :param additional_args: Additional arguments for sampling
+  :return: Dictionary of sampled hyperparameters
+  """
+  batch_size = trial.suggest_categorical("batch_size", [8, 16, 32, 64, 128, 256, 512])
+  n_steps = trial.suggest_categorical("n_steps", [8, 16, 32, 64, 128, 256, 512, 1024, 2048])
+  gamma = trial.suggest_categorical("gamma", [0.9, 0.95, 0.98, 0.99, 0.995, 0.999, 0.9999])
+  learning_rate = round(trial.suggest_float("learning_rate", 1e-5, 1, log=True), 6)
+
+  n_critic_updates = trial.suggest_categorical("n_critic_updates", [5, 10, 20, 25, 30])
+  cg_max_steps = trial.suggest_categorical("cg_max_steps", [5, 10, 20, 25, 30])
+  target_kl = trial.suggest_categorical("target_kl", [0.1, 0.05, 0.03, 0.02, 0.01, 0.005, 0.001])
+
+  # New hyperparameters for quantile-based value estimation
+  n_quantiles = trial.suggest_categorical("n_quantiles", [10, 25, 50, 100])
+  truncation_threshold = trial.suggest_categorical("truncation_threshold", [5, 10, 20])
+  n_value_networks = trial.suggest_categorical("n_value_networks", [3, 5, 7])
+
+  # Adjust batch size if it exceeds n_steps
+  if batch_size > n_steps:
+    batch_size = n_steps
+
+  adaptive_truncation = trial.suggest_categorical("adaptive_truncation", [True, False])
+  penalty_coef = trial.suggest_float("penalty_coef", 0.001, 0.1, log=True)
+
+  return {
+      "n_steps": n_steps,
+      "batch_size": batch_size,
+      "gamma": gamma,
+      "cg_max_steps": cg_max_steps,
+      "n_critic_updates": n_critic_updates,
+      "target_kl": target_kl,
+      "learning_rate": learning_rate,
+      "n_quantiles": n_quantiles,
+      "truncation_threshold": truncation_threshold,
+      "n_value_networks": n_value_networks,
+      "adaptive_truncation": adaptive_truncation,
+      "penalty_coef": penalty_coef
+  }

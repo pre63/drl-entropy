@@ -265,9 +265,6 @@ def sample_trpoq_params(trial, n_actions, n_envs, additional_args):
   n_critic_updates = trial.suggest_categorical("n_critic_updates", [5, 10, 20, 25, 30])
   cg_max_steps = trial.suggest_categorical("cg_max_steps", [5, 10, 20, 25, 30])
   target_kl = trial.suggest_categorical("target_kl", [0.1, 0.05, 0.03, 0.02, 0.01, 0.005, 0.001])
-  gae_lambda = trial.suggest_categorical("gae_lambda", [0.8, 0.9, 0.92, 0.95, 0.98, 0.99, 1.0])
-  net_arch_type = trial.suggest_categorical("net_arch", ["small", "medium"])
-  activation_fn_name = trial.suggest_categorical("activation_fn", ["tanh", "relu"])
 
   # New hyperparameters for quantile-based value estimation
   n_quantiles = trial.suggest_categorical("n_quantiles", [10, 25, 50, 100])
@@ -278,17 +275,6 @@ def sample_trpoq_params(trial, n_actions, n_envs, additional_args):
   if batch_size > n_steps:
     batch_size = n_steps
 
-  # Neural network architecture configuration
-  net_arch = {
-      "small": dict(pi=[64, 64], vf=[64, 64]),
-      "medium": dict(pi=[256, 256], vf=[256, 256]),
-  }[net_arch_type]
-
-  activation_fn = {
-      "tanh": nn.Tanh,
-      "relu": nn.ReLU
-  }[activation_fn_name]
-
   return {
       "n_steps": n_steps,
       "batch_size": batch_size,
@@ -297,11 +283,6 @@ def sample_trpoq_params(trial, n_actions, n_envs, additional_args):
       "n_critic_updates": n_critic_updates,
       "target_kl": target_kl,
       "learning_rate": learning_rate,
-      "gae_lambda": gae_lambda,
-      "policy_kwargs": dict(
-          net_arch=net_arch,
-          activation_fn=activation_fn,
-      ),
       "n_quantiles": n_quantiles,
       "truncation_threshold": truncation_threshold,
       "n_value_networks": n_value_networks,
