@@ -1,17 +1,29 @@
+Pendulum-v1:
+  n_envs: 2
+  n_timesteps: !!float 1e5
+  policy: 'MlpPolicy'
+  n_steps: 1024
+  gamma: 0.9
+  n_critic_updates: 15
+  use_sde: True
+  sde_sample_freq: 4
+
+#Tuned
 LunarLanderContinuous-v3:
   n_envs: 2
   n_timesteps: !!float 1e5
   policy: 'MlpPolicy'
-  batch_size: 8
+  batch_size: 64
   n_steps: 1024
-  gamma: 0.9999
-  learning_rate: 0.0003470874261704972
-  n_critic_updates: 30
-  cg_max_steps: 10
-  target_kl: 0.001
+  gamma: 0.995
+  learning_rate: 0.0031
+  n_critic_updates: 5
+  cg_max_steps: 5
+  target_kl: 0.01
   gae_lambda: 0.92
-  ent_coef: 0.0008
-
+  net_arch: medium
+  activation_fn: relu
+  ent_coef: 0.001
 
 Ant-v5:
   normalize: true

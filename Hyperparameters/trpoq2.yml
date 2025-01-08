@@ -3,19 +3,18 @@ LunarLanderContinuous-v3:
   n_envs: 2
   n_timesteps: !!float 1e5
   policy: 'MlpPolicy'
-  batch_size: 256
-  n_steps: 512
-  gamma: 0.9999
-  learning_rate: 0.001177
-  n_critic_updates: 25
+  batch_size: 8
+  n_steps: 2048
+  gamma: 0.995
+  learning_rate: !!float 4.7615e-05
+  n_critic_updates: 30
   cg_max_steps: 5
   target_kl: 0.001
-  gae_lambda: 0.98
-  net_arch: medium
-  activation_fn: relu
   n_quantiles: 50
   truncation_threshold: 20
-  n_value_networks': 7
+  n_value_networks: 5
+  adaptive_truncation: True
+  penalty_coef: 0.0026
 
 Ant-v5:
   normalize: true

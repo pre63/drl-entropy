@@ -5,7 +5,7 @@ model = ppo # Default model to train
 optimize = False # Default to not optimize hyperparameters
 
 zoology = entrpo entrpor trpor trpo ppo tqc sac
-zoologyenvs = LunarLanderContinuous-v3 Ant-v5 Humanoid-v3 InvertedDoublePendulum-v5 RocketLander-v0
+zoologyenvs = Pendulum-v1 Ant-v5 Humanoid-v3 InvertedDoublePendulum-v5 LunarLanderContinuous-v3 RocketLander-v0
 
 default: install
 

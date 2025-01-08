@@ -1,27 +1,28 @@
+# Tuned
 Pendulum-v1:
-  normalize: true
   n_envs: 2
   n_timesteps: !!float 1e5
   policy: 'MlpPolicy'
   n_steps: 1024
-  n_critic_updates: 20
+  gamma: 0.9
+  n_critic_updates: 15
+  use_sde: True
+  sde_sample_freq: 4
 
 # Tuned
 LunarLanderContinuous-v3:
-  batch_size: 16
-  n_steps: 512
-  gamma: 0.9
-  learning_rate: 1.814676598388671e-05
+  policy: 'MlpPolicy'
+  n_envs: 2
+  batch_size: 32
+  n_steps: 2048
+  gamma: 0.995
+  learning_rate: 0.0014
   n_critic_updates: 20
   cg_max_steps: 25
-  target_kl: 0.03
-  gae_lambda: 0.98
-  net_arch: small
+  target_kl: 0.01
+  gae_lambda: 0.92
+  net_arch: medium
   activation_fn: relu
-  ent_coef: 0.0001
-  buffer_capacity: 93000
-  max_env_reward: 350.0
-  reward_threshold: 0.92
 
 Ant-v5:
   normalize: true
@@ -37,7 +38,6 @@ Ant-v5:
   cg_damping: 0.1
   n_critic_updates: 20
   learning_rate: !!float 1e-3
-  ent_coef: 0.01
 
 Humanoid-v3:
   normalize: true
@@ -53,7 +53,6 @@ Humanoid-v3:
   cg_damping: 0.1
   n_critic_updates: 20
   learning_rate: !!float 1e-3
-  ent_coef: 0.01
 
 InvertedDoublePendulum-v5:
   normalize: true
@@ -69,7 +68,6 @@ InvertedDoublePendulum-v5:
   cg_damping: 0.1
   n_critic_updates: 20
   learning_rate: !!float 1e-3
-  ent_coef: 0.01
 
 RocketLander-v0:
   normalize: true
@@ -85,5 +83,4 @@ RocketLander-v0:
   cg_damping: 0.1
   n_critic_updates: 20
   learning_rate: !!float 1e-3
-  ent_coef: 0.01
 

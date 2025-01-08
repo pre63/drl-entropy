@@ -221,7 +221,7 @@ class EnTRPOR(TRPO):
     self.logger.record("train/n_updates", self._n_updates, exclude="tensorboard")
 
 
-def sample_entrpor_params(trial, total_timesteps):
+def sample_entrpor_params(trial, n_actions, n_envs, additional_args):
   # Define the EnTRPOR-specific optimization space
   params = {
       "policy": "MlpPolicy",
@@ -234,6 +234,9 @@ def sample_entrpor_params(trial, total_timesteps):
       "line_search_max_iter": trial.suggest_int("line_search_max_iter", 5, 15, step=5),
       "n_steps": trial.suggest_categorical("n_steps", [1024, 2048, 4096]),
       "batch_size": trial.suggest_int("batch_size", 32, 256, step=32),
-      "total_timesteps": total_timesteps
+      "total_timesteps": total_timesteps,
+      "n_envs": n_envs,
+      "n_actions": n_actions,
+      **additional_args,
   }
   return params
