@@ -44,9 +44,9 @@ def configure(**params):
       "max_total_trials": None,
       "optimize_hyperparameters": False,
       "no_optim_plots": False,
-      "n_jobs": 1,
+      "n_jobs": 2,
       "sampler": "tpe",
-      "pruner": "median",
+      "pruner": "halving",
       "n_startup_trials": 10,
       "n_evaluations": None,
       "storage": None,
@@ -113,7 +113,7 @@ def configure(**params):
     os.mkdir(optuna_dir) if not os.path.exists(optuna_dir) else None
     storage = JournalStorage(JournalFileBackend(f"{optuna_dir}/storage"))
     args['storage'] = storage
-    
+
     study_name = f"{args['algo']}_{args['env']}_study"
     args['study_name'] = study_name
 

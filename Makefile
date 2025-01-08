@@ -1,6 +1,5 @@
 SHELL := /bin/sh
 
-envs = 4 # Default number of environments per trial
 model = ppo # Default model to train
 optimize = False # Default to not optimize hyperparameters
 
@@ -44,10 +43,10 @@ clean:
 	@rm -rf .venv
 
 train:
-	@echo "Will train model $(model) on environment $(env) for $(envs) environments and we will optimize hyperparameters: $(optimize)"
+	@echo "Will train model $(model) on environment $(env) and we will optimize hyperparameters: $(optimize)"
 	@mkdir -p .logs
 	@mkdir -p .optuna-zoo
-	@. .venv/bin/activate && PYTHONPATH=. python zoo/train.py --model=$(model) --envs=$(envs) --env=$(env) --optimize=$(optimize) | tee -a .logs/zoo-$(model)-$(shell date +"%Y%m%d").log
+	@. .venv/bin/activate && PYTHONPATH=. python zoo/train.py --model=$(model) --env=$(env) --optimize=$(optimize) | tee -a .logs/zoo-$(model)-$(shell date +"%Y%m%d").log
 
 train-zoo:
 	@echo "Will train all models in zoo"

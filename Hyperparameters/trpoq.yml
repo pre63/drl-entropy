@@ -8,7 +8,6 @@ Pendulum-v1:
   gae_lambda: 0.95
   n_critic_updates: 10
   learning_rate: !!float 3e-4
-  ent_coef: 0.0
 
 # Tuned
 LunarLanderContinuous-v3:
@@ -41,7 +40,6 @@ Ant-v5:
   cg_damping: 0.1
   n_critic_updates: 20
   learning_rate: !!float 1e-3
-  ent_coef: 0.01
 
 Humanoid-v3:
   normalize: true
@@ -57,7 +55,6 @@ Humanoid-v3:
   cg_damping: 0.1
   n_critic_updates: 20
   learning_rate: !!float 1e-3
-  ent_coef: 0.01
 
 InvertedDoublePendulum-v5:
   normalize: true
@@ -73,7 +70,6 @@ InvertedDoublePendulum-v5:
   cg_damping: 0.1
   n_critic_updates: 20
   learning_rate: !!float 1e-3
-  ent_coef: 0.01
 
 RocketLander-v0:
   normalize: true
@@ -89,5 +85,4 @@ RocketLander-v0:
   cg_damping: 0.1
   n_critic_updates: 20
   learning_rate: !!float 1e-3
-  ent_coef: 0.01
 

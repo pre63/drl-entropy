@@ -31,7 +31,6 @@ Ant-v5:
   n_critic_updates: 20
   learning_rate: !!float 1e-3
 
-
 Humanoid-v3:
   normalize: true
   n_envs: 2
@@ -46,7 +45,6 @@ Humanoid-v3:
   cg_damping: 0.1
   n_critic_updates: 20
   learning_rate: !!float 1e-3
-
 
 InvertedDoublePendulum-v5:
   normalize: true
@@ -63,7 +61,6 @@ InvertedDoublePendulum-v5:
   n_critic_updates: 20
   learning_rate: !!float 1e-3
 
-
 RocketLander-v0:
   normalize: true
   n_envs: 2
@@ -78,5 +75,4 @@ RocketLander-v0:
   cg_damping: 0.1
   n_critic_updates: 20
   learning_rate: !!float 1e-3
-
 

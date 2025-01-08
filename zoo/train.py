@@ -40,11 +40,12 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument("--model", type=str, default="ppo")
   parser.add_argument("--env", type=str, default="LunarLanderContinuous-v3")
-  parser.add_argument("--envs", type=int, default=4)
+  parser.add_argument("--envs", type=int, default=10)
   parser.add_argument("--device", type=str, default="cpu")
   parser.add_argument("--optimize", type=bool, default=True)
   parser.add_argument("--conf_file", type=str, default=None)
-  parser.add_argument("--trials", type=int, default=100)
+  parser.add_argument("--trials", type=int, default=40)
+  parser.add_argument("--n_jobs", type=int, default=10)
   parser.add_argument("--n_timesteps", type=int, default=100000)
 
   params = parser.parse_args()
@@ -63,4 +64,5 @@ if __name__ == "__main__":
       conf_file=conf_file,
       n_trials=params.trials,
       n_timesteps=params.n_timesteps,
+      n_jobs=params.n_jobs,
   )
