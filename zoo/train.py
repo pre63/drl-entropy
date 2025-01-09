@@ -4,6 +4,9 @@ import argparse
 import rl_zoo3
 import rl_zoo3.train
 
+# Register Environments
+import Environments 
+
 from sbx import SAC, TQC
 
 from Models.EnTRPO.EnTRPO import EnTRPO, sample_entrpo_params

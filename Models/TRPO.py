@@ -1,3 +1,4 @@
+import torch as th
 from typing import Any, ClassVar, Dict, List, Optional, Tuple, Type, TypeVar, Union
 
 from stable_baselines3.common.buffers import RolloutBuffer

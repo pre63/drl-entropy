@@ -50,7 +50,7 @@ Writing report to logs/trpoq/report_LunarLanderContinuous-v3_500-trials-100000-t
 
 import copy
 from functools import partial
-from typing import TypeVar, Union
+from typing import TypeVar, Union, Type, List, Dict, Any
 
 import numpy as np
 import torch as th
@@ -68,21 +68,7 @@ from Models.TRPO import TRPO
 
 SelfTRPO = TypeVar("SelfTRPO", bound="TRPO")
 
-
-class QuantileValueNetwork(nn.Module):
-  def __init__(self, state_dim, n_quantiles=25):
-    super().__init__()
-    self.n_quantiles = n_quantiles
-    self.network = nn.Sequential(
-        nn.Linear(state_dim, 64),
-        nn.ReLU(),
-        nn.Linear(64, 64),
-        nn.ReLU(),
-        nn.Linear(64, n_quantiles)
-    )
-
-  def forward(self, state):
-    return self.network(state)
+from Models.TRPOQ.Network import QuantileValueNetwork, optimize_hyperparameters
 
 
 class TRPOQ(TRPO):
@@ -123,6 +109,8 @@ class TRPOQ(TRPO):
       n_quantiles: int = 25,
       truncation_threshold: int = 5,
       n_value_networks: int = 3,
+      net_arch: List[int] = [64, 64],
+      activation_fn: Type[nn.Module] = nn.ReLU,
       **kwargs
   ):
     super().__init__(
@@ -140,9 +128,14 @@ class TRPOQ(TRPO):
 
     # Initialize multiple quantile-based value functions
     self.value_networks = nn.ModuleList([
-        QuantileValueNetwork(state_dim=env.observation_space.shape[0], n_quantiles=n_quantiles)
-        for _ in range(n_value_networks)
+        QuantileValueNetwork(
+            state_dim=env.observation_space.shape[0],
+            n_quantiles=n_quantiles,
+            net_arch=net_arch,
+            activation_fn=activation_fn
+        ) for _ in range(n_value_networks)
     ])
+
     self.value_optimizers = [th.optim.Adam(v.parameters(), lr=learning_rate) for v in self.value_networks]
 
   def _compute_truncated_value(self, states):
@@ -267,13 +260,14 @@ def sample_trpoq_params(trial, n_actions, n_envs, additional_args):
   target_kl = trial.suggest_categorical("target_kl", [0.1, 0.05, 0.03, 0.02, 0.01, 0.005, 0.001])
 
   # New hyperparameters for quantile-based value estimation
-  n_quantiles = trial.suggest_categorical("n_quantiles", [10, 25, 50, 100])
   truncation_threshold = trial.suggest_categorical("truncation_threshold", [5, 10, 20])
   n_value_networks = trial.suggest_categorical("n_value_networks", [3, 5, 7])
 
   # Adjust batch size if it exceeds n_steps
   if batch_size > n_steps:
     batch_size = n_steps
+
+  network_params = optimize_hyperparameters(trial)
 
   return {
       "n_steps": n_steps,
@@ -283,7 +277,7 @@ def sample_trpoq_params(trial, n_actions, n_envs, additional_args):
       "n_critic_updates": n_critic_updates,
       "target_kl": target_kl,
       "learning_rate": learning_rate,
-      "n_quantiles": n_quantiles,
       "truncation_threshold": truncation_threshold,
       "n_value_networks": n_value_networks,
+      **network_params,
   }

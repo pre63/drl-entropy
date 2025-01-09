@@ -36,7 +36,7 @@ Writing report to logs/trpoq2/report_LunarLanderContinuous-v3_500-trials-100000-
 
 import copy
 from functools import partial
-from typing import TypeVar, Union
+from typing import TypeVar, Union, List, Type
 
 import torch as th
 from gymnasium import spaces
@@ -51,21 +51,7 @@ from Models.TRPO import TRPO
 
 SelfTRPO = TypeVar("SelfTRPO", bound="TRPO")
 
-
-class QuantileValueNetwork(nn.Module):
-  def __init__(self, state_dim, n_quantiles=25):
-    super().__init__()
-    self.n_quantiles = n_quantiles
-    self.network = nn.Sequential(
-        nn.Linear(state_dim, 64),
-        nn.ReLU(),
-        nn.Linear(64, 64),
-        nn.ReLU(),
-        nn.Linear(64, n_quantiles)
-    )
-
-  def forward(self, state):
-    return self.network(state)
+from Models.TRPOQ.Network import QuantileValueNetwork, optimize_hyperparameters
 
 
 class TRPOQ2(TRPO):
@@ -89,6 +75,8 @@ class TRPOQ2(TRPO):
       n_value_networks: int = 3,
       adaptive_truncation: bool = True,
       penalty_coef: float = 0.01,
+      net_arch: List[int] = [64, 64],
+      activation_fn: Type[nn.Module] = nn.ReLU,
       **kwargs
   ):
     super().__init__(
@@ -108,12 +96,21 @@ class TRPOQ2(TRPO):
 
     # Initialize dual critics
     self.truncated_value_networks = nn.ModuleList([
-        QuantileValueNetwork(state_dim=env.observation_space.shape[0], n_quantiles=n_quantiles)
-        for _ in range(n_value_networks)
+        QuantileValueNetwork(
+            state_dim=env.observation_space.shape[0],
+            n_quantiles=n_quantiles,
+            net_arch=net_arch,
+            activation_fn=activation_fn
+        ) for _ in range(n_value_networks)
     ])
+
     self.standard_value_networks = nn.ModuleList([
-        QuantileValueNetwork(state_dim=env.observation_space.shape[0], n_quantiles=n_quantiles)
-        for _ in range(n_value_networks)
+        QuantileValueNetwork(
+            state_dim=env.observation_space.shape[0],
+            n_quantiles=n_quantiles,
+            net_arch=net_arch,
+            activation_fn=activation_fn
+        ) for _ in range(n_value_networks)
     ])
 
     self.truncated_value_optimizers = [th.optim.Adam(v.parameters(), lr=learning_rate) for v in self.truncated_value_networks]
@@ -223,7 +220,6 @@ class TRPOQ2(TRPO):
             value_optimizer.step()
 
 
-
 def sample_trpoq2_params(trial, n_actions, n_envs, additional_args):
   """
   Sampler for TRPO with Quantile Value Estimation hyperparameters.
@@ -244,7 +240,6 @@ def sample_trpoq2_params(trial, n_actions, n_envs, additional_args):
   target_kl = trial.suggest_categorical("target_kl", [0.1, 0.05, 0.03, 0.02, 0.01, 0.005, 0.001])
 
   # New hyperparameters for quantile-based value estimation
-  n_quantiles = trial.suggest_categorical("n_quantiles", [10, 25, 50, 100])
   truncation_threshold = trial.suggest_categorical("truncation_threshold", [5, 10, 20])
   n_value_networks = trial.suggest_categorical("n_value_networks", [3, 5, 7])
 
@@ -255,6 +250,8 @@ def sample_trpoq2_params(trial, n_actions, n_envs, additional_args):
   adaptive_truncation = trial.suggest_categorical("adaptive_truncation", [True, False])
   penalty_coef = trial.suggest_float("penalty_coef", 0.001, 0.1, log=True)
 
+  network_params = optimize_hyperparameters(trial)
+
   return {
       "n_steps": n_steps,
       "batch_size": batch_size,
@@ -263,9 +260,9 @@ def sample_trpoq2_params(trial, n_actions, n_envs, additional_args):
       "n_critic_updates": n_critic_updates,
       "target_kl": target_kl,
       "learning_rate": learning_rate,
-      "n_quantiles": n_quantiles,
       "truncation_threshold": truncation_threshold,
       "n_value_networks": n_value_networks,
       "adaptive_truncation": adaptive_truncation,
       "penalty_coef": penalty_coef
+      ** network_params,
   }
