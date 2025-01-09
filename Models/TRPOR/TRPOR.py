@@ -248,6 +248,7 @@ def sample_trpor_params(trial, n_actions, n_envs, additional_args):
   ent_coef = trial.suggest_float("ent_coef", 0.0, 0.001, step=0.0001)
 
   return {
+      "policy": "MlpPolicy",
       "ent_coef": ent_coef,
       "n_steps": n_steps,
       "batch_size": batch_size,

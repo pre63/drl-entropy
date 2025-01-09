@@ -1,6 +1,0 @@
-
-"""
-[I 2025-01-04 19:09:09,434] Trial 18 finished with value: 305.39028879999995 and parameters: {'gamma': 0.995, 'learning_rate': 0.004027297231178663, 'batch_size': 256, 'buffer_size': 100000, 'learning_starts': 1000, 'train_freq': 128, 'tau': 0.001, 'log_std_init': 0.34534828214352054, 'net_arch': 'medium', 'n_quantiles': 10, 'top_quantiles_to_drop_per_net': 4}. Best is trial 18 with value: 305.39028879999995.
-[W 2025-01-04 19:09:09,443] The parameter 'top_quantiles_to_drop_per_net' in trial#19 is sampled independently instead of being sampled by multivariate TPE sampler. (optimization performance may be degraded). You can suppress this warning by setting `warn_independent_sampling` to `False` in the constructor of `TPESampler`, if this independent sampling is intended behavior.
-[I 2025-01-05 14:35:45,160] Trial 138 finished with value: 313.55174580000005 and parameters: {'gamma': 0.995, 'learning_rate': 0.0009344027560811212, 'batch_size': 512, 'buffer_size': 1000000, 'learning_starts': 0, 'train_freq': 16, 'tau': 0.005, 'log_std_init': 0.11885727529981621, 'net_arch': 'medium', 'n_quantiles': 13, 'top_quantiles_to_drop_per_net': 2}. Best is trial 138 with value: 313.55174580000005.
-"""

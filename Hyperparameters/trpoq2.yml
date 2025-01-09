@@ -16,20 +16,21 @@ LunarLanderContinuous-v3:
   adaptive_truncation: True
   penalty_coef: 0.0026
 
+# Tuned
 Ant-v5:
-  normalize: true
-  n_envs: 2
-  n_timesteps: !!float 2e6
   policy: 'MlpPolicy'
-  batch_size: 128
-  n_steps: 1024
-  gamma: 0.99
-  gae_lambda: 0.95
-  sub_sampling_factor: 1
-  cg_max_steps: 25
-  cg_damping: 0.1
+  batch_size: 8
+  n_steps: 2048
+  gamma: 0.9999
+  learning_rate: 4.029072520738044e-05
   n_critic_updates: 20
-  learning_rate: !!float 1e-3
+  cg_max_steps: 5
+  target_kl: 0.001
+  n_quantiles: 50
+  truncation_threshold: 10
+  n_value_networks: 3
+  adaptive_truncation: False
+  penalty_coef: 0.0013900553786711622
 
 Humanoid-v3:
   normalize: true

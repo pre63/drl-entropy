@@ -130,7 +130,6 @@ class EnTRPO(TRPO):
       self.replay_buffer.clear()
 
 
-
 def sample_entrpo_params(trial, n_actions, n_envs, additional_args):
   """
   Sampler for EnTRPO hyperparameters using Optuna.
@@ -183,6 +182,7 @@ def sample_entrpo_params(trial, n_actions, n_envs, additional_args):
 
   # Returning the sampled hyperparameters as a dictionary
   return {
+      "policy": "MlpPolicy",
       "ent_coef": ent_coef,
       "n_steps": n_steps,
       "batch_size": batch_size,

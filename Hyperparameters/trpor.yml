@@ -10,13 +10,11 @@ Pendulum-v1:
 
 #Tuned
 LunarLanderContinuous-v3:
-  n_envs: 2
-  n_timesteps: !!float 1e5
   policy: 'MlpPolicy'
   batch_size: 64
   n_steps: 1024
   gamma: 0.995
-  learning_rate: 0.0031
+  learning_rate: 0.0030969654797129934
   n_critic_updates: 5
   cg_max_steps: 5
   target_kl: 0.01

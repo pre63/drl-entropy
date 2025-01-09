@@ -253,6 +253,7 @@ def sample_trpoq2_params(trial, n_actions, n_envs, additional_args):
   network_params = optimize_hyperparameters(trial)
 
   return {
+      "policy": "MlpPolicy",
       "n_steps": n_steps,
       "batch_size": batch_size,
       "gamma": gamma,
