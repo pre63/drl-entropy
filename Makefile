@@ -1,5 +1,7 @@
 SHELL := /bin/sh
 
+n_jobs = 2 # Default number of jobs to run in parallel
+envs = 4
 model = ppo # Default model to train
 optimize = False # Default to not optimize hyperparameters
 
@@ -40,7 +42,7 @@ train:
 	@echo "Will train model $(model) on environment $(env) and we will optimize hyperparameters: $(optimize)"
 	@mkdir -p .logs
 	@mkdir -p .optuna-zoo
-	@. .venv/bin/activate && PYTHONPATH=. python zoo/train.py --model=$(model) --env=$(env) --optimize=$(optimize) | tee -a .logs/zoo-$(model)-$(shell date +"%Y%m%d").log
+	@. .venv/bin/activate && PYTHONPATH=. python zoo/train.py --model=$(model) --env=$(env) --optimize=$(optimize) --envs=$(envs) --n_jobs=$(n_jobs) | tee -a .logs/zoo-$(model)-$(env)-$(shell date +"%Y%m%d").log
 
 train-zoo:
 	@echo "Will train all models in zoo"

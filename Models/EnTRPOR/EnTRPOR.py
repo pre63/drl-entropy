@@ -88,9 +88,9 @@ class EnTRPOR(TRPO):
     self.ent_coef = ent_coef
     self.tb_log_name = "EnTRPOR"
 
-  def learn(self, **params):
-    params["tb_log_name"] = self.tb_log_name
-    return super().learn(**params)
+  def learn(self, n_timesteps, callback, **learn_kwargs):
+    learn_kwargs["tb_log_name"] = self.tb_log_name
+    return super().learn(n_timesteps, callback, **learn_kwargs)
 
   def train(self) -> None:
     self.policy.set_training_mode(True)
