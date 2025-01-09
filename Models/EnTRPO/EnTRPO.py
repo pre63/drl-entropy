@@ -4,7 +4,7 @@ from stable_baselines3.common.distributions import kl_divergence
 from stable_baselines3.common.utils import explained_variance
 
 from sb3_contrib.common.utils import conjugate_gradient_solver
-from sb3_contrib.trpo.trpo import TRPO
+from Models.TRPO import TRPO
 
 
 from collections import deque

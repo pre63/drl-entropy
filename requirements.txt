@@ -5,6 +5,8 @@ matplotlib
 torch
 pandas
 seaborn
+mujoco-py
+box2d-py
 gymnasium
 gymnasium[box2d]
 gymnasium[classic_control]

@@ -26,10 +26,11 @@ models = {
 
 for model_name, value in models.items():
   model_class = value["model"]
-  sample = value["sample"] if "sample" in value else None
-
   rl_zoo3.ALGOS[model_name] = model_class
-  rl_zoo3.hyperparams_opt.HYPERPARAMS_SAMPLER[model_name] = sample
+  
+  sample = value["sample"] if "sample" in value else None
+  if sample is not None:
+    rl_zoo3.hyperparams_opt.HYPERPARAMS_SAMPLER[model_name] = sample
 
 
 rl_zoo3.train.ALGOS = rl_zoo3.ALGOS

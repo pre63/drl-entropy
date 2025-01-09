@@ -47,7 +47,7 @@ from torch import nn
 from torch.nn import functional as F
 
 from sb3_contrib.common.utils import conjugate_gradient_solver
-from sb3_contrib import TRPO
+from Models.TRPO import TRPO
 
 SelfTRPO = TypeVar("SelfTRPO", bound="TRPO")
 

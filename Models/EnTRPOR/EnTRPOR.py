@@ -5,7 +5,7 @@ from stable_baselines3.common.distributions import kl_divergence
 from stable_baselines3.common.utils import explained_variance
 
 from sb3_contrib.common.utils import conjugate_gradient_solver
-from sb3_contrib.trpo.trpo import TRPO
+from Models.TRPO import TRPO
 
 
 class EnTRPOR(TRPO):
@@ -76,15 +76,6 @@ class EnTRPOR(TRPO):
     - **Line Search:** Considers the entropy term while checking policy improvement.
     - **Logging:** Logs entropy-regularized objectives and KL divergence values.
 
-    Example:
-    --------
-    ```python
-    from sb3_contrib.trpo.trpo import TRPO
-    from sb3_contrib.trpo.entropor import EnTRPOR
-
-    model = EnTRPOR("MlpPolicy", "CartPole-v1", ent_coef=0.01, gamma=0.99)
-    model.learn(total_timesteps=100000)
-    ```
   """
 
   def __init__(
@@ -234,7 +225,6 @@ def sample_entrpor_params(trial, n_actions, n_envs, additional_args):
       "line_search_max_iter": trial.suggest_int("line_search_max_iter", 5, 15, step=5),
       "n_steps": trial.suggest_categorical("n_steps", [1024, 2048, 4096]),
       "batch_size": trial.suggest_int("batch_size", 32, 256, step=32),
-      "total_timesteps": total_timesteps,
       "n_envs": n_envs,
       "n_actions": n_actions,
       **additional_args,

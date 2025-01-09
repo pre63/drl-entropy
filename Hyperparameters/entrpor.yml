@@ -1,6 +1,5 @@
 Pendulum-v1:
   normalize: true
-  n_envs: 2
   n_timesteps: !!float 1e5
   policy: 'MlpPolicy'
   n_steps: 1024
@@ -8,7 +7,6 @@ Pendulum-v1:
 
 LunarLanderContinuous-v3:
   normalize: true
-  n_envs: 2
   n_timesteps: !!float 1e5
   policy: 'MlpPolicy'
   n_steps: 1024
@@ -16,7 +14,6 @@ LunarLanderContinuous-v3:
 
 Ant-v5:
   normalize: true
-  n_envs: 2
   n_timesteps: !!float 2e6
   policy: 'MlpPolicy'
   batch_size: 128
@@ -32,7 +29,6 @@ Ant-v5:
 
 Humanoid-v3:
   normalize: true
-  n_envs: 2
   n_timesteps: !!float 2e6
   policy: 'MlpPolicy'
   batch_size: 128
@@ -48,7 +44,6 @@ Humanoid-v3:
 
 InvertedDoublePendulum-v5:
   normalize: true
-  n_envs: 2
   n_timesteps: !!float 2e6
   policy: 'MlpPolicy'
   batch_size: 128
@@ -64,7 +59,6 @@ InvertedDoublePendulum-v5:
 
 RocketLander-v0:
   normalize: true
-  n_envs: 2
   n_timesteps: !!float 2e6
   policy: 'MlpPolicy'
   batch_size: 128
