@@ -31,12 +31,6 @@ venv:
 
 install: ubuntu mac venv
 
-sync:
-	aws s3 sync ./.logs s3://entrpo/.logs || true
-
-down:
-	aws s3 sync s3://entrpo/.logs ./.logs || true
-
 clean:
 	@echo "Cleaning up"
 	@rm -rf __pycache__/
@@ -59,9 +53,21 @@ train-zoo:
 		done; \
 	done
 
-train-exp:
+exp:
 	@mkdir -p .logs
 	@mkdir -p .optuna-zoo
 	@mkdir -p .logs/tensorboard
-	
-	@$(MAKE) train-zoo zoology="trpoq trpoq2"
+	@while true; do \
+		$(MAKE) train-zoo zoology="trpoq trpoq2" || true; \
+	done
+
+nightly:
+	@while true; do \
+		while read -r line; do \
+			model=$$(echo $$line | cut -d':' -f1); \
+			envs=$$(echo $$line | cut -d':' -f2); \
+			for env in $$envs; do \
+				$(MAKE) train model=$$model env=$$env optimize=True || echo "Training failed for $$model on $$env"; \
+			done; \
+		done < configs.txt; \
+	done
