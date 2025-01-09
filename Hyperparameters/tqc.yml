@@ -1,11 +1,11 @@
-Pendulum-v1:
-  n_timesteps: 20000
+Pendulum-v1
   policy: 'MlpPolicy'
+  n_timesteps: 100000
   learning_rate: !!float 1e-3
 
-LunarLanderContinuous-v3:
-  n_timesteps: !!float 5e5
+LunarLanderContinuous-v3
   policy: 'MlpPolicy'
+  n_timesteps: 100000
   learning_rate: lin_7.3e-4
   buffer_size: 1000000
   batch_size: 256
@@ -17,9 +17,9 @@ LunarLanderContinuous-v3:
   learning_starts: 10000
   policy_kwargs: "dict(net_arch=[400, 300])"
 
-Ant-v5:
-  n_timesteps: !!float 1e6
+Ant-v5
   policy: 'MlpPolicy'
+  n_timesteps: 100000
   learning_rate: lin_7.3e-4
   buffer_size: 1000000
   batch_size: 256
@@ -31,9 +31,9 @@ Ant-v5:
   learning_starts: 10000
   policy_kwargs: "dict(net_arch=[400, 300])"
 
-Humanoid-v3:
-  n_timesteps: !!float 1e6
+Humanoid-v3
   policy: 'MlpPolicy'
+  n_timesteps: 100000
   learning_rate: lin_7.3e-4
   buffer_size: 1000000
   batch_size: 256
@@ -45,9 +45,9 @@ Humanoid-v3:
   learning_starts: 10000
   policy_kwargs: "dict(net_arch=[400, 300])"
 
-InvertedDoublePendulum-v5:
-  n_timesteps: !!float 1e6
+InvertedDoublePendulum-v5
   policy: 'MlpPolicy'
+  n_timesteps: 100000
   learning_rate: lin_7.3e-4
   buffer_size: 1000000
   batch_size: 256
@@ -59,9 +59,9 @@ InvertedDoublePendulum-v5:
   learning_starts: 10000
   policy_kwargs: "dict(net_arch=[400, 300])"
 
-RocketLander-v0:
-  n_timesteps: !!float 1e6
+RocketLander-v0
   policy: 'MlpPolicy'
+  n_timesteps: 100000
   learning_rate: lin_7.3e-4
   buffer_size: 1000000
   batch_size: 256

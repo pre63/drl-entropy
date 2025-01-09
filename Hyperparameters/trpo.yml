@@ -1,8 +1,8 @@
 # Tuned
 Pendulum-v1:
-  n_envs: 2
-  n_timesteps: !!float 1e5
   policy: 'MlpPolicy'
+  n_timesteps: 100000
+  n_envs: 2
   n_steps: 1024
   gamma: 0.9
   n_critic_updates: 15
@@ -12,6 +12,7 @@ Pendulum-v1:
 # Tuned
 LunarLanderContinuous-v3:
   policy: 'MlpPolicy'
+  n_timesteps: 100000
   n_envs: 2
   batch_size: 32
   n_steps: 2048
@@ -25,10 +26,10 @@ LunarLanderContinuous-v3:
   activation_fn: relu
 
 Ant-v5:
+  policy: 'MlpPolicy'
+  n_timesteps: 100000
   normalize: true
   n_envs: 2
-  n_timesteps: !!float 2e6
-  policy: 'MlpPolicy'
   batch_size: 128
   n_steps: 1024
   gamma: 0.99
@@ -40,10 +41,10 @@ Ant-v5:
   learning_rate: !!float 1e-3
 
 Humanoid-v3:
+  policy: 'MlpPolicy'
+  n_timesteps: 100000
   normalize: true
   n_envs: 2
-  n_timesteps: !!float 2e6
-  policy: 'MlpPolicy'
   batch_size: 128
   n_steps: 1024
   gamma: 0.99
@@ -55,10 +56,10 @@ Humanoid-v3:
   learning_rate: !!float 1e-3
 
 InvertedDoublePendulum-v5:
+  policy: 'MlpPolicy'
+  n_timesteps: 100000
   normalize: true
   n_envs: 2
-  n_timesteps: !!float 2e6
-  policy: 'MlpPolicy'
   batch_size: 128
   n_steps: 1024
   gamma: 0.99
@@ -70,10 +71,10 @@ InvertedDoublePendulum-v5:
   learning_rate: !!float 1e-3
 
 RocketLander-v0:
+  policy: 'MlpPolicy'
+  n_timesteps: 100000
   normalize: true
   n_envs: 2
-  n_timesteps: !!float 2e6
-  policy: 'MlpPolicy'
   batch_size: 128
   n_steps: 1024
   gamma: 0.99
