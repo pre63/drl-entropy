@@ -6,7 +6,7 @@ from stable_baselines3.common.policies import ActorCriticPolicy
 from stable_baselines3.common.type_aliases import GymEnv, Schedule
 
 
-from sb3_contrib.trpo.trpo import TRPO
+from sb3_contrib import TRPO
 
 
 class TRPO(TRPO):
