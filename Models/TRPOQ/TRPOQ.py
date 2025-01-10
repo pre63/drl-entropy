@@ -45,7 +45,6 @@ class TRPOQ(TRPO):
         n_quantiles (int, optional): Number of quantiles used for value estimation. Defaults to 25.
         truncation_threshold (int, optional): Number of lower quantiles retained for conservative advantage estimation. Defaults to 5.
         n_value_networks (int, optional): Number of independent value networks used for ensemble estimation. Defaults to 3.
-        **kwargs: Additional arguments passed to the TRPO base class.
   """
 
   def __init__(

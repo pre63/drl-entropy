@@ -31,7 +31,6 @@ class TRPOQH(TRPO):
   - **Corrective Penalty:** Applies a penalty based on the difference between standard and truncated critic values to compensate for conservative bias.
   - **Multiple Value Networks:** Utilizes multiple critic networks for both standard and truncated values to reduce variance and improve stability.
   - **KL-Divergence Constraint:** Retains the core TRPO constraint to ensure policy stability.
-
   """
 
   def __init__(
@@ -202,8 +201,6 @@ class TRPOQHO(TRPO):
       batch_size: int = 128,
       gamma: float = 0.99,
       n_quantiles: int = 25,
-      truncation_threshold: int = 5,
-      adaptive_truncation: bool = True,
       kl_coef: float = 0.01,  # Replaces explicit line search
       net_arch: List[int] = [64, 64],
       activation_fn: Type[nn.Module] = nn.ReLU,
@@ -219,8 +216,6 @@ class TRPOQHO(TRPO):
         **kwargs
     )
     self.n_quantiles = n_quantiles
-    self.truncation_threshold = truncation_threshold
-    self.adaptive_truncation = adaptive_truncation
     self.kl_coef = kl_coef
 
     # Shared Critic Network with Dual Heads
@@ -324,8 +319,6 @@ def sample_trpoqho_params(trial, n_actions, n_envs, additional_args):
   # KL and Quantile Specific Hyperparameters
   kl_coef = trial.suggest_float("kl_coef", 0.001, 0.1, log=True)
   n_quantiles = trial.suggest_categorical("n_quantiles", [25, 50, 75])
-  truncation_threshold = trial.suggest_categorical("truncation_threshold", [5, 10, 15])
-  adaptive_truncation = trial.suggest_categorical("adaptive_truncation", [True, False])
 
   # Neural network architecture selection
   net_arch_type = trial.suggest_categorical("net_arch", ["small", "medium", "large"])
@@ -354,8 +347,6 @@ def sample_trpoqho_params(trial, n_actions, n_envs, additional_args):
       "learning_rate": learning_rate,
       "kl_coef": kl_coef,
       "n_quantiles": n_quantiles,
-      "truncation_threshold": truncation_threshold,
-      "adaptive_truncation": adaptive_truncation,
       "net_arch": net_arch,
       "activation_fn": activation_fn
   }
