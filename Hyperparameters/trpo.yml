@@ -25,20 +25,20 @@ LunarLanderContinuous-v3:
   net_arch: medium
   activation_fn: relu
 
+# Tuned
 Ant-v5:
   policy: 'MlpPolicy'
   n_timesteps: 100000
-  normalize: true
-  n_envs: 2
-  batch_size: 128
-  n_steps: 1024
-  gamma: 0.99
-  gae_lambda: 0.95
-  sub_sampling_factor: 1
-  cg_max_steps: 25
-  cg_damping: 0.1
-  n_critic_updates: 20
-  learning_rate: !!float 1e-3
+  batch_size: 16
+  n_steps: 32
+  gamma: 0.9
+  learning_rate: 0.00011660060746654879
+  n_critic_updates: 5
+  cg_max_steps: 30
+  target_kl: 0.001
+  gae_lambda: 0.92
+  net_arch: small
+  activation_fn: relu
 
 Humanoid-v3:
   policy: 'MlpPolicy'
@@ -55,20 +55,20 @@ Humanoid-v3:
   n_critic_updates: 20
   learning_rate: !!float 1e-3
 
+# Tuned
 InvertedDoublePendulum-v5:
   policy: 'MlpPolicy'
   n_timesteps: 100000
-  normalize: true
-  n_envs: 2
-  batch_size: 128
-  n_steps: 1024
-  gamma: 0.99
-  gae_lambda: 0.95
-  sub_sampling_factor: 1
+  batch_size: 256
+  n_steps: 512
+  gamma: 0.95
+  learning_rate: 0.002726187365030899
+  n_critic_updates: 5
   cg_max_steps: 25
-  cg_damping: 0.1
-  n_critic_updates: 20
-  learning_rate: !!float 1e-3
+  target_kl: 0.03
+  gae_lambda: 0.99
+  net_arch: medium
+  activation_fn: relu
 
 RocketLander-v0:
   policy: 'MlpPolicy'

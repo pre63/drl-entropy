@@ -12,33 +12,33 @@ Pendulum-v1:
 LunarLanderContinuous-v3:
   policy: 'MlpPolicy'
   n_timesteps: 100000
-  batch_size: 64
-  n_steps: 1024
-  gamma: 0.995
-  learning_rate: 0.0030969654797129934
+  batch_size: 512
+  n_steps: 2048
+  gamma: 0.99
+  learning_rate: 0.4187816982403694
   n_critic_updates: 5
-  cg_max_steps: 5
-  target_kl: 0.01
-  gae_lambda: 0.92
+  cg_max_steps: 20
+  target_kl: 0.001
+  gae_lambda: 0.98
   net_arch: medium
-  activation_fn: relu
-  ent_coef: 0.001
+  activation_fn: tanh
+  ent_coef: 0.0003
 
+# Tuned
 Ant-v5:
   policy: 'MlpPolicy'
   n_timesteps: 100000
-  normalize: true
-  n_envs: 2
   batch_size: 128
-  n_steps: 1024
-  gamma: 0.99
-  gae_lambda: 0.95
-  sub_sampling_factor: 1
-  cg_max_steps: 25
-  cg_damping: 0.1
-  n_critic_updates: 20
-  learning_rate: !!float 1e-3
-  ent_coef: 0.01
+  n_steps: 2048
+  gamma: 0.995
+  learning_rate: 0.06108209804429862
+  n_critic_updates: 10
+  cg_max_steps: 5
+  target_kl: 0.001
+  gae_lambda: 0.92
+  net_arch: medium
+  activation_fn: relu
+  ent_coef: 0.0008
 
 Humanoid-v3:
   policy: 'MlpPolicy'
@@ -56,21 +56,21 @@ Humanoid-v3:
   learning_rate: !!float 1e-3
   ent_coef: 0.01
 
+# Tuned
 InvertedDoublePendulum-v5:
   policy: 'MlpPolicy'
   n_timesteps: 100000
-  normalize: true
-  n_envs: 2
-  batch_size: 128
-  n_steps: 1024
-  gamma: 0.99
+  batch_size: 256
+  n_steps: 512
+  gamma: 0.9999
+  learning_rate: 0.026827220473667195
+  n_critic_updates: 25
+  cg_max_steps: 5
+  target_kl: 0.02
   gae_lambda: 0.95
-  sub_sampling_factor: 1
-  cg_max_steps: 25
-  cg_damping: 0.1
-  n_critic_updates: 20
-  learning_rate: !!float 1e-3
-  ent_coef: 0.01
+  net_arch: small
+  activation_fn: relu
+  ent_coef: 0.0004
 
 RocketLander-v0:
   policy: 'MlpPolicy'

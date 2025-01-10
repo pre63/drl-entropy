@@ -60,21 +60,24 @@ Humanoid-v3:
   learning_rate: !!float 1e-3
   ent_coef: 0.01
 
+  # Tuned
 InvertedDoublePendulum-v5:
   policy: 'MlpPolicy'
   n_timesteps: 100000
-  normalize: true
-  n_envs: 2
   batch_size: 128
   n_steps: 1024
-  gamma: 0.99
-  gae_lambda: 0.95
-  sub_sampling_factor: 1
+  gamma: 0.95
+  learning_rate: 4.7312097848953167e-05
+  n_critic_updates: 10
   cg_max_steps: 25
-  cg_damping: 0.1
-  n_critic_updates: 20
-  learning_rate: !!float 1e-3
-  ent_coef: 0.01
+  target_kl: 0.1
+  gae_lambda: 0.99
+  net_arch: small
+  activation_fn: relu
+  ent_coef: 0.0001
+  buffer_capacity: 56000
+  max_env_reward: 150.0
+  reward_threshold: 0.92
 
 RocketLander-v0:
   policy: 'MlpPolicy'
