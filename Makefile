@@ -1,4 +1,4 @@
-SHELL := /bin/sh
+SHELL := /bin/bash
 
 n_jobs = 2 # Default number of jobs to run in parallel
 envs = 4 # Default number of environments to train on
@@ -42,7 +42,7 @@ train:
 	@echo "Will train model $(model) on environment $(env) and we will optimize hyperparameters: $(optimize)"
 	@mkdir -p .logs
 	@mkdir -p .optuna-zoo
-	@. .venv/bin/activate && PYTHONPATH=. python zoo/train.py --model=$(model) --env=$(env) --optimize=$(optimize) --envs=$(envs) --n_jobs=$(n_jobs) | tee -a .logs/zoo-$(model)-$(env)-$(shell date +"%Y%m%d").log
+	@. .venv/bin/activate; PYTHONPATH=. python -u zoo/train.py --model=$(model) --env=$(env) --optimize=$(optimize) --envs=$(envs) --n_jobs=$(n_jobs) 2>&1 | tee -a .logs/zoo-$(model)-$(env)-$(shell date +"%Y%m%d").log
 
 train-zoo:
 	@echo "Will train all models in zoo"
@@ -65,3 +65,11 @@ nightly:
 			done; \
 		done < configs.txt; \
 	done
+
+
+
+plots:
+	@echo "Will plot all models in zoo"
+	@mkdir -p results/
+	@. .venv/bin/activate; PYTHONPATH=. python zoo/plots.py
+

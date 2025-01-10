@@ -14,6 +14,7 @@ from Models.TRPOQ.TRPOQ import TRPOQ, sample_trpoq_params
 from Models.TRPOQ.TRPOQ2 import TRPOQ2, sample_trpoq2_params
 from Models.TRPOR.TRPOR import TRPOR, sample_trpor_params
 from Models.EnTRPOR.EnTRPOR import EnTRPOR, sample_entrpor_params
+from Models.TRPOQ.TRPOQH import TRPOQH, sample_trpoqh_params, TRPOQHO, sample_trpoqho_params
 
 from zoo.configure import configure
 
@@ -23,6 +24,8 @@ models = {
     "trpoq2": {"model": TRPOQ2, "sample": sample_trpoq2_params},
     "trpor": {"model": TRPOR, "sample": sample_trpor_params},
     "entrpor": {"model": EnTRPOR, "sample": sample_entrpor_params},
+    "trpoqh": {"model": TRPOQH, "sample": sample_trpoqh_params},
+    "trpoqho": {"model": TRPOQHO, "sample": sample_trpoqho_params},
     "sac": {"model": SAC},
     "tqc": {"model": TQC},
 }

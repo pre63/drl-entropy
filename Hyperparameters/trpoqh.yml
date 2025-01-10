@@ -13,36 +13,31 @@ Pendulum-v1:
 LunarLanderContinuous-v3:
   policy: 'MlpPolicy'
   n_timesteps: 100000
-  n_envs: 2
-  batch_size: 8
-  n_steps: 2048
+  batch_size: 512
+  n_steps: 256
   gamma: 0.995
-  learning_rate: !!float 4.7615e-05
-  n_critic_updates: 30
-  cg_max_steps: 5
+  learning_rate: 0.8766740437252282
+  n_critic_updates: 25
+  cg_max_steps: 30
   target_kl: 0.001
   n_quantiles: 50
-  truncation_threshold: 20
+  truncation_threshold: 10
   n_value_networks: 5
-  adaptive_truncation: True
-  penalty_coef: 0.0026
 
 # Tuned
 Ant-v5:
   policy: 'MlpPolicy'
   n_timesteps: 100000
-  batch_size: 8
+  batch_size: 256
   n_steps: 2048
-  gamma: 0.9999
-  learning_rate: 4.029072520738044e-05
-  n_critic_updates: 20
+  gamma: 0.98
+  learning_rate: 0.09620160300295108
+  n_critic_updates: 10
   cg_max_steps: 5
   target_kl: 0.001
   n_quantiles: 50
-  truncation_threshold: 10
-  n_value_networks: 3
-  adaptive_truncation: False
-  penalty_coef: 0.0013900553786711622
+  truncation_threshold: 5
+  n_value_networks: 7
 
 Humanoid-v3:
   policy: 'MlpPolicy'
@@ -59,20 +54,20 @@ Humanoid-v3:
   n_critic_updates: 20
   learning_rate: !!float 1e-3
 
+# Tuned
 InvertedDoublePendulum-v5:
   policy: 'MlpPolicy'
   n_timesteps: 100000
-  normalize: true
-  n_envs: 2
-  batch_size: 128
+  batch_size: 512
   n_steps: 1024
-  gamma: 0.99
-  gae_lambda: 0.95
-  sub_sampling_factor: 1
-  cg_max_steps: 25
-  cg_damping: 0.1
+  gamma: 0.98
+  learning_rate: 4.0417035935389155e-05
   n_critic_updates: 20
-  learning_rate: !!float 1e-3
+  cg_max_steps: 20
+  target_kl: 0.1
+  n_quantiles: 50
+  truncation_threshold: 20
+  n_value_networks: 7
 
 RocketLander-v0:
   policy: 'MlpPolicy'
