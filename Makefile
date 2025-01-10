@@ -1,7 +1,7 @@
 SHELL := /bin/sh
 
 n_jobs = 2 # Default number of jobs to run in parallel
-envs = 4
+envs = 4 # Default number of environments to train on
 model = ppo # Default model to train
 optimize = False # Default to not optimize hyperparameters
 
@@ -53,14 +53,6 @@ train-zoo:
 		for model in $(zoology); do \
 			$(MAKE) train model=$$model env=$$env optimize=True || true; \
 		done; \
-	done
-
-exp:
-	@mkdir -p .logs
-	@mkdir -p .optuna-zoo
-	@mkdir -p .logs/tensorboard
-	@while true; do \
-		$(MAKE) train-zoo zoology="trpoq trpoq2" || true; \
 	done
 
 nightly:
