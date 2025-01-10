@@ -228,7 +228,6 @@ def sample_trpoq2_params(trial, n_actions, n_envs, additional_args):
       "truncation_threshold": truncation_threshold,
       "n_value_networks": n_value_networks,
       "adaptive_truncation": adaptive_truncation,
-      "penalty_coef": penalty_coef
-      ** network_params,
+      "penalty_coef": penalty_coef,
+      **network_params,
   }
-
