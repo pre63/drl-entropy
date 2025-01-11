@@ -1,5 +1,5 @@
 
-Pendulum-v1
+Pendulum-v1:
   policy: 'MlpPolicy'
   n_timesteps: 100000
   learning_rate: !!float 1e-3
@@ -17,7 +17,6 @@ LunarLanderContinuous-v3
   train_freq: 1
   gradient_steps: 1
   learning_starts: 10000
-  policy_kwargs: "dict(net_arch=[400, 300])"
 
 Ant-v5
   policy: 'MlpPolicy'
@@ -31,7 +30,6 @@ Ant-v5
   train_freq: 1
   gradient_steps: 1
   learning_starts: 10000
-  policy_kwargs: "dict(net_arch=[400, 300])"
 
 Humanoid-v3
   policy: 'MlpPolicy'
@@ -45,7 +43,6 @@ Humanoid-v3
   train_freq: 1
   gradient_steps: 1
   learning_starts: 10000
-  policy_kwargs: "dict(net_arch=[400, 300])"
 
 InvertedDoublePendulum-v5
   policy: 'MlpPolicy'
@@ -59,7 +56,6 @@ InvertedDoublePendulum-v5
   train_freq: 1
   gradient_steps: 1
   learning_starts: 10000
-  policy_kwargs: "dict(net_arch=[400, 300])"
 
 RocketLander-v0
   policy: 'MlpPolicy'
@@ -73,4 +69,3 @@ RocketLander-v0
   train_freq: 1
   gradient_steps: 1
   learning_starts: 10000
-  policy_kwargs: "dict(net_arch=[400, 300])"

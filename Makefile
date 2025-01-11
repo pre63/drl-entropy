@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
-n_jobs = 2 # Default number of jobs to run in parallel
-envs = 4 # Default number of environments to train on
+n_jobs = 10 # Default number of jobs to run in parallel
+envs = 2 # Default number of environments to train on
 model = ppo # Default model to train
 optimize = False # Default to not optimize hyperparameters
 

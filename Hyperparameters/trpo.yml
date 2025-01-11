@@ -70,18 +70,18 @@ InvertedDoublePendulum-v5:
   net_arch: medium
   activation_fn: relu
 
+# Tuned
 RocketLander-v0:
   policy: 'MlpPolicy'
   n_timesteps: 100000
-  normalize: true
-  n_envs: 2
-  batch_size: 128
-  n_steps: 1024
-  gamma: 0.99
-  gae_lambda: 0.95
-  sub_sampling_factor: 1
-  cg_max_steps: 25
-  cg_damping: 0.1
-  n_critic_updates: 20
-  learning_rate: !!float 1e-3
+    batch_size: 32
+    n_steps: 1024
+    gamma: 0.999
+    learning_rate: 1.1367854351821837e-05
+    n_critic_updates: 25
+    cg_max_steps: 20
+    target_kl: 0.05
+    gae_lambda: 0.92
+    net_arch: small
+    activation_fn: relu
 
