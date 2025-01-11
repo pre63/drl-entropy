@@ -4,6 +4,7 @@ n_jobs = 10 # Default number of jobs to run in parallel
 envs = 2 # Default number of environments to train on
 model = ppo # Default model to train
 optimize = False # Default to not optimize hyperparameters
+trials = 40 # Default number of trials for hyperparameter optimization
 
 zoology = entrpo entrpor trpor trpo ppo tqc sac
 zoologyenvs = Pendulum-v1 Ant-v5 Humanoid-v3 InvertedDoublePendulum-v5 LunarLanderContinuous-v3 RocketLander-v0
@@ -42,7 +43,7 @@ train:
 	@echo "Will train model $(model) on environment $(env) and we will optimize hyperparameters: $(optimize)"
 	@mkdir -p .logs
 	@mkdir -p .optuna-zoo
-	@. .venv/bin/activate; PYTHONPATH=. python -u zoo/train.py --model=$(model) --env=$(env) --optimize=$(optimize) --envs=$(envs) --n_jobs=$(n_jobs) 2>&1 | tee -a .logs/zoo-$(model)-$(env)-$(shell date +"%Y%m%d").log
+	@. .venv/bin/activate; PYTHONPATH=. python -u zoo/train.py --model=$(model) --env=$(env) --optimize=$(optimize) --envs=$(envs) --n_jobs=$(n_jobs) --trials=$(trials) 2>&1 | tee -a .logs/zoo-$(model)-$(env)-$(shell date +"%Y%m%d").log
 
 train-zoo:
 	@echo "Will train all models in zoo"

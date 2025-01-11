@@ -5,11 +5,11 @@ import rl_zoo3
 import rl_zoo3.train
 
 # Register Environments
-import Environments 
+import Environments
 
 from sbx import SAC, TQC
 
-from Models.EnTRPO.EnTRPO import EnTRPO, sample_entrpo_params
+from Models.EnTRPO.EnTRPO import EnTRPO, sample_entrpo_params, EnTRPOLow, EnTRPOHigh
 from Models.TRPOQ.TRPOQ import TRPOQ, sample_trpoq_params
 from Models.TRPOQ.TRPOQ2 import TRPOQ2, sample_trpoq2_params
 from Models.TRPOR.TRPOR import TRPOR, sample_trpor_params
@@ -20,6 +20,8 @@ from zoo.configure import configure
 
 models = {
     "entrpo": {"model": EnTRPO, "sample": sample_entrpo_params},
+    "entrpolow": {"model": EnTRPOLow, "sample": sample_entrpo_params},
+    "entrpohigh": {"model": EnTRPOHigh, "sample": sample_entrpo_params},
     "trpoq": {"model": TRPOQ, "sample": sample_trpoq_params},
     "trpoq2": {"model": TRPOQ2, "sample": sample_trpoq2_params},
     "trpor": {"model": TRPOR, "sample": sample_trpor_params},
@@ -33,7 +35,7 @@ models = {
 for model_name, value in models.items():
   model_class = value["model"]
   rl_zoo3.ALGOS[model_name] = model_class
-  
+
   sample = value["sample"] if "sample" in value else None
   if sample is not None:
     rl_zoo3.hyperparams_opt.HYPERPARAMS_SAMPLER[model_name] = sample

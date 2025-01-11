@@ -311,7 +311,6 @@ def sample_trpoqho_params(trial, n_actions, n_envs, additional_args):
   :param additional_args: Additional arguments for hyperparameter sampling
   :return: Dictionary of sampled hyperparameters for TRPOQHybridOptimized
   """
-  batch_size = trial.suggest_categorical("batch_size", [16, 32, 64, 128, 256])
   n_steps = trial.suggest_categorical("n_steps", [512, 1024, 2048])
   gamma = trial.suggest_categorical("gamma", [0.98, 0.99, 0.995])
   learning_rate = trial.suggest_float("learning_rate", 1e-5, 1e-2, log=True)
@@ -335,9 +334,7 @@ def sample_trpoqho_params(trial, n_actions, n_envs, additional_args):
       "relu": nn.ReLU
   }[activation_fn_name]
 
-  # Adjust batch size if it exceeds n_steps
-  if batch_size > n_steps:
-    batch_size = n_steps
+  batch_size = trial.suggest_categorical("batch_size", [8, 16, 32, 64, 128, 256, 512, 1024])
 
   return {
       "policy": "MlpPolicy",
@@ -365,7 +362,7 @@ def sample_trpoqh_params(trial, n_actions, n_envs, additional_args):
   :param additional_args: Additional arguments for hyperparameter sampling
   :return: Dictionary of sampled hyperparameters for TRPOQHybrid
   """
-  batch_size = trial.suggest_categorical("batch_size", [16, 32, 64, 128, 256])
+
   n_steps = trial.suggest_categorical("n_steps", [512, 1024, 2048])
   gamma = trial.suggest_categorical("gamma", [0.98, 0.99, 0.995])
   learning_rate = trial.suggest_float("learning_rate", 1e-5, 1e-2, log=True)
@@ -391,9 +388,7 @@ def sample_trpoqh_params(trial, n_actions, n_envs, additional_args):
       "relu": nn.ReLU
   }[activation_fn_name]
 
-  # Adjust batch size if it exceeds n_steps
-  if batch_size > n_steps:
-    batch_size = n_steps
+  batch_size = trial.suggest_categorical("batch_size", [8, 16, 32, 64, 128, 256, 512, 1024])
 
   return {
       "policy": "MlpPolicy",

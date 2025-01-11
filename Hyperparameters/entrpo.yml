@@ -1,5 +1,5 @@
 Pendulum-v1:
-  policy: 'MlpPolicy'
+  policy: "MlpPolicy"
   n_timesteps: 100000
   normalize: true
   n_envs: 2
@@ -8,7 +8,7 @@ Pendulum-v1:
 
 # Tuned
 LunarLanderContinuous-v3:
-  policy: 'MlpPolicy'
+  policy: "MlpPolicy"
   n_timesteps: 100000
   batch_size: 16
   n_steps: 512
@@ -22,12 +22,10 @@ LunarLanderContinuous-v3:
   activation_fn: relu
   ent_coef: 0.0001
   buffer_capacity: 93000
-  max_env_reward: 350.0
-  reward_threshold: 0.92
 
 # Tuned
 Ant-v5:
-  policy: 'MlpPolicy'
+  policy: "MlpPolicy"
   n_timesteps: 100000
   batch_size: 8
   n_steps: 256
@@ -41,11 +39,9 @@ Ant-v5:
   activation_fn: tanh
   ent_coef: 0.001
   buffer_capacity: 39000
-  max_env_reward: 200.0
-  reward_threshold: 0.9
 
 Humanoid-v3:
-  policy: 'MlpPolicy'
+  policy: "MlpPolicy"
   n_timesteps: 100000
   normalize: true
   n_envs: 2
@@ -62,7 +58,7 @@ Humanoid-v3:
 
   # Tuned
 InvertedDoublePendulum-v5:
-  policy: 'MlpPolicy'
+  policy: "MlpPolicy"
   n_timesteps: 100000
   batch_size: 128
   n_steps: 1024
@@ -76,12 +72,10 @@ InvertedDoublePendulum-v5:
   activation_fn: relu
   ent_coef: 0.0001
   buffer_capacity: 56000
-  max_env_reward: 150.0
-  reward_threshold: 0.92
 
 # Tuned
 RocketLander-v0:
-  policy: 'MlpPolicy'
+  policy: "MlpPolicy"
   n_timesteps: 100000
   batch_size: 256
   n_steps: 1024
@@ -97,4 +91,3 @@ RocketLander-v0:
   buffer_capacity: 48000
   max_env_reward: 950.0
   reward_threshold: 0.98
-
