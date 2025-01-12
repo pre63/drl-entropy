@@ -10,7 +10,7 @@ Ant-v5:
   policy: "MlpPolicy"
   n_timesteps: 100000
 
-Humanoid-v3:
+Humanoid-v5:
   policy: "MlpPolicy"
   n_timesteps: 100000
 

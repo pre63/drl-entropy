@@ -7,7 +7,7 @@ optimize = False # Default to not optimize hyperparameters
 trials = 40 # Default number of trials for hyperparameter optimization
 
 zoology = entrpo entrpor trpor trpo ppo tqc sac
-zoologyenvs = Pendulum-v1 Ant-v5 Humanoid-v3 InvertedDoublePendulum-v5 LunarLanderContinuous-v3 RocketLander-v0
+zoologyenvs = Pendulum-v1 Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5 LunarLanderContinuous-v3 RocketLander-v0
 
 default: install
 

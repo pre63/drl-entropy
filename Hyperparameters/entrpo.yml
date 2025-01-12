@@ -1,93 +1,23 @@
 Pendulum-v1:
   policy: "MlpPolicy"
   n_timesteps: 100000
-  normalize: true
-  n_envs: 2
-  n_steps: 1024
-  n_critic_updates: 20
 
-# Tuned
 LunarLanderContinuous-v3:
   policy: "MlpPolicy"
   n_timesteps: 100000
-  batch_size: 16
-  n_steps: 512
-  gamma: 0.9
-  learning_rate: 1.814676598388671e-05
-  n_critic_updates: 20
-  cg_max_steps: 25
-  target_kl: 0.03
-  gae_lambda: 0.98
-  net_arch: small
-  activation_fn: relu
-  ent_coef: 0.0001
-  buffer_capacity: 93000
 
-# Tuned
 Ant-v5:
   policy: "MlpPolicy"
   n_timesteps: 100000
-  batch_size: 8
-  n_steps: 256
-  gamma: 0.999
-  learning_rate: 1.5435081754277102e-05
-  n_critic_updates: 10
-  cg_max_steps: 20
-  target_kl: 0.001
-  gae_lambda: 0.8
-  net_arch: medium
-  activation_fn: tanh
-  ent_coef: 0.001
-  buffer_capacity: 39000
 
-Humanoid-v3:
+Humanoid-v5:
   policy: "MlpPolicy"
   n_timesteps: 100000
-  normalize: true
-  n_envs: 2
-  batch_size: 128
-  n_steps: 1024
-  gamma: 0.99
-  gae_lambda: 0.95
-  sub_sampling_factor: 1
-  cg_max_steps: 25
-  cg_damping: 0.1
-  n_critic_updates: 20
-  learning_rate: !!float 1e-3
-  ent_coef: 0.01
 
-  # Tuned
 InvertedDoublePendulum-v5:
   policy: "MlpPolicy"
   n_timesteps: 100000
-  batch_size: 128
-  n_steps: 1024
-  gamma: 0.95
-  learning_rate: 4.7312097848953167e-05
-  n_critic_updates: 10
-  cg_max_steps: 25
-  target_kl: 0.1
-  gae_lambda: 0.99
-  net_arch: small
-  activation_fn: relu
-  ent_coef: 0.0001
-  buffer_capacity: 56000
 
-# Tuned
 RocketLander-v0:
   policy: "MlpPolicy"
   n_timesteps: 100000
-  batch_size: 256
-  n_steps: 1024
-  gamma: 0.999
-  learning_rate: 0.001444049716631992
-  n_critic_updates: 10
-  cg_max_steps: 30
-  target_kl: 0.001
-  gae_lambda: 0.92
-  net_arch: small
-  activation_fn: tanh
-  ent_coef: 0.0006000000000000001
-  buffer_capacity: 48000
-  max_env_reward: 950.0
-  reward_threshold: 0.98

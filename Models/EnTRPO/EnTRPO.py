@@ -46,13 +46,17 @@ class ReplayBuffer:
     self.advantages.append(advantages.detach().clone())
     self.old_log_prob.append(old_log_prob.detach().clone())
 
-  def get(self, observations, actions, returns, advantages, old_log_prob):
+  def sample_extend(self, batch_size, observations, actions, returns, advantages, old_log_prob):
+    if len(self.observations) < batch_size:
+      return observations, actions, returns, advantages, old_log_prob
+
+    indices = random.sample(range(len(self.observations)), batch_size)
     return (
-        th.cat(list(self.observations) + [observations]),
-        th.cat(list(self.actions) + [actions]),
-        th.cat(list(self.returns) + [returns]),
-        th.cat(list(self.advantages) + [advantages]),
-        th.cat(list(self.old_log_prob) + [old_log_prob])
+        th.cat(th.stack([self.observations[i] for i in indices]), observations),
+        th.cat(th.stack([self.actions[i] for i in indices]), actions),
+        th.cat(th.stack([self.returns[i] for i in indices]), returns),
+        th.cat(th.stack([self.advantages[i] for i in indices]), advantages),
+        th.cat(th.stack([self.old_log_prob[i] for i in indices]), old_log_prob),
     )
 
   def clear(self):
@@ -156,13 +160,27 @@ class EnTRPO(TRPO):
       distribution = self.policy.get_distribution(observations)
       entropy_mean = distribution.entropy().mean().item()
 
+      # Here we implmnet hte alernate strategies, not part of EnTRPO specs initially
+      # depending on the 'direction' of the exploration based onthe entropy we add the 
+      # experience to from the replay buffer to the current batch
+      # the premise is that if the environment is unknown, we should replay more 
+      # or vice versa depending on low or high direction
       activate_high = self.replay_strategy_threshold > entropy_mean and self.replay_strategy == "HIGH"
       activate_low = self.replay_strategy_threshold < entropy_mean and self.replay_strategy == "LOW"
 
       if activate_high or activate_low:
-        observations, actions, returns, advantages, old_log_prob = self.replay_buffer.get(
-            observations, actions, returns, advantages, old_log_prob
-        )
+        # Sample data from the replay buffer and 
+        # concatenate with the current rollout data,
+        # effectively doubling the batch size
+        data = self.replay_buffer.sample_extend(
+            self.batch_size,
+            observations,
+            actions,
+            returns,
+            advantages,
+            old_log_prob)
+
+        observations, actions, returns, advantages, old_log_prob = data
 
       # Add the current rollout data to the replay buffer for next iteration
       self.replay_buffer.add(rollout_data.observations, rollout_data.actions, rollout_data.returns,
@@ -189,8 +207,13 @@ class EnTRPO(TRPO):
 
       # surrogate policy objective
       if self.replay_strategy == "EnTRPO":
+        # Entropy regularization on the advantage
+        # this is the EnTRPO implementation
         policy_objective = (advantages * ratio).mean() + self.ent_coef * distribution.entropy().mean()
       else:
+        # Alternative way of using entropy os to use it to guide 
+        # experience replay sampling based on how unknown or known 
+        # the environment is represented by the distribution
         policy_objective = (advantages * ratio).mean()
 
       # KL divergence

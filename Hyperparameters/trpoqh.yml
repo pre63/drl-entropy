@@ -39,20 +39,9 @@ Ant-v5:
   truncation_threshold: 5
   n_value_networks: 7
 
-Humanoid-v3:
+Humanoid-v5:
   policy: 'MlpPolicy'
   n_timesteps: 100000
-  normalize: true
-  n_envs: 2
-  batch_size: 128
-  n_steps: 1024
-  gamma: 0.99
-  gae_lambda: 0.95
-  sub_sampling_factor: 1
-  cg_max_steps: 25
-  cg_damping: 0.1
-  n_critic_updates: 20
-  learning_rate: !!float 1e-3
 
 # Tuned
 InvertedDoublePendulum-v5:
