@@ -22,3 +22,5 @@ jax
 jax[cuda12]
 plotly==6.0.0rc0
 scikit-learn
+isort
+autopep8

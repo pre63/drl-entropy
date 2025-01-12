@@ -1,20 +1,13 @@
 import os
 import pickle
 import shutil
+
+import matplotlib.pyplot as plt
 import numpy as np
 import optuna
-import matplotlib.pyplot as plt
-from optuna.visualization import (
-    plot_contour,
-    plot_edf,
-    plot_intermediate_values,
-    plot_optimization_history,
-    plot_parallel_coordinate,
-    plot_param_importances,
-    plot_rank,
-    plot_slice,
-    plot_timeline
-)
+from optuna.visualization import (plot_contour, plot_edf, plot_intermediate_values,
+                                  plot_optimization_history, plot_parallel_coordinate,
+                                  plot_param_importances, plot_rank, plot_slice, plot_timeline)
 
 
 def load_and_copy_studies(folder_path, result_path):

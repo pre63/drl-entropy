@@ -1,6 +1,6 @@
 
-import numpy as np
 import gymnasium as gym
+import numpy as np
 
 
 def make_lunar_lander(reward_strategy="default", render_mode=None, continuous=True):
@@ -120,9 +120,6 @@ def combined_reward(state, reward, action, done, info):
   efficiency_weight = 1 - proximity_weight
 
   return proximity_weight * proximity + efficiency_weight * efficiency
-
-
-import numpy as np
 
 
 def check_success(observation,

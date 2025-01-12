@@ -1,21 +1,20 @@
 import copy
 from functools import partial
-from typing import TypeVar, Union, List, Type
+from typing import List, Type, TypeVar, Union
 
 import torch as th
 from gymnasium import spaces
+from sb3_contrib.common.utils import conjugate_gradient_solver
 from stable_baselines3.common.distributions import kl_divergence
 from stable_baselines3.common.policies import ActorCriticPolicy
 from stable_baselines3.common.type_aliases import GymEnv, Schedule
 from torch import nn
 from torch.nn import functional as F
 
-from sb3_contrib.common.utils import conjugate_gradient_solver
 from Models.TRPO import TRPO
+from Models.TRPOQ.Network import QuantileValueNetwork, optimize_hyperparameters
 
 SelfTRPO = TypeVar("SelfTRPO", bound="TRPO")
-
-from Models.TRPOQ.Network import QuantileValueNetwork, optimize_hyperparameters
 
 
 class TRPOQ2(TRPO):

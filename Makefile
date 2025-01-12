@@ -34,6 +34,10 @@ venv:
 
 install: ubuntu mac venv
 
+fix:
+	@echo "Will run autopep8 and isort"
+	@. .venv/bin/activate && isort --multi-line=0 --line-length=100 . && autopep8 -r . --in-place --aggressive
+
 clean:
 	@echo "Cleaning up"
 	@rm -rf __pycache__/
@@ -57,6 +61,7 @@ train-zoo:
 	done
 
 nightly:
+	@$(MAKE) fix
 	@while true; do \
 		while read -r line; do \
 			model=$$(echo $$line | cut -d':' -f1); \

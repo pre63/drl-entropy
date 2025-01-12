@@ -1,10 +1,9 @@
 import torch as th
-from torch import nn
-
+from sb3_contrib.common.utils import conjugate_gradient_solver
 from stable_baselines3.common.distributions import kl_divergence
 from stable_baselines3.common.utils import explained_variance
+from torch import nn
 
-from sb3_contrib.common.utils import conjugate_gradient_solver
 from Models.TRPO import TRPO
 
 

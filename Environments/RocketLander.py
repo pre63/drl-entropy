@@ -29,22 +29,13 @@ __credits__ = ["Subhajit Das"]
 
 from typing import TYPE_CHECKING, Optional
 
-import numpy as np
-
+import Box2D
 import gymnasium as gym
+import numpy as np
+from Box2D.b2 import (circleShape, contactListener, distanceJointDef, edgeShape, fixtureDef,
+                      polygonShape, revoluteJointDef)
 from gymnasium import spaces
 from gymnasium.error import DependencyNotInstalled
-import Box2D
-from Box2D.b2 import (
-    circleShape,
-    contactListener,
-    edgeShape,
-    fixtureDef,
-    polygonShape,
-    revoluteJointDef,
-    distanceJointDef
-)
-
 
 VEL_STATE = True  # Add velocity info to state
 FPS = 60

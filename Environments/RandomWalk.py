@@ -4,17 +4,18 @@ https://github.com/mimoralea/gym-walk
 """
 
 import sys
-import numpy as np
-from six import StringIO
 from string import ascii_uppercase
 from typing import Optional
-import matplotlib.pyplot as plt
-import seaborn as sns
-import pygame
 
 import gymnasium as gym
+import matplotlib.pyplot as plt
+import numpy as np
+import pygame
+import seaborn as sns
 from gymnasium import spaces, utils
 from gymnasium.envs.toy_text.utils import categorical_sample
+from six import StringIO
+
 WEST, EAST = 0, 1
 
 
@@ -22,7 +23,7 @@ class WalkEnv(gym.Env):
   """
   Random Walk Environment for Reinforcement Learning.
 
-  Defaults are meant to be hard enough to create an environment where we can train a model without 
+  Defaults are meant to be hard enough to create an environment where we can train a model without
   it randomly converging to the optimal policy.
 
   The environment represents a 1D grid with a start state, terminal states at both ends,

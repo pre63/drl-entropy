@@ -1,12 +1,10 @@
-import torch as th
 from typing import Any, ClassVar, Dict, List, Optional, Tuple, Type, TypeVar, Union
 
+import torch as th
+from sb3_contrib import TRPO
 from stable_baselines3.common.buffers import RolloutBuffer
 from stable_baselines3.common.policies import ActorCriticPolicy
 from stable_baselines3.common.type_aliases import GymEnv, Schedule
-
-
-from sb3_contrib import TRPO
 
 
 class TRPO(TRPO):

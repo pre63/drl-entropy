@@ -1,28 +1,27 @@
 import copy
 from functools import partial
-from typing import TypeVar, Union, List, Type
+from typing import List, Type, TypeVar, Union
 
 import torch as th
 from gymnasium import spaces
+from sb3_contrib.common.utils import conjugate_gradient_solver
 from stable_baselines3.common.distributions import kl_divergence
 from stable_baselines3.common.policies import ActorCriticPolicy
 from stable_baselines3.common.type_aliases import GymEnv, Schedule
 from torch import nn
 from torch.nn import functional as F
 
-from sb3_contrib.common.utils import conjugate_gradient_solver
 from Models.TRPO import TRPO
+from Models.TRPOQ.Network import QuantileValueNetwork, optimize_hyperparameters
 
 SelfTRPO = TypeVar("SelfTRPO", bound="TRPO")
-
-from Models.TRPOQ.Network import QuantileValueNetwork, optimize_hyperparameters
 
 
 class TRPOQH(TRPO):
   """
   Trust Region Policy Optimization with Quantile-Based Value Estimation (TRPOQ-Hybrid).
 
-  TRPOQ-Hybrid extends standard TRPO by introducing dual critics, adaptive truncation, 
+  TRPOQ-Hybrid extends standard TRPO by introducing dual critics, adaptive truncation,
   and corrective penalties to control overestimation bias in continuous control tasks.
 
   Key Features:
@@ -179,8 +178,8 @@ class TRPOQHO(TRPO):
   """
   Trust Region Policy Optimization with Quantile-Based Value Estimation (TRPOQ-Hybrid Optimized).
 
-  TRPOQ-Hybrid Optimized is an advanced policy optimization algorithm that combines elements of 
-  TRPO and quantile regression with several efficiency improvements. It is designed to reduce overestimation 
+  TRPOQ-Hybrid Optimized is an advanced policy optimization algorithm that combines elements of
+  TRPO and quantile regression with several efficiency improvements. It is designed to reduce overestimation
   bias while maintaining computational efficiency and policy stability.
 
   Key Features:
@@ -353,7 +352,7 @@ def sample_trpoqh_params(trial, n_actions, n_envs, additional_args):
   """
   Hyperparameter sampler for TRPOQHybrid using Optuna.
 
-  This method samples hyperparameters for TRPOQHybrid, focusing on dual critics, 
+  This method samples hyperparameters for TRPOQHybrid, focusing on dual critics,
   adaptive truncation, and corrective penalties for enhanced policy stability.
 
   :param trial: Optuna trial object

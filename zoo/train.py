@@ -1,21 +1,18 @@
-import os
 import argparse
+import os
 
 import rl_zoo3
 import rl_zoo3.train
+from sbx import SAC, TQC
 
 # Register Environments
 import Environments
-
-from sbx import SAC, TQC
-
-from Models.EnTRPO.EnTRPO import EnTRPO, sample_entrpo_params, EnTRPOLow, EnTRPOHigh
+from Models.EnTRPO.EnTRPO import EnTRPO, EnTRPOHigh, EnTRPOLow, sample_entrpo_params
+from Models.EnTRPOR.EnTRPOR import EnTRPOR, sample_entrpor_params
 from Models.TRPOQ.TRPOQ import TRPOQ, sample_trpoq_params
 from Models.TRPOQ.TRPOQ2 import TRPOQ2, sample_trpoq2_params
+from Models.TRPOQ.TRPOQH import TRPOQH, TRPOQHO, sample_trpoqh_params, sample_trpoqho_params
 from Models.TRPOR.TRPOR import TRPOR, sample_trpor_params
-from Models.EnTRPOR.EnTRPOR import EnTRPOR, sample_entrpor_params
-from Models.TRPOQ.TRPOQH import TRPOQH, sample_trpoqh_params, TRPOQHO, sample_trpoqho_params
-
 from zoo.configure import configure
 
 models = {

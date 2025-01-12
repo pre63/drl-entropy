@@ -1,6 +1,6 @@
-from Environments.RocketLander import RocketLander
-
 from gymnasium.envs.registration import register
+
+from Environments.RocketLander import RocketLander
 
 register(
     id="RocketLander-v0",

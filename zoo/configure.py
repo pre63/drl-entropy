@@ -6,17 +6,15 @@ import uuid
 
 import gymnasium as gym
 import numpy as np
-import stable_baselines3 as sb3
-import torch as th
-from stable_baselines3.common.utils import set_random_seed
-
 # Register custom environments
 import rl_zoo3.import_envs  # noqa: F401
-from rl_zoo3.exp_manager import ExperimentManager
-from rl_zoo3.utils import ALGOS
-
+import stable_baselines3 as sb3
+import torch as th
 from optuna.storages import JournalStorage
 from optuna.storages.journal import JournalFileBackend
+from rl_zoo3.exp_manager import ExperimentManager
+from rl_zoo3.utils import ALGOS
+from stable_baselines3.common.utils import set_random_seed
 
 
 def configure(**params):

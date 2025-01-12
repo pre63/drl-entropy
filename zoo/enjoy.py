@@ -5,10 +5,10 @@ from rl_zoo3.enjoy import enjoy
 from sbx import SAC, TQC
 
 from Models.EnTRPO.EnTRPO import EnTRPO, sample_entrpo_params
+from Models.EnTRPOR.EnTRPOR import EnTRPOR, sample_entrpor_params
 from Models.TRPOQ.TRPOQ import TRPOQ, sample_trpoq_params
 from Models.TRPOQ.TRPOQ2 import TRPOQ2
 from Models.TRPOR.TRPOR import TRPOR, sample_trpor_params
-from Models.EnTRPOR.EnTRPOR import EnTRPOR, sample_entrpor_params
 
 models = {
     "entrpo": {"model": EnTRPO, "sample": sample_entrpo_params},

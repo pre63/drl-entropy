@@ -3,16 +3,14 @@ from functools import partial
 from typing import Any, ClassVar, Optional, TypeVar, Union
 
 import torch as th
-from torch import nn
-from torch.nn import functional as F
-
 from gymnasium import spaces
-
+from sb3_contrib.common.utils import conjugate_gradient_solver
 from stable_baselines3.common.distributions import kl_divergence
 from stable_baselines3.common.type_aliases import RolloutBufferSamples
 from stable_baselines3.common.utils import explained_variance
+from torch import nn
+from torch.nn import functional as F
 
-from sb3_contrib.common.utils import conjugate_gradient_solver
 from Models.TRPO import TRPO
 
 SelfTRPOR = TypeVar("SelfTRPOR", bound="TRPOR")

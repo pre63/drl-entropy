@@ -1,28 +1,26 @@
 import copy
+import random
 import warnings
+from collections import deque
 from functools import partial
 from typing import Any, ClassVar, Optional, TypeVar, Union
 
 import numpy as np
 import torch as th
 from gymnasium import spaces
+from sb3_contrib.common.utils import conjugate_gradient_solver, flat_grad
+from sb3_contrib.trpo.policies import CnnPolicy, MlpPolicy, MultiInputPolicy
 from stable_baselines3.common.buffers import RolloutBuffer
 from stable_baselines3.common.distributions import kl_divergence
 from stable_baselines3.common.on_policy_algorithm import OnPolicyAlgorithm
 from stable_baselines3.common.policies import ActorCriticPolicy, BasePolicy
-from stable_baselines3.common.type_aliases import GymEnv, MaybeCallback, RolloutBufferSamples, Schedule
+from stable_baselines3.common.type_aliases import (GymEnv, MaybeCallback, RolloutBufferSamples,
+                                                   Schedule)
 from stable_baselines3.common.utils import explained_variance
 from torch import nn
 from torch.nn import functional as F
 
-from sb3_contrib.common.utils import conjugate_gradient_solver, flat_grad
-from sb3_contrib.trpo.policies import CnnPolicy, MlpPolicy, MultiInputPolicy
-
 from Models.TRPO import TRPO
-
-
-from collections import deque
-import random
 
 
 class ReplayBuffer:
@@ -161,15 +159,15 @@ class EnTRPO(TRPO):
       entropy_mean = distribution.entropy().mean().item()
 
       # Here we implmnet hte alernate strategies, not part of EnTRPO specs initially
-      # depending on the 'direction' of the exploration based onthe entropy we add the 
+      # depending on the 'direction' of the exploration based onthe entropy we add the
       # experience to from the replay buffer to the current batch
-      # the premise is that if the environment is unknown, we should replay more 
+      # the premise is that if the environment is unknown, we should replay more
       # or vice versa depending on low or high direction
       activate_high = self.replay_strategy_threshold > entropy_mean and self.replay_strategy == "HIGH"
       activate_low = self.replay_strategy_threshold < entropy_mean and self.replay_strategy == "LOW"
 
       if activate_high or activate_low:
-        # Sample data from the replay buffer and 
+        # Sample data from the replay buffer and
         # concatenate with the current rollout data,
         # effectively doubling the batch size
         data = self.replay_buffer.sample_extend(
@@ -211,8 +209,8 @@ class EnTRPO(TRPO):
         # this is the EnTRPO implementation
         policy_objective = (advantages * ratio).mean() + self.ent_coef * distribution.entropy().mean()
       else:
-        # Alternative way of using entropy os to use it to guide 
-        # experience replay sampling based on how unknown or known 
+        # Alternative way of using entropy os to use it to guide
+        # experience replay sampling based on how unknown or known
         # the environment is represented by the distribution
         policy_objective = (advantages * ratio).mean()
 
@@ -341,7 +339,7 @@ def sample_entrpo_params(trial, n_actions, n_envs, additional_args):
   Sampler for EnTRPO hyperparameters using Optuna.
 
   This function generates hyperparameters for the Entropy-Regularized Trust Region Policy Optimization (EnTRPO).
-  The hyperparameters control aspects such as batch size, number of steps per update, entropy regularization, 
+  The hyperparameters control aspects such as batch size, number of steps per update, entropy regularization,
   and neural network architecture.
 
   :param trial: An Optuna trial object used for hyperparameter sampling.
