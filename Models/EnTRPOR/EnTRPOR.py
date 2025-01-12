@@ -59,15 +59,6 @@ class EnTRPOR(TRPO):
     target_kl : float, optional
         Target KL divergence for policy updates (default: 0.01).
 
-    Methods:
-    --------
-    learn(**params)
-        Trains the agent with the specified parameters, logging results under `"EnTRPOR"`.
-
-    train()
-        Performs a single policy update using the KL-constrained optimization approach
-        with entropy regularization.
-
     Differences from Standard TRPO:
     -------------------------------
     - **Entropy Bonus:** Adds entropy to the policy objective for better exploration.
