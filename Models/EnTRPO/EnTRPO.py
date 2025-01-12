@@ -350,7 +350,7 @@ def sample_entrpo_params(trial, n_actions, n_envs, additional_args):
   """
   # Sampling core hyperparameters
   n_steps = trial.suggest_categorical("n_steps", [8, 16, 32, 64, 128, 256, 512, 1024, 2048])
-  gamma = trial.suggest_categorical("gamma", [0.9, 0.95, 0.98, 0.99, 0.995, 0.999, 0.9999])
+  gamma = trial.suggest_categorical("gamma", [0.8, 0.85, 0.9, 0.95, 0.99])
   learning_rate = trial.suggest_float("learning_rate", 1e-5, 1, log=True)
   n_critic_updates = trial.suggest_categorical("n_critic_updates", [5, 10, 20, 25, 30])
   cg_max_steps = trial.suggest_categorical("cg_max_steps", [5, 10, 20, 25, 30])
@@ -385,10 +385,9 @@ def sample_entrpo_params(trial, n_actions, n_envs, additional_args):
   # EnTRPO: replay all untill buffer clears
   # HIGH: replay when the entropy exceeeds a threshold
   # LOW: replay when the entropy is below a threshold
-  replay_strategy = trial.suggest_categorical("replay_strategy", ["EnTRPO", "HIGH", "LOW"])
   replay_strategy_threshold = trial.suggest_float("replay_strategy_threshold", -10, 10)
 
-  epsilon = trial.suggest_float("epsilon", 0.1, 0.3, step=0.05)
+  epsilon = trial.suggest_float("epsilon", 0.1, 0.9, step=0.05)
 
   # Returning the sampled hyperparameters as a dictionary
   return {
