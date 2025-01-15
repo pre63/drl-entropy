@@ -1,14 +1,17 @@
 Pendulum-v1:
   policy: "MlpPolicy"
   n_timesteps: 100000
+  reward_threshold: -3.0
 
 LunarLanderContinuous-v3:
   policy: "MlpPolicy"
   n_timesteps: 100000
+  reward_threshold: 195
 
 Ant-v5:
   policy: "MlpPolicy"
   n_timesteps: 100000
+  reward_threshold: 1000
 
 # Tuned
 Humanoid-v5:
@@ -26,6 +29,7 @@ Humanoid-v5:
   vf_coef: 0.6478550290553781
   net_arch: medium
   activation_fn: tanh
+  reward_threshold: 450
 
 # Tuned
 InvertedDoublePendulum-v5:
@@ -43,7 +47,9 @@ InvertedDoublePendulum-v5:
   vf_coef: 0.8335472464784038
   net_arch: medium
   activation_fn: tanh
+  reward_threshold: 410
 
 RocketLander-v0:
   policy: "MlpPolicy"
   n_timesteps: 100000
+  reward_threshold: -3.0

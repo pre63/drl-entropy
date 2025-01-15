@@ -1,14 +1,17 @@
 Pendulum-v1:
   policy: "MlpPolicy"
   n_timesteps: 100000
+  reward_threshold: -3.0
 
 LunarLanderContinuous-v3:
   policy: "MlpPolicy"
   n_timesteps: 100000
+  reward_threshold: 195
 
 Ant-v5:
   policy: "MlpPolicy"
   n_timesteps: 100000
+  reward_threshold: 1000
 
 Humanoid-v5:
   policy: "MlpPolicy"
@@ -32,7 +35,9 @@ Humanoid-v5:
 InvertedDoublePendulum-v5:
   policy: "MlpPolicy"
   n_timesteps: 100000
+  reward_threshold: 410
 
 RocketLander-v0:
   policy: "MlpPolicy"
   n_timesteps: 100000
+  reward_threshold: -3.0

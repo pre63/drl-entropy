@@ -1,11 +1,13 @@
 Pendulum-v1:
   policy: "MlpPolicy"
   n_timesteps: 100000
+  reward_threshold: -3.0
 
 # Tuned
 LunarLanderContinuous-v3:
   policy: "MlpPolicy"
   n_timesteps: 100000
+  reward_threshold: 300.0
   n_steps: 2048
   gamma: 0.99
   learning_rate: 0.0014690394043123287
@@ -18,7 +20,6 @@ LunarLanderContinuous-v3:
   activation_fn: tanh
   ent_coef: 0.0009000000000000001
   buffer_capacity: 20000
-  reward_threshold: 300.0
   replay_strategy_threshold: -4.105715891723701
   epsilon: 0.4
 
@@ -81,7 +82,6 @@ InvertedDoublePendulum-v5:
   reward_threshold: 400.0
   replay_strategy_threshold: 7.361296528960423
   epsilon: 0.35
-
 
 # Tuned
 RocketLander-v0:

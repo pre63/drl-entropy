@@ -116,6 +116,7 @@ def configure(**params):
     args['study_name'] = study_name
 
   print(f"Timesteps: {args['n_timesteps']}")
+
   # Initialize the experiment manager
   exp_manager = ExperimentManager(
       args=args,
@@ -165,6 +166,8 @@ def configure(**params):
       exp_manager.save_trained_model(model)
   else:
     exp_manager.hyperparameters_optimization()
+
+  return exp_manager
 
 
 # Example usage
