@@ -1,6 +1,6 @@
 trpo: Humanoid-v5
 trpoqho: InvertedDoublePendulum-v5
-ppo: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5 LunarLanderContinuous-v3 RocketLander-v0
+ppo: Ant-v5 LunarLanderContinuous-v3 RocketLander-v0
 tqc: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5 LunarLanderContinuous-v3 RocketLander-v0
 sac: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5 LunarLanderContinuous-v3 RocketLander-v0
 entrpohigh: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5 LunarLanderContinuous-v3 RocketLander-v0

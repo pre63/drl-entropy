@@ -10,13 +10,39 @@ Ant-v5:
   policy: "MlpPolicy"
   n_timesteps: 100000
 
+# Tuned
 Humanoid-v5:
   policy: "MlpPolicy"
   n_timesteps: 100000
+  batch_size: 32
+  n_steps: 1024
+  gamma: 0.9999
+  learning_rate: 5.952941145071963e-05
+  ent_coef: 0.09916620755875631
+  clip_range: 0.1
+  n_epochs: 5
+  gae_lambda: 0.9
+  max_grad_norm: 0.8
+  vf_coef: 0.6478550290553781
+  net_arch: medium
+  activation_fn: tanh
 
+# Tuned
 InvertedDoublePendulum-v5:
   policy: "MlpPolicy"
   n_timesteps: 100000
+  batch_size: 8
+  n_steps: 512
+  gamma: 0.99
+  learning_rate: 0.0002076880765596658
+  ent_coef: 0.0022800737277672723
+  clip_range: 0.4
+  n_epochs: 5
+  gae_lambda: 0.8
+  max_grad_norm: 0.7
+  vf_coef: 0.8335472464784038
+  net_arch: medium
+  activation_fn: tanh
 
 RocketLander-v0:
   policy: "MlpPolicy"

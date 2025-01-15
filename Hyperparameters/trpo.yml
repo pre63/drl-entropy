@@ -40,9 +40,20 @@ Ant-v5:
   net_arch: small
   activation_fn: relu
 
+# Tuned
 Humanoid-v5:
   policy: 'MlpPolicy'
   n_timesteps: 100000
+  batch_size: 256
+  n_steps: 32
+  gamma: 0.999
+  learning_rate: 0.07439215571634901
+  n_critic_updates: 20
+  cg_max_steps: 5
+  target_kl: 0.02
+  gae_lambda: 0.92
+  net_arch: small
+  activation_fn: tanh
 
 # Tuned
 InvertedDoublePendulum-v5:
