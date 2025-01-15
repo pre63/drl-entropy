@@ -21,52 +21,95 @@ from torch import nn
 from torch.nn import functional as F
 
 from Models.TRPO import TRPO
-
-
 class ReplayBuffer:
   """
-  A simple replay buffer for storing and retrieving tensors with minimal complexity.
+  A replay buffer with optional Prioritized Experience Replay (PER).
   """
 
-  def __init__(self, capacity):
+  def __init__(self, capacity: int, use_per: bool = False):
+    """
+    Initialize the replay buffer.
+
+    Args:
+        capacity (int): Maximum number of items the buffer can hold.
+        use_per (bool): Whether to use Prioritized Experience Replay (PER).
+    """
     self.capacity = capacity
+    self.use_per = use_per
     self.observations = deque(maxlen=capacity)
     self.actions = deque(maxlen=capacity)
     self.returns = deque(maxlen=capacity)
     self.advantages = deque(maxlen=capacity)
     self.old_log_prob = deque(maxlen=capacity)
+    self.cumulative_rewards = deque(maxlen=capacity)  # Required only for PER
 
-  def add(self, observations, actions, returns, advantages, old_log_prob):
-    """Add a batch of transitions to the buffer."""
-    self.observations.append(observations.detach().clone())
-    self.actions.append(actions.detach().clone())
-    self.returns.append(returns.detach().clone())
-    self.advantages.append(advantages.detach().clone())
-    self.old_log_prob.append(old_log_prob.detach().clone())
+  def add(self, observations: th.Tensor, actions: th.Tensor, returns: th.Tensor, advantages: th.Tensor, old_log_prob: th.Tensor):
+    """
+    Add a batch of transitions to the buffer. Stores cumulative rewards if PER is enabled.
 
-  def sample_extend(self, batch_size, observations, actions, returns, advantages, old_log_prob):
+    Args:
+        observations, actions, returns, advantages, old_log_prob (th.Tensor): Tensors for the experience batch.
+    """
+    batch_size = observations.shape[0]
+    cumulative_reward = returns.sum().item()  # Calculate cumulative reward
+
+    for i in range(batch_size):
+      self.observations.append(observations[i].detach().clone())
+      self.actions.append(actions[i].detach().clone())
+      self.returns.append(returns[i].detach().clone())
+      self.advantages.append(advantages[i].detach().clone())
+      self.old_log_prob.append(old_log_prob[i].detach().clone())
+      if self.use_per:
+        self.cumulative_rewards.append(cumulative_reward)
+
+  def sample_extend(self, batch_size: int, observations: th.Tensor, actions: th.Tensor, returns: th.Tensor, advantages: th.Tensor, old_log_prob: th.Tensor):
+    """
+    Sample a batch of transitions and extend the provided tensors with the sampled batch.
+
+    If PER is enabled, experiences are sampled based on cumulative rewards.
+    If PER is disabled, experiences are randomly sampled.
+
+    Args:
+        batch_size (int): Number of samples to retrieve.
+    """
     if len(self.observations) < batch_size:
       return observations, actions, returns, advantages, old_log_prob
 
-    indices = random.sample(range(len(self.observations)), batch_size)
-    return (
-        th.cat(th.stack([self.observations[i] for i in indices]), observations),
-        th.cat(th.stack([self.actions[i] for i in indices]), actions),
-        th.cat(th.stack([self.returns[i] for i in indices]), returns),
-        th.cat(th.stack([self.advantages[i] for i in indices]), advantages),
-        th.cat(th.stack([self.old_log_prob[i] for i in indices]), old_log_prob),
-    )
+    # Use PER if enabled, otherwise random sampling
+    if self.use_per:
+      rewards_tensor = th.tensor(self.cumulative_rewards, dtype=th.float32)
+      sampling_probs = th.softmax(rewards_tensor, dim=0).numpy()  # Softmax for stability
+      indices = np.random.choice(len(self.observations), batch_size, p=sampling_probs)
+    else:
+      indices = random.sample(range(len(self.observations)), batch_size)
+
+    # Collect the sampled experiences
+    sampled_observations = th.stack([self.observations[i] for i in indices])
+    sampled_actions = th.stack([self.actions[i] for i in indices])
+    sampled_returns = th.stack([self.returns[i] for i in indices])
+    sampled_advantages = th.stack([self.advantages[i] for i in indices])
+    sampled_old_log_prob = th.stack([self.old_log_prob[i] for i in indices])
+
+    # Concatenate with the incoming batch
+    observations = th.cat([observations, sampled_observations], dim=0)
+    actions = th.cat([actions, sampled_actions], dim=0)
+    returns = th.cat([returns, sampled_returns], dim=0)
+    advantages = th.cat([advantages, sampled_advantages], dim=0)
+    old_log_prob = th.cat([old_log_prob, sampled_old_log_prob], dim=0)
+
+    return observations, actions, returns, advantages, old_log_prob
 
   def clear(self):
-    """Clear all stored data."""
+    """ Clear all stored data in the buffer. """
     self.observations.clear()
     self.actions.clear()
     self.returns.clear()
     self.advantages.clear()
     self.old_log_prob.clear()
+    self.cumulative_rewards.clear()
 
   def __len__(self):
-    """Return the current size of the buffer."""
+    """ Return the current size of the buffer. """
     return len(self.observations)
 
 
@@ -101,13 +144,14 @@ class EnTRPO(TRPO):
       replay_strategy="EnTRPO",
       replay_strategy_threshold=0.0,
       batch_size=32,
+      use_per=False,
       **kwargs
   ):
     super().__init__(*args, **kwargs)
 
     self.epsilon = epsilon
     self.ent_coef = ent_coef
-    self.replay_buffer = ReplayBuffer(capacity=buffer_capacity)
+    self.replay_buffer = ReplayBuffer(capacity=buffer_capacity, use_per=use_per)
     self.batch_size = batch_size
     self.reward_threshold = reward_threshold
     self.replay_strategy = replay_strategy
@@ -389,10 +433,15 @@ def sample_entrpo_params(trial, n_actions, n_envs, additional_args):
 
   epsilon = trial.suggest_float("epsilon", 0.1, 0.9, step=0.05)
 
+  use_per = trial.suggest_categorical("use_per", [True, False])
+
+  orthogonal_init = trial.suggest_categorical("orthogonal_init", [True, False])
+
   # Returning the sampled hyperparameters as a dictionary
   return {
       "policy": "MlpPolicy",
       "epsilon": epsilon,
+      "use_per": use_per,
       "ent_coef": ent_coef,
       "n_steps": n_steps,
       "batch_size": batch_size,
@@ -408,7 +457,7 @@ def sample_entrpo_params(trial, n_actions, n_envs, additional_args):
       "policy_kwargs": dict(
           net_arch=net_arch,
           activation_fn=activation_fn,
-          ortho_init=False,  # Fixed for simplicity but can be made tunable
+          ortho_init=orthogonal_init,
       ),
       **additional_args,
   }
