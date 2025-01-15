@@ -48,20 +48,24 @@ Humanoid-v5:
   policy: 'MlpPolicy'
   n_timesteps: 100000
 
+# Tuned
 InvertedDoublePendulum-v5:
   policy: 'MlpPolicy'
   n_timesteps: 100000
-  normalize: true
-  n_envs: 2
-  batch_size: 128
   n_steps: 1024
-  gamma: 0.99
-  gae_lambda: 0.95
-  sub_sampling_factor: 1
-  cg_max_steps: 25
-  cg_damping: 0.1
-  n_critic_updates: 20
-  learning_rate: !!float 1e-3
+  gamma: 0.999
+  learning_rate: 0.038357854080139184
+  batch_size: 256
+  n_critic_updates: 10
+  cg_max_steps: 30
+  target_kl: 0.05
+  truncation_threshold: 20
+  n_value_networks: 5
+  adaptive_truncation: False
+  penalty_coef: 0.09663036337420812
+  net_arch: small
+  activation_fn: relu
+  n_quantiles: 25
 
 RocketLander-v0:
   policy: 'MlpPolicy'

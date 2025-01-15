@@ -47,16 +47,18 @@ Humanoid-v5:
 InvertedDoublePendulum-v5:
   policy: 'MlpPolicy'
   n_timesteps: 100000
-  batch_size: 512
   n_steps: 1024
-  gamma: 0.98
-  learning_rate: 4.0417035935389155e-05
-  n_critic_updates: 20
+  gamma: 0.995
+  learning_rate: 0.004344331454565199
+  batch_size: 8
+  n_critic_updates: 10
   cg_max_steps: 20
-  target_kl: 0.1
-  n_quantiles: 50
+  target_kl: 0.01
   truncation_threshold: 20
-  n_value_networks: 7
+  n_value_networks: 3
+  net_arch: medium
+  activation_fn: tanh
+  n_quantiles: 10
 
 RocketLander-v0:
   policy: 'MlpPolicy'

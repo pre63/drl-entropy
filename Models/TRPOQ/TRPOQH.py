@@ -8,6 +8,7 @@ from sb3_contrib.common.utils import conjugate_gradient_solver
 from stable_baselines3.common.distributions import kl_divergence
 from stable_baselines3.common.policies import ActorCriticPolicy
 from stable_baselines3.common.type_aliases import GymEnv, Schedule
+from stable_baselines3.common.utils import explained_variance
 from torch import nn
 from torch.nn import functional as F
 

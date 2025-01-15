@@ -40,9 +40,21 @@ Ant-v5:
   activation_fn: relu
   ent_coef: 0.0008
 
+# Tuned
 Humanoid-v5:
   policy: 'MlpPolicy'
   n_timesteps: 100000
+  n_steps: 256
+  gamma: 0.9999
+  learning_rate: 0.001981986604251018
+  n_critic_updates: 5
+  cg_max_steps: 20
+  target_kl: 0.03
+  gae_lambda: 0.8
+  net_arch: small
+  activation_fn: tanh
+  batch_size: 16
+  ent_coef: 0.0005
 
 # Tuned
 InvertedDoublePendulum-v5:
