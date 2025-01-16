@@ -4,7 +4,7 @@ from stable_baselines3.common.distributions import kl_divergence
 from stable_baselines3.common.utils import explained_variance
 from torch import nn
 
-from Models.TRPO import TRPO
+from Models.SB3 import TRPO
 
 
 class EnTRPOR(TRPO):

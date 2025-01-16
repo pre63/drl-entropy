@@ -13,7 +13,7 @@ from stable_baselines3.common.utils import explained_variance
 from torch import nn
 from torch.nn import functional as F
 
-from Models.TRPO import TRPO
+from Models.SB3 import TRPO
 from Models.TRPOQ.Network import QuantileValueNetwork, optimize_hyperparameters
 
 SelfTRPO = TypeVar("SelfTRPO", bound="TRPO")

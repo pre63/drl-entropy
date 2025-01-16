@@ -44,6 +44,7 @@ from stable_baselines3.common.vec_env import (DummyVecEnv, SubprocVecEnv, VecEnv
 # For custom activation fn
 from torch import nn as nn
 
+
 class ExperimentManager(ExperimentManager):
   def learn(self, model: BaseAlgorithm) -> None:
     """

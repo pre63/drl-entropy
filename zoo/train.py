@@ -14,8 +14,8 @@ from sbx import SAC, TQC
 import Environments
 from Models.EnTRPO.EnTRPO import EnTRPO, EnTRPOHigh, EnTRPOLow, sample_entrpo_params
 from Models.EnTRPOR.EnTRPOR import EnTRPOR, sample_entrpor_params
-from Models.PPO import PPO
-from Models.TRPO import TRPO
+from Models.SB3 import PPO, TRPO
+from Models.SBX import SAC, TQC
 from Models.TRPOQ.TRPOQ import TRPOQ, sample_trpoq_params
 from Models.TRPOQ.TRPOQ2 import TRPOQ2, sample_trpoq2_params
 from Models.TRPOQ.TRPOQH import TRPOQH, TRPOQHO, sample_trpoqh_params, sample_trpoqho_params
