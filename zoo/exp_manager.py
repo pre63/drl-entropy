@@ -44,7 +44,6 @@ from stable_baselines3.common.vec_env import (DummyVecEnv, SubprocVecEnv, VecEnv
 # For custom activation fn
 from torch import nn as nn
 
-
 class ExperimentManager(ExperimentManager):
   def learn(self, model: BaseAlgorithm) -> None:
     """
@@ -62,17 +61,13 @@ class ExperimentManager(ExperimentManager):
     self.training_rewards = []
 
     try:
-      # Custom callback to log rewards and timesteps during training
+      # Custom callback to log rewards at the end of each episode
       def reward_logger(locals_, globals_):
-        env = locals_['self'].env
-        if hasattr(env, 'get_attr'):  # VecEnv
-          rewards = env.get_attr('rewards')
-        else:
-          rewards = [info['reward'] for info in locals_['infos']]
+        infos = locals_['infos']  # Access environment info
 
-        if isinstance(rewards[0], list):
-          rewards = [item for sublist in rewards for item in sublist]
-        self.training_rewards.extend(rewards)
+        # Extract episode rewards from 'infos'
+        episode_rewards = [info['episode']['r'] for info in infos if 'episode' in info]
+        self.training_rewards.extend(episode_rewards)
         return True
 
       # Use the custom reward logger

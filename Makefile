@@ -10,7 +10,7 @@ trials = 40 # Default number of trials for hyperparameter optimization
 n_timesteps=1000000 # Default number of timesteps to train for
 
 zoology = entrpo entrpor tqc trpoq2 trpor entrpohigh ppo trpo trpoqh entrpolow sac trpoq trpoqho
-zoologyenvs = Pendulum-v1 Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5 LunarLanderContinuous-v3 RocketLander-v0
+zoologyenvs = Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5 LunarLanderContinuous-v3 RocketLander-v0 Pendulum-v1
 
 default: install
 
@@ -94,13 +94,13 @@ nightly:
 train-eval:
 	@echo "Will evaluate model $(model) on environment $(env)"
 	@for env in $(zoologyenvs); do \
-			. .venv/bin/activate; PYTHONPATH=. python -u zoo/train.py --train-eval=True --model=$(model) --env=$(env) --n_timesteps=$(n_timesteps) 2>&1 | tee -a .logs/eval-$(model)-$(env)-$(shell date +"%Y%m%d").log; \
+			. .venv/bin/activate; PYTHONPATH=. python -u zoo/train-eval.py --model=$(model) --env=$(env) --n_timesteps=$(n_timesteps) 2>&1 | tee -a .logs/eval-$(model)-$(env)-$(shell date +"%Y%m%d").log; \
 	done
 
 train-eval-all:
 	@echo "Will evaluate all models in zoo"
 	@for model in $(zoology); do \
 		for env in $(zoologyenvs); do \
-			$(MAKE) train-eval model=$$model env=$$env n_timesteps=1 || true; \
+			$(MAKE) train-eval model=$$model env=$$env || true; \
 		done; \
 	done
