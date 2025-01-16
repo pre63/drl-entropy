@@ -54,12 +54,15 @@ venv:
 install: ubuntu mac venv
 
 fix:
-	@echo "Will run autopep8 and isort on changed files"
-	@changed_files=$$(git diff --name-only --diff-filter=ACM | grep '\.py$$'); \
-	if [ ! -z "$$changed_files" ]; then \
-		. .venv/bin/activate && isort --multi-line=0 --line-length=100 $$changed_files && autopep8 -r $$changed_files --in-place --aggressive; \
+	@echo "Will run autopep8 and isort on modified, added, untracked, or staged Python files"
+	@changed_files=$$(git diff --name-only --diff-filter=AM | grep '\.py$$'); \
+	untracked_files=$$(git ls-files --others --exclude-standard | grep '\.py$$'); \
+	staged_files=$$(git diff --name-only --cached | grep '\.py$$'); \
+	all_files=$$(echo "$$changed_files $$untracked_files $$staged_files" | tr ' ' '\n' | sort -u); \
+	if [ ! -z "$$all_files" ]; then \
+		. .venv/bin/activate && isort --multi-line=0 --line-length=100 $$all_files && autopep8 -r $$all_files --in-place --aggressive; \
 	else \
-		echo "No Python files have changed"; \
+		echo "No modified, added, untracked, or staged Python files"; \
 	fi
 
 clean:
@@ -109,3 +112,7 @@ train-eval-all:
 			$(MAKE) train-eval model=$$model env=$$env || true; \
 		done; \
 	done
+
+train-eval-plot:
+	@echo "Will evaluate model $(model) on environment $(env) and generate a plot"
+	@. .venv/bin/activate; PYTHONPATH=. python -u zoo/train-eval-plot.py
