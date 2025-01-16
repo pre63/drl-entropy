@@ -1,12 +1,14 @@
 import argparse
 import os
 import time
+from math import inf
+from statistics import mean, stdev
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import rl_zoo3
 import rl_zoo3.train
+import yaml
 from sbx import SAC, TQC
 from stable_baselines3.common.results_plotter import load_results, ts2xy
 
@@ -14,12 +16,12 @@ from stable_baselines3.common.results_plotter import load_results, ts2xy
 import Environments
 from Models.EnTRPO.EnTRPO import EnTRPO, EnTRPOHigh, EnTRPOLow, sample_entrpo_params
 from Models.EnTRPOR.EnTRPOR import EnTRPOR, sample_entrpor_params
+from Models.PPO import PPO
+from Models.TRPO import TRPO
 from Models.TRPOQ.TRPOQ import TRPOQ, sample_trpoq_params
 from Models.TRPOQ.TRPOQ2 import TRPOQ2, sample_trpoq2_params
 from Models.TRPOQ.TRPOQH import TRPOQH, TRPOQHO, sample_trpoqh_params, sample_trpoqho_params
 from Models.TRPOR.TRPOR import TRPOR, sample_trpor_params
-from Models.TRPO import TRPO
-from Models.PPO import PPO
 from zoo.configure import configure
 
 models = {
@@ -49,20 +51,8 @@ for model_name, value in models.items():
 rl_zoo3.train.ALGOS = rl_zoo3.ALGOS
 rl_zoo3.exp_manager.ALGOS = rl_zoo3.ALGOS
 
-import yaml
-
 
 def load_reward_threshold(conf_file, env):
-  """
-  Load the reward threshold for the given environment from the YAML configuration file.
-
-  Args:
-      conf_file (str): Path to the YAML configuration file.
-      env (str): Environment name.
-
-  Returns:
-      float: Reward threshold for the specified environment.
-  """
   with open(conf_file, "r") as file:
     config = yaml.safe_load(file)
   if env in config and "reward_threshold" in config[env]:
@@ -71,79 +61,84 @@ def load_reward_threshold(conf_file, env):
 
 
 def plot_all_from_csv(csv_path, results_dir):
-  """
-  Plot all environments and models from a given CSV file.
 
-  Args:
-      csv_path (str): Path to the CSV containing the results.
-      results_dir (str): Directory to save the resulting plot.
-  """
   os.makedirs(results_dir, exist_ok=True)
 
-  # Read metrics from CSV
+  # Check if the aggregated CSV exists
   if not os.path.exists(csv_path):
     print(f"CSV file not found: {csv_path}")
     return
 
+  # Read the aggregated results CSV
   results_df = pd.read_csv(csv_path)
+
+  # Group by environments
   grouped = results_df.groupby("Env")
 
-  # Prepare tiled subplots
+  # Create a single plot with one graph per environment
   n_envs = len(grouped)
-  cols = 2
-  rows = (n_envs + 1) // cols
-  fig, axes = plt.subplots(rows, cols, figsize=(10, 5 * rows))
-  axes = axes.flatten()
+  fig, axes = plt.subplots(n_envs, 1, figsize=(12, 5 * n_envs), dpi=150)  # High DPI for better resolution
+  if n_envs == 1:
+    axes = [axes]  # Ensure axes is iterable for a single subplot
 
-  for i, (env, group) in enumerate(grouped):
+  for ax, (env, group) in zip(axes, grouped):
     for model in group["Model"].unique():
-      model_data = group[group["Model"] == model].iloc[0]
-      timesteps = np.array(eval(model_data["Timesteps"]))
-      rewards = np.array(eval(model_data["Rewards"]))
-      axes[i].plot(timesteps, rewards, label=f"{model}")
-      axes[i].fill_between(
-          timesteps,
-          rewards - model_data["Std Dev"],
-          rewards + model_data["Std Dev"],
-          alpha=0.3
-      )
+      # Filter by model
+      model_data = group[group["Model"] == model]
 
-    axes[i].set_title(f"{env}")
-    axes[i].set_xlabel("Timesteps")
-    axes[i].set_ylabel("Reward")
-    axes[i].legend()
+      # Aggregate all runs for the same model
+      aggregated_df = pd.DataFrame()  # DataFrame to hold all runs' data
+      for _, row in model_data.iterrows():
+        run_file = row["File"]  # Path to the run-specific data CSV
+        if os.path.exists(run_file):
+          run_data = pd.read_csv(run_file)
+          # Set Timesteps as index for proper alignment
+          run_data.set_index("Timesteps", inplace=True)
+          # Add the run's Reward data to the aggregation
+          aggregated_df = pd.concat([aggregated_df, run_data["Reward"]], axis=1)
+        else:
+          print(f"Run file not found: {run_file}")
 
-  # Remove unused subplots
-  for i in range(len(grouped), len(axes)):
-    fig.delaxes(axes[i])
+      if not aggregated_df.empty:
+        aggregated_df.columns = range(aggregated_df.shape[1])  # Rename columns for consistency
+        mean_rewards = aggregated_df.mean(axis=1)  # Mean across runs
+        std_rewards = aggregated_df.std(axis=1)  # Standard deviation across runs
+
+        # Plot standard deviation as a light shaded region
+        ax.fill_between(
+            mean_rewards.index,
+            mean_rewards - std_rewards,
+            mean_rewards + std_rewards,
+            alpha=0.2,  # Light transparency for the shaded area
+            color="gray"  # Standard color for all shaded regions
+        )
+
+        # Plot mean as a clear solid line (after the shaded region)
+        ax.plot(mean_rewards.index, mean_rewards, label=f"{model} (Mean)", linewidth=1.5)
+
+    ax.set_title(env)
+    ax.set_xlabel("Timesteps")
+    ax.set_ylabel("Reward")
+    ax.legend(loc='upper left')
 
   plt.tight_layout()
-  plot_path = os.path.join(results_dir, "all_envs_rewards.png")
+  plot_path = os.path.join(results_dir, "combined_env_rewards.png")
   plt.savefig(plot_path)
   plt.close()
-  print(f"Tiled plot for all environments saved at: {plot_path}")
+  print(f"Combined plot for all environments saved at: {plot_path}")
 
 
 def evaluate_training(algo, env, n_eval_envs, device, optimize_hyperparameters, conf_file, n_trials, n_timesteps, n_jobs):
-  csv_file = f"results/model_comparison_{env}.csv"
-  results_dir = f"results/{algo}/all_envs"
+  results_dir = "results/"
+  csv_file = f"{results_dir}results.csv"
+
+  os.makedirs(results_dir, exist_ok=True)
 
   # Load reward threshold from the YAML configuration
   reward_threshold = load_reward_threshold(conf_file, env)
   print(f"Reward threshold for {env}: {reward_threshold}")
 
-  # Check if the CSV exists to load existing results
-  if os.path.exists(csv_file):
-    existing_data = pd.read_csv(csv_file)
-  else:
-    existing_data = pd.DataFrame()
-
   for run in range(10):
-    # Skip runs that are already completed
-    if not existing_data.empty and ((existing_data["Model"] == algo) & (existing_data["Env"] == env) & (existing_data["Run"] == run + 1)).any():
-      print(f"Skipping already completed run {run + 1} for {algo} on {env}")
-      continue
-
     print(f"Training {algo}, Run {run + 1}")
     start_time = time.time()
 
@@ -161,48 +156,69 @@ def evaluate_training(algo, env, n_eval_envs, device, optimize_hyperparameters, 
         n_timesteps=n_timesteps,
         n_jobs=n_jobs,
         log_folder=log_folder,
-        eval_freq=n_timesteps // 1000,
-        verbose=0
+        verbose=0,
+        train_eval=True,
     )
 
     wall_time = time.time() - start_time
     save_path = exp_manager.save_path
+
     if not os.path.exists(save_path):
       print(f"Warning: Log path not found for {algo} run {run}. Skipping.")
       continue
 
-    # Load evaluation results
-    results = load_results(save_path)
-    x, y = ts2xy(results, 'timesteps')
-    print(f"Loaded {len(x)} timesteps for {algo} on {env}")
+    # Extract rewards and generate corresponding timesteps
+    rewards = exp_manager.training_rewards
+    timesteps = list(range(1, len(rewards) + 1))  # Ensure timesteps is a valid sequence
 
-    # Collect metrics
-    idx = np.argmax(y >= reward_threshold) if np.any(y >= reward_threshold) else np.inf
-    sample_complexity = x[idx] if idx != np.inf else np.inf
+    # Ensure data integrity
+    if len(rewards) == 0:
+      print(f"Warning: No timesteps or rewards logged for {algo} on {env}, run {run + 1}. Skipping.")
+      continue
 
+    # Save raw run data to a separate file
+    run_data_file = os.path.join(save_path, f"run_{run + 1}_data.csv")
+    run_data = pd.DataFrame({"Timesteps": timesteps, "Reward": rewards})  # Correct column names
+    run_data.to_csv(run_data_file, index=False)
+    print(f"Run data saved to {run_data_file}")
+
+    # Calculate statistics
+    mean_reward = mean(rewards)
+    std_reward = stdev(rewards)
+
+    # Calculate sample complexity
+    sample_complexity = inf
+    if reward_threshold is not None:
+      cumulative_rewards = 0
+      for i, reward in enumerate(rewards, start=1):
+        cumulative_rewards += reward
+        cumulative_mean = cumulative_rewards / i
+        if cumulative_mean >= reward_threshold:
+          sample_complexity = i
+          break  # Stop once the threshold is reached
+
+    # Save summary data to the shared CSV
     run_metrics = {
         "Model": algo,
         "Env": env,
         "Run": run + 1,
         "Wall Time (s)": wall_time,
         "Sample Complexity": sample_complexity,
-        "Mean Reward": np.mean(y),
-        "Std Dev": np.std(y),
-        "Timesteps": [x.tolist()],  # Save timesteps as a list
-        "Rewards": [y.tolist()]    # Save rewards as a list
+        "Mean Reward": mean_reward,
+        "Std Dev": std_reward,
+        "File": run_data_file,
+        "Save Path": save_path,
     }
 
-    # Append the new run's results to the CSV
     run_df = pd.DataFrame([run_metrics])
     if os.path.exists(csv_file):
       run_df.to_csv(csv_file, mode='a', header=False, index=False)
     else:
       run_df.to_csv(csv_file, index=False)
+    print(f"Summary metrics for run {run + 1} saved to {csv_file}")
 
-    print(f"Metrics for run {run + 1} updated in: {csv_file}")
-
-    # Update the plot after each run
-    plot_all_from_csv(csv_file, results_dir)
+    # Update the plot with the current data
+  plot_all_from_csv(csv_file, results_dir)
 
 
 if __name__ == "__main__":

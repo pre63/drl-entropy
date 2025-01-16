@@ -16,6 +16,8 @@ from rl_zoo3.exp_manager import ExperimentManager
 from rl_zoo3.utils import ALGOS
 from stable_baselines3.common.utils import set_random_seed
 
+from zoo.exp_manager import ExperimentManager as EvalExperimentManager
+
 
 def configure(**params):
   # Set default values and override with provided params
@@ -61,6 +63,7 @@ def configure(**params):
       "wandb_entity": None,
       "wandb_tags": [],
       "progress": False,
+      "train_eval": False,
   }
 
   # Update defaults with provided params
@@ -118,7 +121,12 @@ def configure(**params):
   print(f"Timesteps: {args['n_timesteps']}")
 
   # Initialize the experiment manager
-  exp_manager = ExperimentManager(
+  if args["train_eval"]:
+    exp_manager_class = EvalExperimentManager
+  else:
+    exp_manager_class = ExperimentManager
+
+  exp_manager = exp_manager_class(
       args=args,
       algo=args["algo"],
       env_id=env_id,
