@@ -9,8 +9,12 @@ optimize = False # Default to not optimize hyperparameters
 trials = 40 # Default number of trials for hyperparameter optimization
 n_timesteps=1000000 # Default number of timesteps to train for
 
-zoology = entrpo entrpor tqc trpoq2 trpor entrpohigh ppo trpo trpoqh entrpolow sac trpoq trpoqho
-zoologyenvs = Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5 LunarLanderContinuous-v3 RocketLander-v0 Pendulum-v1
+#zoology = entrpo entrpor tqc trpoq2 trpor entrpohigh ppo trpo trpoqh entrpolow sac trpoq trpoqho
+#zoologyenvs = Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5 LunarLanderContinuous-v3 RocketLander-v0 Pendulum-v1
+
+zoology = tqc ppo trpo sac
+zoology = trpoq trpoq2 trpoqh trpoqho trpor
+zoologyenvs = Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5
 
 default: install
 
@@ -115,4 +119,4 @@ train-eval-all:
 
 train-eval-plot:
 	@echo "Will evaluate model $(model) on environment $(env) and generate a plot"
-	@. .venv/bin/activate; PYTHONPATH=. python -u zoo/train-eval-plot.py
+	@. .venv/bin/activate; PYTHONPATH=. python -u zoo/train_eval_plot.py

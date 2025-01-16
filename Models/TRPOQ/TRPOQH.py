@@ -77,6 +77,9 @@ class TRPOQH(TRPO):
     self.truncated_value_networks = nn.ModuleList([copy.deepcopy(self.shared_value_network) for _ in range(n_value_networks)])
     self.standard_value_networks = nn.ModuleList([copy.deepcopy(self.shared_value_network) for _ in range(n_value_networks)])
 
+    if callable(learning_rate):
+      learning_rate = learning_rate(0)
+
     # Optimizers for each set of critics
     self.value_optimizers = [th.optim.Adam(v.parameters(), lr=learning_rate) for v in self.standard_value_networks + self.truncated_value_networks]
 

@@ -216,7 +216,7 @@ def sample_trpor_params(trial, n_actions, n_envs, additional_args):
   """
   n_steps = trial.suggest_categorical("n_steps", [8, 16, 32, 64, 128, 256, 512, 1024, 2048])
   gamma = trial.suggest_categorical("gamma", [0.9, 0.95, 0.98, 0.99, 0.995, 0.999, 0.9999])
-  learning_rate = round(trial.suggest_float("learning_rate", 1e-5, 1, log=True), 6)
+  learning_rate = trial.suggest_float("learning_rate", 1e-5, 1, log=True)
 
   n_critic_updates = trial.suggest_categorical("n_critic_updates", [5, 10, 20, 25, 30])
   cg_max_steps = trial.suggest_categorical("cg_max_steps", [5, 10, 20, 25, 30])

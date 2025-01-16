@@ -83,6 +83,9 @@ class TRPOQ(TRPO):
         ) for _ in range(n_value_networks)
     ])
 
+    if callable(learning_rate):
+      learning_rate = learning_rate(0)
+
     self.value_optimizers = [th.optim.Adam(v.parameters(), lr=learning_rate) for v in self.value_networks]
 
   def _compute_truncated_value(self, states):
@@ -199,7 +202,7 @@ def sample_trpoq_params(trial, n_actions, n_envs, additional_args):
   """
   n_steps = trial.suggest_categorical("n_steps", [8, 16, 32, 64, 128, 256, 512, 1024, 2048])
   gamma = trial.suggest_categorical("gamma", [0.9, 0.95, 0.98, 0.99, 0.995, 0.999, 0.9999])
-  learning_rate = round(trial.suggest_float("learning_rate", 1e-5, 1, log=True), 6)
+  learning_rate = trial.suggest_float("learning_rate", 1e-5, 1, log=True)
 
   batch_size = trial.suggest_categorical("batch_size", [8, 16, 32, 64, 128, 256, 512, 1024])
 
