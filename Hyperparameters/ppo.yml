@@ -12,6 +12,18 @@ Ant-v5:
   policy: "MlpPolicy"
   n_timesteps: 100000
   reward_threshold: 1000
+  batch_size: 128
+  n_steps: 256
+  gamma: 0.95
+  learning_rate: 0.0007291778429655199
+  ent_coef: 1.9036008616760693e-08
+  clip_range: 0.3
+  n_epochs: 10
+  gae_lambda: 1.0
+  max_grad_norm: 0.5
+  vf_coef: 0.8262092832719824
+  net_arch: small
+  activation_fn: relu
 
 # Tuned
 Humanoid-v5:
