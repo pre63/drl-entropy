@@ -109,7 +109,6 @@ class PPO(PPO):
       **kwargs,
   ):
     super().__init__(
-        self,
         policy=policy,
         env=env,
         learning_rate=learning_rate,

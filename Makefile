@@ -54,8 +54,13 @@ venv:
 install: ubuntu mac venv
 
 fix:
-	@echo "Will run autopep8 and isort"
-	@. .venv/bin/activate && isort --multi-line=0 --line-length=100 . && autopep8 -r . --in-place --aggressive
+	@echo "Will run autopep8 and isort on changed files"
+	@changed_files=$$(git diff --name-only --diff-filter=ACM | grep '\.py$$'); \
+	if [ ! -z "$$changed_files" ]; then \
+		. .venv/bin/activate && isort --multi-line=0 --line-length=100 $$changed_files && autopep8 -r $$changed_files --in-place --aggressive; \
+	else \
+		echo "No Python files have changed"; \
+	fi
 
 clean:
 	@echo "Cleaning up"

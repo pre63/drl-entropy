@@ -38,7 +38,6 @@ class SAC(SAC):
       **kwags,
   ):
     super().__init__(
-        self,
         policy=policy,
         env=env,
         learning_rate=learning_rate,
@@ -102,7 +101,6 @@ class TQC(TQC):
       **kwags,
   ):
     super().__init__(
-        self,
         policy=policy,
         env=env,
         learning_rate=learning_rate,
