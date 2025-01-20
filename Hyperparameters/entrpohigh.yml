@@ -55,12 +55,48 @@ Humanoid-v5:
   orthogonal_init: True
   gradient_clip: 0.5
 
+# Tuned
 InvertedDoublePendulum-v5:
   policy: "MlpPolicy"
   n_timesteps: 100000
   reward_threshold: 410
+    n_steps: 256
+    gamma: 0.99
+    learning_rate: 0.02500223451086856
+    n_critic_updates: 5
+    cg_max_steps: 10
+    target_kl: 0.005
+    gae_lambda: 0.9
+    batch_size: 64
+    net_arch: small
+    activation_fn: tanh
+    ent_coef: 0.001
+    buffer_capacity: 74000
+    reward_threshold: 350.0
+    replay_strategy_threshold: -9.241979943613844
+    epsilon: 0.65
+    use_per: True
+    orthogonal_init: False
 
+# Tuned
 RocketLander-v0:
   policy: "MlpPolicy"
   n_timesteps: 100000
   reward_threshold: -3.0
+  n_steps: 2048
+  gamma: 0.99
+  learning_rate: 0.0415005883498435
+  n_critic_updates: 20
+  cg_max_steps: 5
+  target_kl: 0.001
+  gae_lambda: 0.98
+  batch_size: 8
+  net_arch: small
+  activation_fn: relu
+  ent_coef: 0.0008
+  buffer_capacity: 9000
+  reward_threshold: 400.0
+  replay_strategy_threshold: -0.3061684282089736
+  epsilon: 0.85
+  use_per: False
+  orthogonal_init: False

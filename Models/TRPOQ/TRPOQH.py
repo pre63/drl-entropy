@@ -2,6 +2,7 @@ import copy
 from functools import partial
 from typing import List, Type, TypeVar, Union
 
+import numpy as np
 import torch as th
 from gymnasium import spaces
 from sb3_contrib.common.utils import conjugate_gradient_solver
@@ -228,6 +229,9 @@ class TRPOQHO(TRPO):
         net_arch=net_arch,
         activation_fn=activation_fn
     )
+
+    if callable(learning_rate):
+      learning_rate = learning_rate(0)
 
     # Optimizer for the shared critic
     self.critic_optimizer = th.optim.Adam(self.critic.parameters(), lr=learning_rate)

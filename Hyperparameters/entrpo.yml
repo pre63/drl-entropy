@@ -47,21 +47,18 @@ Ant-v5:
 Humanoid-v5:
   policy: "MlpPolicy"
   n_timesteps: 100000
-  n_steps: 1024
-  gamma: 0.99
-  learning_rate: 0.5933142651241774
-  n_critic_updates: 25
-  cg_max_steps: 30
-  target_kl: 0.05
-  gae_lambda: 0.9
-  batch_size: 512
-  net_arch: medium
+  batch_size: 256
+  n_steps: 256
+  gamma: 0.999
+  learning_rate: 0.0013728588534608977
+  n_critic_updates: 10
+  cg_max_steps: 20
+  target_kl: 0.02
+  gae_lambda: 1.0
+  net_arch: small
   activation_fn: tanh
-  ent_coef: 0.0008
-  buffer_capacity: 11000
-  reward_threshold: 500.0
-  replay_strategy_threshold: -4.558097185781528
-  epsilon: 0.8
+
+
 
 # Tuned
 InvertedDoublePendulum-v5:

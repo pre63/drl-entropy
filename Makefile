@@ -6,14 +6,10 @@ n_jobs = 10 # Default number of jobs to run in parallel
 envs = 2 # Default number of environments to train on
 model = ppo # Default model to train
 optimize = False # Default to not optimize hyperparameters
-trials = 40 # Default number of trials for hyperparameter optimization
+trials = 1000 # Default number of trials for hyperparameter optimization
 n_timesteps=1000000 # Default number of timesteps to train for
 
-#zoology = entrpo entrpor tqc trpoq2 trpor entrpohigh ppo trpo trpoqh entrpolow sac trpoq trpoqho
-#zoologyenvs = Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5 LunarLanderContinuous-v3 RocketLander-v0 Pendulum-v1
-
-zoology = tqc ppo trpo sac
-zoology = trpoq trpoq2 trpoqh trpoqho trpor
+zoology = entrpo entrpor trpo entrpohigh entrpolow
 zoologyenvs = Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5
 
 default: install

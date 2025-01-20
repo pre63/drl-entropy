@@ -96,7 +96,7 @@ def plot_all_from_csv(csv_path, results_dir):
             downsampled_timesteps,
             downsampled_mean_rewards - downsampled_std_rewards,
             downsampled_mean_rewards + downsampled_std_rewards,
-            alpha=0.2, color="gray"
+            alpha=0.2,
         )
         ax.plot(
             downsampled_timesteps,

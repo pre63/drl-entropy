@@ -1,14 +1,5 @@
-ppo: LunarLanderContinuous-v3 RocketLander-v0
-entrpohigh: InvertedDoublePendulum-v5 LunarLanderContinuous-v3 RocketLander-v0
-entrpolow: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5 LunarLanderContinuous-v3 RocketLander-v0
-trpo: Humanoid-v5
-tqc: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5 LunarLanderContinuous-v3 RocketLander-v0
-sac: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5 LunarLanderContinuous-v3 RocketLander-v0
-entrpohigh: Pendulum-v1
-entrpolow: Pendulum-v1
-entrpo: Pendulum-v1
-entrpor: Pendulum-v1
-trpor: Pendulum-v1
-ppo: Pendulum-v1
-tqc: Pendulum-v1
-sac: Pendulum-v1
+entrpo: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5
+entrpohigh: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5
+entrpolow: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5
+entrpor: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5
+trpo: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5

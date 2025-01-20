@@ -8,20 +8,74 @@ LunarLanderContinuous-v3:
   n_timesteps: 100000
   reward_threshold: 195
 
+# Tuned
 Ant-v5:
   policy: "MlpPolicy"
   n_timesteps: 100000
   reward_threshold: 1000
+  n_steps: 1024
+  gamma: 0.95
+  learning_rate: 0.001074665884312754
+  n_critic_updates: 5
+  cg_max_steps: 5
+  target_kl: 0.001
+  gae_lambda: 0.8
+  batch_size: 32
+  net_arch: medium
+  activation_fn: tanh
+  ent_coef: 0.0006000000000000001
+  buffer_capacity: 65000
+  reward_threshold: 400.0
+  replay_strategy_threshold: 2.488286128489621
+  epsilon: 0.75
+  use_per: True
+  orthogonal_init: False
 
+# Tuned
 Humanoid-v5:
   policy: "MlpPolicy"
   n_timesteps: 100000
   reward_threshold: 450
+  n_steps: 1024
+  gamma: 0.95
+  learning_rate: 0.00012295224732700993
+  n_critic_updates: 30
+  cg_max_steps: 5
+  target_kl: 0.05
+  gae_lambda: 1.0
+  batch_size: 32
+  net_arch: medium
+  activation_fn: tanh
+  ent_coef: 0.0001
+  buffer_capacity: 79000
+  reward_threshold: 300.0
+  replay_strategy_threshold: -6.2625944661703326
+  epsilon: 0.8
+  use_per: False
+  orthogonal_init: False
 
+# Tuned
 InvertedDoublePendulum-v5:
   policy: "MlpPolicy"
   n_timesteps: 100000
   reward_threshold: 410
+  n_steps: 512
+  gamma: 0.95
+  learning_rate: 0.013713124546916214
+  n_critic_updates: 5
+  cg_max_steps: 5
+  target_kl: 0.02
+  gae_lambda: 0.99
+  batch_size: 1024
+  net_arch: small
+  activation_fn: tanh
+  ent_coef: 0.0
+  buffer_capacity: 66000
+  reward_threshold: 450.0
+  replay_strategy_threshold: -0.20926517140171086
+  epsilon: 0.35
+  use_per: False
+  orthogonal_init: False
 
 RocketLander-v0:
   policy: "MlpPolicy"
