@@ -121,3 +121,18 @@ train-eval-all:
 train-eval-plot:
 	@echo "Will evaluate model $(model) on environment $(env) and generate a plot"
 	@. .venv/bin/activate; PYTHONPATH=. python -u zoo/train_eval_plot.py
+
+list:
+	@# List all zoo models and environments combinations
+	@echo "Listing all model and environment combinations:"
+	@for env in $(zoologyenvs); do \
+		for model in $(zoology); do \
+			echo "$$env - $$model"; \
+		done; \
+	done
+	@# Calculate and print the total number of combinations
+	@zoologyenvs_count=$$(echo "$(zoologyenvs)" | wc -w); \
+	zoology_count=$$(echo "$(zoology)" | wc -w); \
+	trials=$(trials); \
+	total_combinations=$$(echo "$$zoologyenvs_count * $$zoology_count * $$trials" | bc); \
+	echo "Total number of combinations: $$total_combinations"
