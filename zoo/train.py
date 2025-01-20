@@ -14,7 +14,7 @@ from sbx import SAC, TQC
 import Environments
 from Models.EnTRPO.EnTRPO import EnTRPO, EnTRPOHigh, EnTRPOLow, sample_entrpo_params
 from Models.EnTRPOR.EnTRPOR import EnTRPOR, sample_entrpor_params
-from Models.SB3 import PPO, TRPO
+from Models.SB3 import PPO, TRPO, sample_ppo_params, sample_trpo_params
 from Models.SBX import SAC, TQC
 from Models.TRPOQ.TRPOQ import TRPOQ, sample_trpoq_params
 from Models.TRPOQ.TRPOQ2 import TRPOQ2, sample_trpoq2_params
@@ -35,8 +35,8 @@ models = {
     "trpoqho": {"model": TRPOQHO, "sample": sample_trpoqho_params},
     "sac": {"model": SAC},
     "tqc": {"model": TQC},
-    "trpo": {"model": TRPO},
-    "ppo": {"model": PPO},
+    "trpo": {"model": TRPO, "sample": sample_trpo_params},
+    "ppo": {"model": PPO, "sample": sample_ppo_params},
 }
 
 for model_name, value in models.items():
@@ -51,9 +51,8 @@ rl_zoo3.exp_manager.ALGOS = rl_zoo3.ALGOS
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
-  parser.add_argument("--model", type=str, default="ppo")
+  parser.add_argument("--model", type=str, default="trpo")
   parser.add_argument("--env", type=str, default="LunarLanderContinuous-v3")
-  parser.add_argument("--envs", type=int, default=10)
   parser.add_argument("--device", type=str, default="cpu")
   parser.add_argument("--optimize", type=bool, default=False)
   parser.add_argument("--conf_file", type=str, default=None)
@@ -71,7 +70,6 @@ if __name__ == "__main__":
   configure(
       algo=params.model,
       env=params.env,
-      n_eval_envs=params.envs,
       device=params.device,
       optimize_hyperparameters=params.optimize,
       conf_file=conf_file,

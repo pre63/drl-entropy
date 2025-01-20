@@ -2,15 +2,16 @@ SHELL := /bin/bash
 
 OS := $(shell uname -s)
 
-n_jobs = 10 # Default number of jobs to run in parallel
-envs = 2 # Default number of environments to train on
-model = ppo # Default model to train
-optimize = False # Default to not optimize hyperparameters
-trials = 1000 # Default number of trials for hyperparameter optimization
+n_jobs=10 # Default number of jobs to run in parallel
+envs=10 # Default number of environments to train on
+model=trpo # Default model to train
+optimize=False # Default to not optimize hyperparameters
+trials=1000 # Default number of trials for hyperparameter optimization
 n_timesteps=1000000 # Default number of timesteps to train for
+env=Humanoid-v5 # Default environment to train on
 
-zoology = entrpo entrpor trpo entrpohigh entrpolow
-zoologyenvs = Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5
+zoology=entrpo entrpor trpo entrpohigh entrpolow
+zoologyenvs=Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5
 
 default: install
 
@@ -74,7 +75,8 @@ train:
 	@echo "Will train model $(model) on environment $(env) and we will optimize hyperparameters: $(optimize)"
 	@mkdir -p .logs
 	@mkdir -p .optuna-zoo
-	@. .venv/bin/activate; PYTHONPATH=. python -u zoo/train.py --model=$(model) --env=$(env) --optimize=$(optimize) --envs=$(envs) --n_jobs=$(n_jobs) --trials=$(trials) 2>&1 | tee -a .logs/zoo-$(model)-$(env)-$(shell date +"%Y%m%d").log
+	@mkdir -p ".optuna-zoo/$(model)_$(env)"
+	@. .venv/bin/activate; PYTHONPATH=. python -u zoo/train.py --model=$(model) --env=$(env) --optimize=$(optimize) --n_jobs=$(n_jobs) --trials=$(trials) 2>&1 | tee -a .logs/zoo-$(model)-$(env)-$(shell date +"%Y%m%d").log
 
 train-zoo:
 	@echo "Will train all models in zoo"
@@ -86,15 +88,18 @@ train-zoo:
 			$(MAKE) train model=$$model env=$$env optimize=True || true; \
 		done; \
 	done
-
 nightly:
 	@$(MAKE) fix
 	@while true; do \
 		while read -r line; do \
-			model=$$(echo $$line | cut -d':' -f1); \
-			envs=$$(echo $$line | cut -d':' -f2); \
-			for env in $$envs; do \
-				$(MAKE) train model=$$model env=$$env optimize=True || echo "Training failed for $$model on $$env"; \
+			zmodel=$$(echo $$line | cut -d':' -f1); \
+			zenvs=$$(echo $$line | cut -d':' -f2); \
+			for env in $$zenvs; do \
+				echo "Launching training for $$zmodel on $$env with $$envs parallel jobs..."; \
+				for i in $$(seq 1 $(envs)); do \
+					$(MAKE) train model=$$zmodel env=$$env optimize=True & \
+				done; \
+				wait; \
 			done; \
 		done < configs.txt; \
 	done

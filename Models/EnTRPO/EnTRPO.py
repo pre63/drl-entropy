@@ -442,6 +442,7 @@ def sample_entrpo_params(trial, n_actions, n_envs, additional_args):
   # Returning the sampled hyperparameters as a dictionary
   return {
       "policy": "MlpPolicy",
+      "n_envs": n_envs,
       "epsilon": epsilon,
       "use_per": use_per,
       "ent_coef": ent_coef,

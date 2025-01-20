@@ -345,6 +345,7 @@ def sample_trpoqho_params(trial, n_actions, n_envs, additional_args):
 
   return {
       "policy": "MlpPolicy",
+      "n_envs": n_envs,
       "n_steps": n_steps,
       "batch_size": batch_size,
       "gamma": gamma,
@@ -399,6 +400,7 @@ def sample_trpoqh_params(trial, n_actions, n_envs, additional_args):
 
   return {
       "policy": "MlpPolicy",
+      "n_envs": n_envs,
       "n_steps": n_steps,
       "batch_size": batch_size,
       "gamma": gamma,

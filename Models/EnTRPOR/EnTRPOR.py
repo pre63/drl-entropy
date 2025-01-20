@@ -206,6 +206,7 @@ def sample_entrpor_params(trial, n_actions, n_envs, additional_args):
   # Define the EnTRPOR-specific optimization space
   params = {
       "policy": "MlpPolicy",
+      "n_envs": n_envs,
       "ent_coef": trial.suggest_float("ent_coef", 0.0, 0.001, step=0.0001),
       "gamma": trial.suggest_float("gamma", 0.98, 0.999, log=True),
       "gae_lambda": trial.suggest_float("gae_lambda", 0.9, 0.99, step=0.001),

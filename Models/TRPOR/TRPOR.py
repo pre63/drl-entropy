@@ -244,6 +244,7 @@ def sample_trpor_params(trial, n_actions, n_envs, additional_args):
 
   return {
       "policy": "MlpPolicy",
+      "n_envs": n_envs,
       "ent_coef": ent_coef,
       "n_steps": n_steps,
       "batch_size": batch_size,
