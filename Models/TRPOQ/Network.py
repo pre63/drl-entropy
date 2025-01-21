@@ -20,28 +20,21 @@ class QuantileValueNetwork(nn.Module):
 
 def optimize_hyperparameters(trial):
   """
-  Optuna hyperparameter optimization function
-  """
+    Optuna hyperparameter optimization function
+    """
 
   net_arch_type = trial.suggest_categorical("net_arch", ["small", "medium", "large"])
 
   # Neural network architecture configuration
   net_arch = {
-      "small": [64, 64],
-      "medium": [256, 256],
-      "large": [400, 300],
+    "small": [64, 64],
+    "medium": [256, 256],
+    "large": [400, 300],
   }[net_arch_type]
 
   activation_fn_name = trial.suggest_categorical("activation_fn", ["tanh", "relu"])
-  activation_fn = {
-      "tanh": nn.Tanh,
-      "relu": nn.ReLU
-  }[activation_fn_name]
+  activation_fn = {"tanh": nn.Tanh, "relu": nn.ReLU}[activation_fn_name]
 
   n_quantiles = trial.suggest_categorical("n_quantiles", [10, 25, 50, 100])
 
-  return {
-      "net_arch": net_arch,
-      "activation_fn": activation_fn,
-      "n_quantiles": n_quantiles
-  }
+  return {"net_arch": net_arch, "activation_fn": activation_fn, "n_quantiles": n_quantiles}

@@ -7,8 +7,9 @@ envs=10 # Default number of environments to train on
 model=trpo # Default model to train
 optimize=False # Default to not optimize hyperparameters
 trials=1000 # Default number of trials for hyperparameter optimization
-n_timesteps=1000000 # Default number of timesteps to train for
+n_timesteps=0 # Default number of timesteps to train for
 env=Humanoid-v5 # Default environment to train on
+configs=configs.txt # Default configuration file
 
 zoology=entrpo entrpor trpo entrpohigh entrpolow
 zoologyenvs=Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5
@@ -55,13 +56,13 @@ venv:
 install: ubuntu mac venv
 
 fix:
-	@echo "Will run autopep8 and isort on modified, added, untracked, or staged Python files"
+	@echo "Will run black and isort on modified, added, untracked, or staged Python files"
 	@changed_files=$$(git diff --name-only --diff-filter=AM | grep '\.py$$'); \
 	untracked_files=$$(git ls-files --others --exclude-standard | grep '\.py$$'); \
 	staged_files=$$(git diff --name-only --cached | grep '\.py$$'); \
 	all_files=$$(echo "$$changed_files $$untracked_files $$staged_files" | tr ' ' '\n' | sort -u); \
 	if [ ! -z "$$all_files" ]; then \
-		. .venv/bin/activate && isort --multi-line=0 --line-length=100 $$all_files && autopep8 -r $$all_files --in-place --aggressive; \
+		. .venv/bin/activate && isort --multi-line=0 --line-length=100 $$all_files && black .; \
 	else \
 		echo "No modified, added, untracked, or staged Python files"; \
 	fi
@@ -101,7 +102,7 @@ nightly:
 				done; \
 				wait; \
 			done; \
-		done < configs.txt; \
+		done < $(configs); \
 	done
 
 train-eval:

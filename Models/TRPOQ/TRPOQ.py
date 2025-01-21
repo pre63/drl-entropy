@@ -43,45 +43,35 @@ class TRPOQ(TRPO):
         n_quantiles (int, optional): Number of quantiles used for value estimation. Defaults to 25.
         truncation_threshold (int, optional): Number of lower quantiles retained for conservative advantage estimation. Defaults to 5.
         n_value_networks (int, optional): Number of independent value networks used for ensemble estimation. Defaults to 3.
-  """
+    """
 
   def __init__(
-      self,
-      policy: Union[str, type[ActorCriticPolicy]],
-      env: Union[GymEnv, str],
-      learning_rate: Union[float, Schedule] = 1e-3,
-      n_steps: int = 2048,
-      batch_size: int = 128,
-      gamma: float = 0.99,
-      n_quantiles: int = 25,
-      truncation_threshold: int = 5,
-      n_value_networks: int = 3,
-      net_arch: List[int] = [64, 64],
-      activation_fn: Type[nn.Module] = nn.ReLU,
-      **kwargs
+    self,
+    policy: Union[str, type[ActorCriticPolicy]],
+    env: Union[GymEnv, str],
+    learning_rate: Union[float, Schedule] = 1e-3,
+    n_steps: int = 2048,
+    batch_size: int = 128,
+    gamma: float = 0.99,
+    n_quantiles: int = 25,
+    truncation_threshold: int = 5,
+    n_value_networks: int = 3,
+    net_arch: List[int] = [64, 64],
+    activation_fn: Type[nn.Module] = nn.ReLU,
+    **kwargs
   ):
-    super().__init__(
-        policy=policy,
-        env=env,
-        learning_rate=learning_rate,
-        n_steps=n_steps,
-        batch_size=batch_size,
-        gamma=gamma,
-        **kwargs
-    )
+    super().__init__(policy=policy, env=env, learning_rate=learning_rate, n_steps=n_steps, batch_size=batch_size, gamma=gamma, **kwargs)
     self.n_quantiles = n_quantiles
     self.truncation_threshold = truncation_threshold
     self.n_value_networks = n_value_networks
 
     # Initialize multiple quantile-based value functions
-    self.value_networks = nn.ModuleList([
-        QuantileValueNetwork(
-            state_dim=env.observation_space.shape[0],
-            n_quantiles=n_quantiles,
-            net_arch=net_arch,
-            activation_fn=activation_fn
-        ) for _ in range(n_value_networks)
-    ])
+    self.value_networks = nn.ModuleList(
+      [
+        QuantileValueNetwork(state_dim=env.observation_space.shape[0], n_quantiles=n_quantiles, net_arch=net_arch, activation_fn=activation_fn)
+        for _ in range(n_value_networks)
+      ]
+    )
 
     if callable(learning_rate):
       learning_rate = learning_rate(0)
@@ -91,7 +81,7 @@ class TRPOQ(TRPO):
   def _compute_truncated_value(self, states):
     all_quantiles = th.cat([v(states) for v in self.value_networks], dim=1)
     sorted_quantiles, _ = th.sort(all_quantiles, dim=1)
-    truncated_values = sorted_quantiles[:, :self.truncation_threshold].mean(dim=1)
+    truncated_values = sorted_quantiles[:, : self.truncation_threshold].mean(dim=1)
     return truncated_values
 
   def train(self):
@@ -128,9 +118,7 @@ class TRPOQ(TRPO):
       actor_params, policy_objective_gradients, grad_kl, grad_shape = self._compute_actor_grad(kl_div, policy_objective)
 
       search_direction = conjugate_gradient_solver(
-          partial(self.hessian_vector_product, actor_params, grad_kl),
-          policy_objective_gradients,
-          max_iter=self.cg_max_steps
+        partial(self.hessian_vector_product, actor_params, grad_kl), policy_objective_gradients, max_iter=self.cg_max_steps
       )
 
       step_size = 2 * self.target_kl / (th.matmul(search_direction, self.hessian_vector_product(actor_params, grad_kl, search_direction)))
@@ -143,9 +131,7 @@ class TRPOQ(TRPO):
         start_idx = 0
         for param, original_param, shape in zip(actor_params, original_actor_params, grad_shape):
           n_params = param.numel()
-          param.data = (
-              original_param.data + step_size * search_direction[start_idx: start_idx + n_params].view(shape)
-          )
+          param.data = original_param.data + step_size * search_direction[start_idx : start_idx + n_params].view(shape)
           start_idx += n_params
 
         distribution = self.policy.get_distribution(rollout_data.observations)
@@ -192,14 +178,14 @@ class TRPOQ(TRPO):
 
 def sample_trpoq_params(trial, n_actions, n_envs, additional_args):
   """
-  Sampler for TRPO with Quantile Value Estimation hyperparameters.
+    Sampler for TRPO with Quantile Value Estimation hyperparameters.
 
-  :param trial: Optuna trial object
-  :param n_actions: Number of actions in the environment
-  :param n_envs: Number of parallel environments
-  :param additional_args: Additional arguments for sampling
-  :return: Dictionary of sampled hyperparameters
-  """
+    :param trial: Optuna trial object
+    :param n_actions: Number of actions in the environment
+    :param n_envs: Number of parallel environments
+    :param additional_args: Additional arguments for sampling
+    :return: Dictionary of sampled hyperparameters
+    """
   n_steps = trial.suggest_categorical("n_steps", [8, 16, 32, 64, 128, 256, 512, 1024, 2048])
   gamma = trial.suggest_categorical("gamma", [0.9, 0.95, 0.98, 0.99, 0.995, 0.999, 0.9999])
   learning_rate = trial.suggest_float("learning_rate", 1e-5, 1, log=True)
@@ -220,17 +206,21 @@ def sample_trpoq_params(trial, n_actions, n_envs, additional_args):
 
   network_params = optimize_hyperparameters(trial)
 
+  n_timesteps = trial.suggest_int("n_timesteps", 100000, 1000000, step=100000)
+  n_envs = trial.suggest_categorical("n_envs", [n_envs] if n_envs > 0 else [1, 2, 4, 6, 8, 10])
+
   return {
-      "policy": "MlpPolicy",
-      "n_envs": n_envs,
-      "n_steps": n_steps,
-      "batch_size": batch_size,
-      "gamma": gamma,
-      "cg_max_steps": cg_max_steps,
-      "n_critic_updates": n_critic_updates,
-      "target_kl": target_kl,
-      "learning_rate": learning_rate,
-      "truncation_threshold": truncation_threshold,
-      "n_value_networks": n_value_networks,
-      **network_params,
+    "policy": "MlpPolicy",
+    "n_timesteps": n_timesteps,
+    "n_envs": n_envs,
+    "n_steps": n_steps,
+    "batch_size": batch_size,
+    "gamma": gamma,
+    "cg_max_steps": cg_max_steps,
+    "n_critic_updates": n_critic_updates,
+    "target_kl": target_kl,
+    "learning_rate": learning_rate,
+    "truncation_threshold": truncation_threshold,
+    "n_value_networks": n_value_networks,
+    **network_params,
   }

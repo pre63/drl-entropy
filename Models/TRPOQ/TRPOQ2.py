@@ -19,38 +19,30 @@ SelfTRPO = TypeVar("SelfTRPO", bound="TRPO")
 
 class TRPOQ2(TRPO):
   """
-  Trust Region Policy Optimization with Quantile Regression (TRPO-Q) implementation with guarantees.
-  - Corrective Penalties: Compensates for conservative bias with a penalty term.
-  - Dual Critics: Maintains both standard and truncated critics.
-  - Adaptive Truncation: Dynamically adjusts truncation based on value variance.
-  """
+    Trust Region Policy Optimization with Quantile Regression (TRPO-Q) implementation with guarantees.
+    - Corrective Penalties: Compensates for conservative bias with a penalty term.
+    - Dual Critics: Maintains both standard and truncated critics.
+    - Adaptive Truncation: Dynamically adjusts truncation based on value variance.
+    """
 
   def __init__(
-      self,
-      policy: Union[str, type[ActorCriticPolicy]],
-      env: Union[GymEnv, str],
-      learning_rate: Union[float, Schedule] = 1e-3,
-      n_steps: int = 2048,
-      batch_size: int = 128,
-      gamma: float = 0.99,
-      n_quantiles: int = 25,
-      truncation_threshold: int = 5,
-      n_value_networks: int = 3,
-      adaptive_truncation: bool = True,
-      penalty_coef: float = 0.01,
-      net_arch: List[int] = [64, 64],
-      activation_fn: Type[nn.Module] = nn.ReLU,
-      **kwargs
+    self,
+    policy: Union[str, type[ActorCriticPolicy]],
+    env: Union[GymEnv, str],
+    learning_rate: Union[float, Schedule] = 1e-3,
+    n_steps: int = 2048,
+    batch_size: int = 128,
+    gamma: float = 0.99,
+    n_quantiles: int = 25,
+    truncation_threshold: int = 5,
+    n_value_networks: int = 3,
+    adaptive_truncation: bool = True,
+    penalty_coef: float = 0.01,
+    net_arch: List[int] = [64, 64],
+    activation_fn: Type[nn.Module] = nn.ReLU,
+    **kwargs
   ):
-    super().__init__(
-        policy=policy,
-        env=env,
-        learning_rate=learning_rate,
-        n_steps=n_steps,
-        batch_size=batch_size,
-        gamma=gamma,
-        **kwargs
-    )
+    super().__init__(policy=policy, env=env, learning_rate=learning_rate, n_steps=n_steps, batch_size=batch_size, gamma=gamma, **kwargs)
     self.n_quantiles = n_quantiles
     self.truncation_threshold = truncation_threshold
     self.n_value_networks = n_value_networks
@@ -58,23 +50,19 @@ class TRPOQ2(TRPO):
     self.penalty_coef = penalty_coef
 
     # Initialize dual critics
-    self.truncated_value_networks = nn.ModuleList([
-        QuantileValueNetwork(
-            state_dim=env.observation_space.shape[0],
-            n_quantiles=n_quantiles,
-            net_arch=net_arch,
-            activation_fn=activation_fn
-        ) for _ in range(n_value_networks)
-    ])
+    self.truncated_value_networks = nn.ModuleList(
+      [
+        QuantileValueNetwork(state_dim=env.observation_space.shape[0], n_quantiles=n_quantiles, net_arch=net_arch, activation_fn=activation_fn)
+        for _ in range(n_value_networks)
+      ]
+    )
 
-    self.standard_value_networks = nn.ModuleList([
-        QuantileValueNetwork(
-            state_dim=env.observation_space.shape[0],
-            n_quantiles=n_quantiles,
-            net_arch=net_arch,
-            activation_fn=activation_fn
-        ) for _ in range(n_value_networks)
-    ])
+    self.standard_value_networks = nn.ModuleList(
+      [
+        QuantileValueNetwork(state_dim=env.observation_space.shape[0], n_quantiles=n_quantiles, net_arch=net_arch, activation_fn=activation_fn)
+        for _ in range(n_value_networks)
+      ]
+    )
 
     if callable(learning_rate):
       learning_rate = learning_rate(0)
@@ -134,9 +122,7 @@ class TRPOQ2(TRPO):
       actor_params, policy_objective_gradients, grad_kl, grad_shape = self._compute_actor_grad(kl_div, policy_objective)
 
       search_direction = conjugate_gradient_solver(
-          partial(self.hessian_vector_product, actor_params, grad_kl),
-          policy_objective_gradients,
-          max_iter=self.cg_max_steps
+        partial(self.hessian_vector_product, actor_params, grad_kl), policy_objective_gradients, max_iter=self.cg_max_steps
       )
 
       step_size = 2 * self.target_kl / (th.matmul(search_direction, self.hessian_vector_product(actor_params, grad_kl, search_direction)))
@@ -150,9 +136,7 @@ class TRPOQ2(TRPO):
         start_idx = 0
         for param, original_param, shape in zip(actor_params, original_actor_params, grad_shape):
           n_params = param.numel()
-          param.data = (
-              original_param.data + step_size * search_direction[start_idx: start_idx + n_params].view(shape)
-          )
+          param.data = original_param.data + step_size * search_direction[start_idx : start_idx + n_params].view(shape)
           start_idx += n_params
 
         distribution = self.policy.get_distribution(rollout_data.observations)
@@ -173,8 +157,8 @@ class TRPOQ2(TRPO):
       # Value function update with dual critics and quantile regression
       for _ in range(self.n_critic_updates):
         for networks, optimizers in [
-            (self.truncated_value_networks, self.truncated_value_optimizers),
-            (self.standard_value_networks, self.standard_value_optimizers)
+          (self.truncated_value_networks, self.truncated_value_optimizers),
+          (self.standard_value_networks, self.standard_value_optimizers),
         ]:
           for value_network, value_optimizer in zip(networks, optimizers):
             predicted_quantiles = value_network(rollout_data.observations)
@@ -188,14 +172,14 @@ class TRPOQ2(TRPO):
 
 def sample_trpoq2_params(trial, n_actions, n_envs, additional_args):
   """
-  Sampler for TRPO with Quantile Value Estimation hyperparameters.
+    Sampler for TRPO with Quantile Value Estimation hyperparameters.
 
-  :param trial: Optuna trial object
-  :param n_actions: Number of actions in the environment
-  :param n_envs: Number of parallel environments
-  :param additional_args: Additional arguments for sampling
-  :return: Dictionary of sampled hyperparameters
-  """
+    :param trial: Optuna trial object
+    :param n_actions: Number of actions in the environment
+    :param n_envs: Number of parallel environments
+    :param additional_args: Additional arguments for sampling
+    :return: Dictionary of sampled hyperparameters
+    """
   n_steps = trial.suggest_categorical("n_steps", [8, 16, 32, 64, 128, 256, 512, 1024, 2048])
   gamma = trial.suggest_categorical("gamma", [0.9, 0.95, 0.98, 0.99, 0.995, 0.999, 0.9999])
   learning_rate = trial.suggest_float("learning_rate", 1e-5, 1, log=True)
@@ -219,19 +203,23 @@ def sample_trpoq2_params(trial, n_actions, n_envs, additional_args):
 
   network_params = optimize_hyperparameters(trial)
 
+  n_timesteps = trial.suggest_int("n_timesteps", 100000, 1000000, step=100000)
+  n_envs = trial.suggest_categorical("n_envs", [n_envs] if n_envs > 0 else [1, 2, 4, 6, 8, 10])
+
   return {
-      "policy": "MlpPolicy",
-      "n_envs": n_envs,
-      "n_steps": n_steps,
-      "batch_size": batch_size,
-      "gamma": gamma,
-      "cg_max_steps": cg_max_steps,
-      "n_critic_updates": n_critic_updates,
-      "target_kl": target_kl,
-      "learning_rate": learning_rate,
-      "truncation_threshold": truncation_threshold,
-      "n_value_networks": n_value_networks,
-      "adaptive_truncation": adaptive_truncation,
-      "penalty_coef": penalty_coef,
-      **network_params,
+    "policy": "MlpPolicy",
+    "n_timesteps": n_timesteps,
+    "n_envs": n_envs,
+    "n_steps": n_steps,
+    "batch_size": batch_size,
+    "gamma": gamma,
+    "cg_max_steps": cg_max_steps,
+    "n_critic_updates": n_critic_updates,
+    "target_kl": target_kl,
+    "learning_rate": learning_rate,
+    "truncation_threshold": truncation_threshold,
+    "n_value_networks": n_value_networks,
+    "adaptive_truncation": adaptive_truncation,
+    "penalty_coef": penalty_coef,
+    **network_params,
   }

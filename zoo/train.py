@@ -24,19 +24,19 @@ from zoo.configure import configure
 
 # Register models
 models = {
-    "entrpo": {"model": EnTRPO, "sample": sample_entrpo_params},
-    "entrpolow": {"model": EnTRPOLow, "sample": sample_entrpo_params},
-    "entrpohigh": {"model": EnTRPOHigh, "sample": sample_entrpo_params},
-    "trpoq": {"model": TRPOQ, "sample": sample_trpoq_params},
-    "trpoq2": {"model": TRPOQ2, "sample": sample_trpoq2_params},
-    "trpor": {"model": TRPOR, "sample": sample_trpor_params},
-    "entrpor": {"model": EnTRPOR, "sample": sample_entrpor_params},
-    "trpoqh": {"model": TRPOQH, "sample": sample_trpoqh_params},
-    "trpoqho": {"model": TRPOQHO, "sample": sample_trpoqho_params},
-    "sac": {"model": SAC},
-    "tqc": {"model": TQC},
-    "trpo": {"model": TRPO, "sample": sample_trpo_params},
-    "ppo": {"model": PPO, "sample": sample_ppo_params},
+  "entrpo": {"model": EnTRPO, "sample": sample_entrpo_params},
+  "entrpolow": {"model": EnTRPOLow, "sample": sample_entrpo_params},
+  "entrpohigh": {"model": EnTRPOHigh, "sample": sample_entrpo_params},
+  "trpoq": {"model": TRPOQ, "sample": sample_trpoq_params},
+  "trpoq2": {"model": TRPOQ2, "sample": sample_trpoq2_params},
+  "trpor": {"model": TRPOR, "sample": sample_trpor_params},
+  "entrpor": {"model": EnTRPOR, "sample": sample_entrpor_params},
+  "trpoqh": {"model": TRPOQH, "sample": sample_trpoqh_params},
+  "trpoqho": {"model": TRPOQHO, "sample": sample_trpoqho_params},
+  "sac": {"model": SAC},
+  "tqc": {"model": TQC},
+  "trpo": {"model": TRPO, "sample": sample_trpo_params},
+  "ppo": {"model": PPO, "sample": sample_ppo_params},
 }
 
 for model_name, value in models.items():
@@ -58,7 +58,7 @@ if __name__ == "__main__":
   parser.add_argument("--conf_file", type=str, default=None)
   parser.add_argument("--trials", type=int, default=40)
   parser.add_argument("--n_jobs", type=int, default=10)
-  parser.add_argument("--n_timesteps", type=int, default=1000000)
+  parser.add_argument("--n_timesteps", type=int, default=0)
 
   params = parser.parse_args()
   model = params.model
@@ -68,12 +68,12 @@ if __name__ == "__main__":
     conf_file = f"Hyperparameters/{model.lower()}.yml"
 
   configure(
-      algo=params.model,
-      env=params.env,
-      device=params.device,
-      optimize_hyperparameters=params.optimize,
-      conf_file=conf_file,
-      n_trials=params.trials,
-      n_timesteps=params.n_timesteps,
-      n_jobs=params.n_jobs,
+    algo=params.model,
+    env=params.env,
+    device=params.device,
+    optimize_hyperparameters=params.optimize,
+    conf_file=conf_file,
+    n_trials=params.trials,
+    n_timesteps=params.n_timesteps,
+    n_jobs=params.n_jobs,
   )

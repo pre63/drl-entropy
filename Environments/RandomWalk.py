@@ -21,23 +21,23 @@ WEST, EAST = 0, 1
 
 class WalkEnv(gym.Env):
   """
-  Random Walk Environment for Reinforcement Learning.
+    Random Walk Environment for Reinforcement Learning.
 
-  Defaults are meant to be hard enough to create an environment where we can train a model without
-  it randomly converging to the optimal policy.
+    Defaults are meant to be hard enough to create an environment where we can train a model without
+    it randomly converging to the optimal policy.
 
-  The environment represents a 1D grid with a start state, terminal states at both ends,
-  and intermediate navigable states. The agent can move left, right, or stay in the same position.
-  Rewards are provided for reaching the terminal states.
+    The environment represents a 1D grid with a start state, terminal states at both ends,
+    and intermediate navigable states. The agent can move left, right, or stay in the same position.
+    Rewards are provided for reaching the terminal states.
 
-  Parameters:
-  - n_states (int): Number of intermediate states (excluding start and terminal states).
-  - p_stay (float): Probability of staying in the same state.
-  - p_backward (float): Probability of moving backward.
-  - max_blocks (int): Maximum number of steps allowed per episode.
-  - render_mode (str): Rendering mode ("human", "ansi", or None).
-  - verbose (int): Verbosity level for logging messages (0 for no logging).
-  """
+    Parameters:
+    - n_states (int): Number of intermediate states (excluding start and terminal states).
+    - p_stay (float): Probability of staying in the same state.
+    - p_backward (float): Probability of moving backward.
+    - max_blocks (int): Maximum number of steps allowed per episode.
+    - render_mode (str): Rendering mode ("human", "ansi", or None).
+    - verbose (int): Verbosity level for logging messages (0 for no logging).
+    """
 
   metadata = {"render_modes": [None, "human", "ansi"], "render_fps": 5}
 
@@ -110,8 +110,8 @@ class WalkEnv(gym.Env):
 
   def _initialize_pygame(self):
     """
-    Initialize Pygame for rendering the environment in human mode.
-    """
+        Initialize Pygame for rendering the environment in human mode.
+        """
     pygame.init()
     self._pygame_initialized = True
     self.screen_size = (800, 200)
@@ -124,9 +124,9 @@ class WalkEnv(gym.Env):
 
   def _initialize_transitions(self):
     """
-    Precompute transition probabilities for all states and actions.
-    This method is called lazily to reduce initialization overhead.
-    """
+        Precompute transition probabilities for all states and actions.
+        This method is called lazily to reduce initialization overhead.
+        """
     self.P = {}
     for s in range(self.nS):
       self.P[s] = {}
@@ -140,15 +140,15 @@ class WalkEnv(gym.Env):
         d_backward = (s >= self.nS - 2 and s_backward == self.nS - 1) or (s <= 1 and s_backward == 0)
 
         self.P[s][a] = [
-            (p_forward, s_forward, r_forward, d_forward),
-            (self.p_stay, s, 0.0, s in [0, self.nS - 1]),
-            (self.p_backward, s_backward, r_backward, d_backward),
+          (p_forward, s_forward, r_forward, d_forward),
+          (self.p_stay, s, 0.0, s in [0, self.nS - 1]),
+          (self.p_backward, s_backward, r_backward, d_backward),
         ]
 
   def _initialize_categorical_samples(self):
     """
-    Precompute cumulative probabilities for transitions to speed up sampling during steps.
-    """
+        Precompute cumulative probabilities for transitions to speed up sampling during steps.
+        """
     if not self.P:
       self._initialize_transitions()
 
@@ -160,15 +160,15 @@ class WalkEnv(gym.Env):
 
   def step(self, action):
     """
-    Execute a step in the environment based on the provided action.
+        Execute a step in the environment based on the provided action.
 
-    Returns:
-    - next_state (int): The next state of the agent.
-    - reward (float): The reward received after taking the action.
-    - terminated (bool): Whether the episode has terminated.
-    - truncated (bool): Whether the episode was truncated due to max steps.
-    - info (dict): Additional information about the step.
-    """
+        Returns:
+        - next_state (int): The next state of the agent.
+        - reward (float): The reward received after taking the action.
+        - terminated (bool): Whether the episode has terminated.
+        - truncated (bool): Whether the episode was truncated due to max steps.
+        - info (dict): Additional information about the step.
+        """
     self.current_step += 1
 
     if not self.action_space.contains(action):
@@ -192,16 +192,16 @@ class WalkEnv(gym.Env):
 
   def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None):
     """
-    Reset the environment to its initial state.
+        Reset the environment to its initial state.
 
-    Parameters:
-    - seed (int, optional): Random seed for reproducibility.
-    - options (dict, optional): Additional options for the reset.
+        Parameters:
+        - seed (int, optional): Random seed for reproducibility.
+        - options (dict, optional): Additional options for the reset.
 
-    Returns:
-    - initial_state (int): The initial state of the environment.
-    - info (dict): Additional information about the reset.
-    """
+        Returns:
+        - initial_state (int): The initial state of the environment.
+        - info (dict): Additional information about the reset.
+        """
     if seed is not None:
       super().reset(seed=seed)
       self.np_random, _ = gym.utils.seeding.np_random(seed)
@@ -219,8 +219,8 @@ class WalkEnv(gym.Env):
 
   def _ansi_render(self):
     """
-    Render the environment in text mode.
-    """
+        Render the environment in text mode.
+        """
     outfile = StringIO()
     desc = np.asarray(["[" + ascii_uppercase[: self.shape[1] - 2] + "]"], dtype="c").tolist()
     desc = [[c.decode("utf-8") for c in line] for line in desc]
@@ -232,8 +232,8 @@ class WalkEnv(gym.Env):
 
   def _human_render(self):
     """
-    Render the environment using Pygame.
-    """
+        Render the environment using Pygame.
+        """
     if self.verbose > 0:
       print("Rendering the environment with Pygame...")
 
@@ -250,12 +250,7 @@ class WalkEnv(gym.Env):
     for i in range(self.shape[1] - 2):
       cell_x = i * self.cell_width
       cell_rect = pygame.Rect(cell_x, 50, self.cell_width, 100)
-      color = (
-          LEFT_TERMINAL_COLOR if i == 0 else
-          TERMINAL_COLOR if i == self.nS - 1 else
-          AGENT_COLOR if i == self.s else
-          CELL_COLOR
-      )
+      color = LEFT_TERMINAL_COLOR if i == 0 else TERMINAL_COLOR if i == self.nS - 1 else AGENT_COLOR if i == self.s else CELL_COLOR
       pygame.draw.rect(surface, color, cell_rect)
       pygame.draw.rect(surface, (0, 0, 0), cell_rect, 2)
 
@@ -267,12 +262,8 @@ class WalkEnv(gym.Env):
 class ContinuousWalkEnv(WalkEnv):
   def __init__(self, n_states, p_stay, p_backward, max_blocks, render_mode, verbose):
     super().__init__(n_states, p_stay, p_backward, max_blocks, render_mode, verbose)
-    self.observation_space = spaces.Box(
-        low=0.0, high=float(n_states + 1), shape=(1,), dtype=np.float32
-    )
-    self.action_space = spaces.Box(
-        low=-1.0, high=1.0, shape=(1,), dtype=np.float32
-    )
+    self.observation_space = spaces.Box(low=0.0, high=float(n_states + 1), shape=(1,), dtype=np.float32)
+    self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(1,), dtype=np.float32)
 
   def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None):
     super().reset(seed=seed, options=options)
@@ -329,14 +320,7 @@ def plot_transition_matrix(env):
   # Plot transition probabilities for each action
   fig, axes = plt.subplots(1, n_actions, figsize=(15, 5))
   for a in range(n_actions):
-    sns.heatmap(
-        transition_probs[:, a, :],
-        annot=True,
-        fmt=".2f",
-        cmap="Blues",
-        cbar=True,
-        ax=axes[a]
-    )
+    sns.heatmap(transition_probs[:, a, :], annot=True, fmt=".2f", cmap="Blues", cbar=True, ax=axes[a])
     axes[a].set_title(f"Action {a}: Transition Probabilities")
     axes[a].set_xlabel("Next State")
     axes[a].set_ylabel("Current State")
@@ -346,7 +330,7 @@ def plot_transition_matrix(env):
 
 
 def plot_rewards(env):
-    # Adjust for terminal states
+  # Adjust for terminal states
   n_states = env.shape[1] - 2  # Exclude start and terminal states
   n_actions = env.n_actions
   rewards = np.zeros((n_states, n_actions, n_states))
@@ -360,13 +344,7 @@ def plot_rewards(env):
   # Aggregate and plot rewards
   aggregated_rewards = rewards.sum(axis=1)  # Aggregate rewards over actions
   plt.figure(figsize=(10, 6))
-  sns.heatmap(
-      aggregated_rewards,
-      annot=True,
-      fmt=".2f",
-      cmap="YlGnBu",
-      cbar=True
-  )
+  sns.heatmap(aggregated_rewards, annot=True, fmt=".2f", cmap="YlGnBu", cbar=True)
   plt.title("Rewards Matrix (Aggregated over Actions)")
   plt.xlabel("Next State")
   plt.ylabel("Current State")
@@ -375,15 +353,15 @@ def plot_rewards(env):
 
 def estimate_goal_probability(env, num_simulations=1000):
   """
-  Estimate the probability of reaching the goal in a random walk MDP.
+    Estimate the probability of reaching the goal in a random walk MDP.
 
-  Parameters:
-  - env: The random walk environment.
-  - num_simulations: Number of simulations to run.
+    Parameters:
+    - env: The random walk environment.
+    - num_simulations: Number of simulations to run.
 
-  Returns:
-  - success_probability: Estimated probability of reaching the goal.
-  """
+    Returns:
+    - success_probability: Estimated probability of reaching the goal.
+    """
   successes = 0
 
   for _ in range(num_simulations):

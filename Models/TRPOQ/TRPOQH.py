@@ -21,45 +21,37 @@ SelfTRPO = TypeVar("SelfTRPO", bound="TRPO")
 
 class TRPOQH(TRPO):
   """
-  Trust Region Policy Optimization with Quantile-Based Value Estimation (TRPOQ-Hybrid).
+    Trust Region Policy Optimization with Quantile-Based Value Estimation (TRPOQ-Hybrid).
 
-  TRPOQ-Hybrid extends standard TRPO by introducing dual critics, adaptive truncation,
-  and corrective penalties to control overestimation bias in continuous control tasks.
+    TRPOQ-Hybrid extends standard TRPO by introducing dual critics, adaptive truncation,
+    and corrective penalties to control overestimation bias in continuous control tasks.
 
-  Key Features:
-  - **Dual Critics:** Maintains separate critics for standard and truncated quantile estimations.
-  - **Adaptive Truncation:** Dynamically adjusts the truncation threshold based on the variance of the critic's quantile outputs.
-  - **Corrective Penalty:** Applies a penalty based on the difference between standard and truncated critic values to compensate for conservative bias.
-  - **Multiple Value Networks:** Utilizes multiple critic networks for both standard and truncated values to reduce variance and improve stability.
-  - **KL-Divergence Constraint:** Retains the core TRPO constraint to ensure policy stability.
-  """
+    Key Features:
+    - **Dual Critics:** Maintains separate critics for standard and truncated quantile estimations.
+    - **Adaptive Truncation:** Dynamically adjusts the truncation threshold based on the variance of the critic's quantile outputs.
+    - **Corrective Penalty:** Applies a penalty based on the difference between standard and truncated critic values to compensate for conservative bias.
+    - **Multiple Value Networks:** Utilizes multiple critic networks for both standard and truncated values to reduce variance and improve stability.
+    - **KL-Divergence Constraint:** Retains the core TRPO constraint to ensure policy stability.
+    """
 
   def __init__(
-      self,
-      policy: Union[str, type[ActorCriticPolicy]],
-      env: Union[GymEnv, str],
-      learning_rate: Union[float, Schedule] = 1e-3,
-      n_steps: int = 2048,
-      batch_size: int = 128,
-      gamma: float = 0.99,
-      n_quantiles: int = 25,
-      truncation_threshold: int = 5,
-      n_value_networks: int = 2,
-      adaptive_truncation: bool = True,
-      penalty_coef: float = 0.01,
-      net_arch: List[int] = [64, 64],
-      activation_fn: Type[nn.Module] = nn.ReLU,
-      **kwargs
+    self,
+    policy: Union[str, type[ActorCriticPolicy]],
+    env: Union[GymEnv, str],
+    learning_rate: Union[float, Schedule] = 1e-3,
+    n_steps: int = 2048,
+    batch_size: int = 128,
+    gamma: float = 0.99,
+    n_quantiles: int = 25,
+    truncation_threshold: int = 5,
+    n_value_networks: int = 2,
+    adaptive_truncation: bool = True,
+    penalty_coef: float = 0.01,
+    net_arch: List[int] = [64, 64],
+    activation_fn: Type[nn.Module] = nn.ReLU,
+    **kwargs
   ):
-    super().__init__(
-        policy=policy,
-        env=env,
-        learning_rate=learning_rate,
-        n_steps=n_steps,
-        batch_size=batch_size,
-        gamma=gamma,
-        **kwargs
-    )
+    super().__init__(policy=policy, env=env, learning_rate=learning_rate, n_steps=n_steps, batch_size=batch_size, gamma=gamma, **kwargs)
     self.n_quantiles = n_quantiles
     self.truncation_threshold = truncation_threshold
     self.n_value_networks = n_value_networks
@@ -68,10 +60,7 @@ class TRPOQH(TRPO):
 
     # Shared network backbone for both standard and truncated critics
     self.shared_value_network = QuantileValueNetwork(
-        state_dim=env.observation_space.shape[0],
-        n_quantiles=n_quantiles,
-        net_arch=net_arch,
-        activation_fn=activation_fn
+      state_dim=env.observation_space.shape[0], n_quantiles=n_quantiles, net_arch=net_arch, activation_fn=activation_fn
     )
 
     # Separate heads for standard and truncated critics
@@ -138,9 +127,7 @@ class TRPOQH(TRPO):
       actor_params, policy_objective_gradients, grad_kl, grad_shape = self._compute_actor_grad(kl_div, policy_objective)
 
       search_direction = conjugate_gradient_solver(
-          partial(self.hessian_vector_product, actor_params, grad_kl),
-          policy_objective_gradients,
-          max_iter=self.cg_max_steps
+        partial(self.hessian_vector_product, actor_params, grad_kl), policy_objective_gradients, max_iter=self.cg_max_steps
       )
 
       step_size = 2 * self.target_kl / (th.matmul(search_direction, self.hessian_vector_product(actor_params, grad_kl, search_direction)))
@@ -153,9 +140,7 @@ class TRPOQH(TRPO):
         start_idx = 0
         for param, original_param, shape in zip(actor_params, original_actor_params, grad_shape):
           n_params = param.numel()
-          param.data = (
-              original_param.data + step_size * search_direction[start_idx: start_idx + n_params].view(shape)
-          )
+          param.data = original_param.data + step_size * search_direction[start_idx : start_idx + n_params].view(shape)
           start_idx += n_params
 
         distribution = self.policy.get_distribution(rollout_data.observations)
@@ -181,54 +166,41 @@ class TRPOQH(TRPO):
 
 class TRPOQHO(TRPO):
   """
-  Trust Region Policy Optimization with Quantile-Based Value Estimation (TRPOQ-Hybrid Optimized).
+    Trust Region Policy Optimization with Quantile-Based Value Estimation (TRPOQ-Hybrid Optimized).
 
-  TRPOQ-Hybrid Optimized is an advanced policy optimization algorithm that combines elements of
-  TRPO and quantile regression with several efficiency improvements. It is designed to reduce overestimation
-  bias while maintaining computational efficiency and policy stability.
+    TRPOQ-Hybrid Optimized is an advanced policy optimization algorithm that combines elements of
+    TRPO and quantile regression with several efficiency improvements. It is designed to reduce overestimation
+    bias while maintaining computational efficiency and policy stability.
 
-  Key Features:
-  - **Single Critic with Dual Heads:** Uses a shared neural network for both standard and truncated quantile estimates, reducing parameter count and forward passes.
-  - **Soft Truncation:** Applies a weighted average of lower quantiles instead of hard truncation, reducing the need for sorting operations.
-  - **KL-Regularized Optimization:** Replaces TRPO's line search with a KL-divergence penalty term in the objective function for simpler and faster optimization.
-  - **Gradient Clipping:** Implements gradient clipping for improved numerical stability during updates.
-  - **Reduced Value Network Complexity:** Combines standard and truncated quantile critics into a single model with two output heads, reducing memory and computation costs.
+    Key Features:
+    - **Single Critic with Dual Heads:** Uses a shared neural network for both standard and truncated quantile estimates, reducing parameter count and forward passes.
+    - **Soft Truncation:** Applies a weighted average of lower quantiles instead of hard truncation, reducing the need for sorting operations.
+    - **KL-Regularized Optimization:** Replaces TRPO's line search with a KL-divergence penalty term in the objective function for simpler and faster optimization.
+    - **Gradient Clipping:** Implements gradient clipping for improved numerical stability during updates.
+    - **Reduced Value Network Complexity:** Combines standard and truncated quantile critics into a single model with two output heads, reducing memory and computation costs.
 
-  """
+    """
 
   def __init__(
-      self,
-      policy: Union[str, type[ActorCriticPolicy]],
-      env: Union[GymEnv, str],
-      learning_rate: Union[float, Schedule] = 1e-3,
-      n_steps: int = 2048,
-      batch_size: int = 128,
-      gamma: float = 0.99,
-      n_quantiles: int = 25,
-      kl_coef: float = 0.01,  # Replaces explicit line search
-      net_arch: List[int] = [64, 64],
-      activation_fn: Type[nn.Module] = nn.ReLU,
-      **kwargs
+    self,
+    policy: Union[str, type[ActorCriticPolicy]],
+    env: Union[GymEnv, str],
+    learning_rate: Union[float, Schedule] = 1e-3,
+    n_steps: int = 2048,
+    batch_size: int = 128,
+    gamma: float = 0.99,
+    n_quantiles: int = 25,
+    kl_coef: float = 0.01,  # Replaces explicit line search
+    net_arch: List[int] = [64, 64],
+    activation_fn: Type[nn.Module] = nn.ReLU,
+    **kwargs
   ):
-    super().__init__(
-        policy=policy,
-        env=env,
-        learning_rate=learning_rate,
-        n_steps=n_steps,
-        batch_size=batch_size,
-        gamma=gamma,
-        **kwargs
-    )
+    super().__init__(policy=policy, env=env, learning_rate=learning_rate, n_steps=n_steps, batch_size=batch_size, gamma=gamma, **kwargs)
     self.n_quantiles = n_quantiles
     self.kl_coef = kl_coef
 
     # Shared Critic Network with Dual Heads
-    self.critic = QuantileValueNetwork(
-        state_dim=env.observation_space.shape[0],
-        n_quantiles=n_quantiles,
-        net_arch=net_arch,
-        activation_fn=activation_fn
-    )
+    self.critic = QuantileValueNetwork(state_dim=env.observation_space.shape[0], n_quantiles=n_quantiles, net_arch=net_arch, activation_fn=activation_fn)
 
     if callable(learning_rate):
       learning_rate = learning_rate(0)
@@ -307,17 +279,17 @@ class TRPOQHO(TRPO):
 
 def sample_trpoqho_params(trial, n_actions, n_envs, additional_args):
   """
-  Hyperparameter sampler for TRPOQHybridOptimized using Optuna.
+    Hyperparameter sampler for TRPOQHybridOptimized using Optuna.
 
-  This method samples hyperparameters for the TRPOQHybridOptimized model, focusing on efficient
-  value estimation with dual-head critics, soft truncation, and KL-regularization.
+    This method samples hyperparameters for the TRPOQHybridOptimized model, focusing on efficient
+    value estimation with dual-head critics, soft truncation, and KL-regularization.
 
-  :param trial: Optuna trial object
-  :param n_actions: Number of actions in the environment
-  :param n_envs: Number of parallel environments
-  :param additional_args: Additional arguments for hyperparameter sampling
-  :return: Dictionary of sampled hyperparameters for TRPOQHybridOptimized
-  """
+    :param trial: Optuna trial object
+    :param n_actions: Number of actions in the environment
+    :param n_envs: Number of parallel environments
+    :param additional_args: Additional arguments for hyperparameter sampling
+    :return: Dictionary of sampled hyperparameters for TRPOQHybridOptimized
+    """
   n_steps = trial.suggest_categorical("n_steps", [512, 1024, 2048])
   gamma = trial.suggest_categorical("gamma", [0.98, 0.99, 0.995])
   learning_rate = trial.suggest_float("learning_rate", 1e-5, 1e-2, log=True)
@@ -328,48 +300,45 @@ def sample_trpoqho_params(trial, n_actions, n_envs, additional_args):
 
   # Neural network architecture selection
   net_arch_type = trial.suggest_categorical("net_arch", ["small", "medium", "large"])
-  net_arch = {
-      "small": [64, 64],
-      "medium": [256, 256],
-      "large": [512, 512]
-  }[net_arch_type]
+  net_arch = {"small": [64, 64], "medium": [256, 256], "large": [512, 512]}[net_arch_type]
 
   # Activation function selection
   activation_fn_name = trial.suggest_categorical("activation_fn", ["tanh", "relu"])
-  activation_fn = {
-      "tanh": nn.Tanh,
-      "relu": nn.ReLU
-  }[activation_fn_name]
+  activation_fn = {"tanh": nn.Tanh, "relu": nn.ReLU}[activation_fn_name]
 
   batch_size = trial.suggest_categorical("batch_size", [8, 16, 32, 64, 128, 256, 512, 1024])
 
+  n_timesteps = trial.suggest_int("n_timesteps", 100000, 1000000, step=100000)
+  n_envs = trial.suggest_categorical("n_envs", [n_envs] if n_envs > 0 else [1, 2, 4, 6, 8, 10])
+
   return {
-      "policy": "MlpPolicy",
-      "n_envs": n_envs,
-      "n_steps": n_steps,
-      "batch_size": batch_size,
-      "gamma": gamma,
-      "learning_rate": learning_rate,
-      "kl_coef": kl_coef,
-      "n_quantiles": n_quantiles,
-      "net_arch": net_arch,
-      "activation_fn": activation_fn
+    "policy": "MlpPolicy",
+    "n_time_steps": n_timesteps,
+    "n_envs": n_envs,
+    "n_steps": n_steps,
+    "batch_size": batch_size,
+    "gamma": gamma,
+    "learning_rate": learning_rate,
+    "kl_coef": kl_coef,
+    "n_quantiles": n_quantiles,
+    "net_arch": net_arch,
+    "activation_fn": activation_fn,
   }
 
 
 def sample_trpoqh_params(trial, n_actions, n_envs, additional_args):
   """
-  Hyperparameter sampler for TRPOQHybrid using Optuna.
+    Hyperparameter sampler for TRPOQHybrid using Optuna.
 
-  This method samples hyperparameters for TRPOQHybrid, focusing on dual critics,
-  adaptive truncation, and corrective penalties for enhanced policy stability.
+    This method samples hyperparameters for TRPOQHybrid, focusing on dual critics,
+    adaptive truncation, and corrective penalties for enhanced policy stability.
 
-  :param trial: Optuna trial object
-  :param n_actions: Number of actions in the environment
-  :param n_envs: Number of parallel environments
-  :param additional_args: Additional arguments for hyperparameter sampling
-  :return: Dictionary of sampled hyperparameters for TRPOQHybrid
-  """
+    :param trial: Optuna trial object
+    :param n_actions: Number of actions in the environment
+    :param n_envs: Number of parallel environments
+    :param additional_args: Additional arguments for hyperparameter sampling
+    :return: Dictionary of sampled hyperparameters for TRPOQHybrid
+    """
 
   n_steps = trial.suggest_categorical("n_steps", [512, 1024, 2048])
   gamma = trial.suggest_categorical("gamma", [0.98, 0.99, 0.995])
@@ -383,32 +352,29 @@ def sample_trpoqh_params(trial, n_actions, n_envs, additional_args):
 
   # Neural network architecture selection
   net_arch_type = trial.suggest_categorical("net_arch", ["small", "medium", "large"])
-  net_arch = {
-      "small": [64, 64],
-      "medium": [256, 256],
-      "large": [512, 512]
-  }[net_arch_type]
+  net_arch = {"small": [64, 64], "medium": [256, 256], "large": [512, 512]}[net_arch_type]
 
   # Activation function selection
   activation_fn_name = trial.suggest_categorical("activation_fn", ["tanh", "relu"])
-  activation_fn = {
-      "tanh": nn.Tanh,
-      "relu": nn.ReLU
-  }[activation_fn_name]
+  activation_fn = {"tanh": nn.Tanh, "relu": nn.ReLU}[activation_fn_name]
 
   batch_size = trial.suggest_categorical("batch_size", [8, 16, 32, 64, 128, 256, 512, 1024])
 
+  n_timesteps = trial.suggest_int("n_timesteps", 100000, 1000000, step=100000)
+  n_envs = trial.suggest_categorical("n_envs", [n_envs] if n_envs > 0 else [1, 2, 4, 6, 8, 10])
+
   return {
-      "policy": "MlpPolicy",
-      "n_envs": n_envs,
-      "n_steps": n_steps,
-      "batch_size": batch_size,
-      "gamma": gamma,
-      "learning_rate": learning_rate,
-      "n_critic_updates": n_critic_updates,
-      "n_value_networks": n_value_networks,
-      "penalty_coef": penalty_coef,
-      "adaptive_truncation": adaptive_truncation,
-      "net_arch": net_arch,
-      "activation_fn": activation_fn
+    "policy": "MlpPolicy",
+    "n_timesteps": n_timesteps,
+    "n_envs": n_envs,
+    "n_steps": n_steps,
+    "batch_size": batch_size,
+    "gamma": gamma,
+    "learning_rate": learning_rate,
+    "n_critic_updates": n_critic_updates,
+    "n_value_networks": n_value_networks,
+    "penalty_coef": penalty_coef,
+    "adaptive_truncation": adaptive_truncation,
+    "net_arch": net_arch,
+    "activation_fn": activation_fn,
   }

@@ -66,13 +66,13 @@ class EnTRPOR(TRPO):
     - **Line Search:** Considers the entropy term while checking policy improvement.
     - **Logging:** Logs entropy-regularized objectives and KL divergence values.
 
-  """
+    """
 
   def __init__(
-      self,
-      *args,
-      ent_coef: float = 0.01,
-      **kwargs,
+    self,
+    *args,
+    ent_coef: float = 0.01,
+    **kwargs,
   ):
     super().__init__(*args, **kwargs)
     self.ent_coef = ent_coef
@@ -94,12 +94,12 @@ class EnTRPOR(TRPO):
     for rollout_data in self.rollout_buffer.get(batch_size=None):
       if self.sub_sampling_factor > 1:
         rollout_data = type(rollout_data)(
-            rollout_data.observations[:: self.sub_sampling_factor],
-            rollout_data.actions[:: self.sub_sampling_factor],
-            None,
-            rollout_data.old_log_prob[:: self.sub_sampling_factor],
-            rollout_data.advantages[:: self.sub_sampling_factor],
-            None,
+          rollout_data.observations[:: self.sub_sampling_factor],
+          rollout_data.actions[:: self.sub_sampling_factor],
+          None,
+          rollout_data.old_log_prob[:: self.sub_sampling_factor],
+          rollout_data.advantages[:: self.sub_sampling_factor],
+          None,
         )
 
       actions = rollout_data.actions
@@ -123,24 +123,19 @@ class EnTRPOR(TRPO):
 
       self.policy.optimizer.zero_grad()
 
-      actor_params, policy_objective_gradients, grad_kl, grad_shape = self._compute_actor_grad(
-          kl_div, policy_objective
-      )
+      actor_params, policy_objective_gradients, grad_kl, grad_shape = self._compute_actor_grad(kl_div, policy_objective)
 
-      def hessian_vector_product_fn(vec, rg=True): return self.hessian_vector_product(
-          actor_params, grad_kl, vec, retain_graph=rg
-      )
+      def hessian_vector_product_fn(vec, rg=True):
+        return self.hessian_vector_product(actor_params, grad_kl, vec, retain_graph=rg)
 
       search_direction = conjugate_gradient_solver(
-          hessian_vector_product_fn,
-          policy_objective_gradients,
-          max_iter=self.cg_max_steps,
+        hessian_vector_product_fn,
+        policy_objective_gradients,
+        max_iter=self.cg_max_steps,
       )
 
       line_search_max_step_size = 2 * self.target_kl
-      line_search_max_step_size /= th.matmul(
-          search_direction, hessian_vector_product_fn(search_direction, rg=False)
-      )
+      line_search_max_step_size /= th.matmul(search_direction, hessian_vector_product_fn(search_direction, rg=False))
       line_search_max_step_size = th.sqrt(line_search_max_step_size)
 
       line_search_backtrack_coeff = 1.0
@@ -152,8 +147,7 @@ class EnTRPOR(TRPO):
           start_idx = 0
           for param, orig, shape in zip(actor_params, original_actor_params, grad_shape):
             n_params = param.numel()
-            param.data = orig.data + line_search_backtrack_coeff * line_search_max_step_size * \
-                search_direction[start_idx: (start_idx + n_params)].view(shape)
+            param.data = orig.data + line_search_backtrack_coeff * line_search_max_step_size * search_direction[start_idx : (start_idx + n_params)].view(shape)
             start_idx += n_params
 
           distribution = self.policy.get_distribution(rollout_data.observations)
@@ -204,20 +198,24 @@ class EnTRPOR(TRPO):
 
 def sample_entrpor_params(trial, n_actions, n_envs, additional_args):
   # Define the EnTRPOR-specific optimization space
+  n_timesteps = trial.suggest_int("n_timesteps", 100000, 1000000, step=100000)
+  n_envs = trial.suggest_categorical("n_envs", [n_envs] if n_envs > 0 else [1, 2, 4, 6, 8, 10])
+
   params = {
-      "policy": "MlpPolicy",
-      "n_envs": n_envs,
-      "ent_coef": trial.suggest_float("ent_coef", 0.0, 0.001, step=0.0001),
-      "gamma": trial.suggest_float("gamma", 0.98, 0.999, log=True),
-      "gae_lambda": trial.suggest_float("gae_lambda", 0.9, 0.99, step=0.001),
-      "target_kl": trial.suggest_float("target_kl", 0.001, 0.05, step=0.001),
-      "cg_damping": trial.suggest_float("cg_damping", 0.01, 0.1, step=0.01),
-      "cg_max_steps": trial.suggest_int("cg_max_steps", 10, 20, step=1),
-      "line_search_max_iter": trial.suggest_int("line_search_max_iter", 5, 15, step=5),
-      "n_steps": trial.suggest_categorical("n_steps", [1024, 2048, 4096]),
-      "batch_size": trial.suggest_int("batch_size", 32, 256, step=32),
-      "n_envs": n_envs,
-      "n_actions": n_actions,
-      **additional_args,
+    "policy": "MlpPolicy",
+    "n_timesteps": n_timesteps,
+    "n_envs": n_envs,
+    "ent_coef": trial.suggest_float("ent_coef", 0.0, 0.001, step=0.0001),
+    "gamma": trial.suggest_float("gamma", 0.98, 0.999, log=True),
+    "gae_lambda": trial.suggest_float("gae_lambda", 0.9, 0.99, step=0.001),
+    "target_kl": trial.suggest_float("target_kl", 0.001, 0.05, step=0.001),
+    "cg_damping": trial.suggest_float("cg_damping", 0.01, 0.1, step=0.01),
+    "cg_max_steps": trial.suggest_int("cg_max_steps", 10, 20, step=1),
+    "line_search_max_iter": trial.suggest_int("line_search_max_iter", 5, 15, step=5),
+    "n_steps": trial.suggest_categorical("n_steps", [1024, 2048, 4096]),
+    "batch_size": trial.suggest_int("batch_size", 32, 256, step=32),
+    "n_envs": n_envs,
+    "n_actions": n_actions,
+    **additional_args,
   }
   return params

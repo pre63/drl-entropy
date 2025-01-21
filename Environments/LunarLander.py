@@ -1,4 +1,3 @@
-
 import gymnasium as gym
 import numpy as np
 
@@ -47,8 +46,8 @@ class LunarLanderRewardWrapper(gym.Wrapper):
 
 def default_reward(state, reward, action, done, info):
   """
-  Default reward strategy from the environment.
-  """
+    Default reward strategy from the environment.
+    """
   info["success"] = False if "success" not in info else info["success"]
 
   if done:
@@ -63,8 +62,8 @@ def default_reward(state, reward, action, done, info):
 
 def proximity_reward(state, reward, action, done, info):
   """
-  Reward strategy prioritizing proximity to the target and low velocity.
-  """
+    Reward strategy prioritizing proximity to the target and low velocity.
+    """
   info["success"] = False if "success" not in info else info["success"]
 
   x_position = state[0]
@@ -74,7 +73,7 @@ def proximity_reward(state, reward, action, done, info):
     if success:
       info["success"] = True
       info["is_success"] = True
-      award = 200.0 + -x_position**2
+      award = 200.0 + -(x_position**2)
       reward = max(reward + award, 200.0)
     else:
       reward = reward - 100.0
@@ -84,8 +83,8 @@ def proximity_reward(state, reward, action, done, info):
 
 def energy_efficient_reward(state, reward, action, done, info):
   """
-  Reward strategy prioritizing energy efficiency during landing.
-  """
+    Reward strategy prioritizing energy efficiency during landing.
+    """
   info["success"] = False if "success" not in info else info["success"]
   fuel_usage = np.linalg.norm(action)  # Action magnitude as a proxy for fuel usage
   x_position = state[0]
@@ -98,7 +97,7 @@ def energy_efficient_reward(state, reward, action, done, info):
     if success:
       info["success"] = True
       info["is_success"] = True
-      award = 200.0 + -x_position**2 * 0.1 * (fuel_usage - 1.0)
+      award = 200.0 + -(x_position**2) * 0.1 * (fuel_usage - 1.0)
 
       reward = max(reward + award, 200.0)
     else:
@@ -109,8 +108,8 @@ def energy_efficient_reward(state, reward, action, done, info):
 
 def combined_reward(state, reward, action, done, info):
   """
-  Combines proximity and energy efficiency strategies.
-  """
+    Combines proximity and energy efficiency strategies.
+    """
   proximity = proximity_reward(state, reward, action, done, info)
   efficiency = energy_efficient_reward(state, reward, action, done, info)
 
@@ -122,26 +121,21 @@ def combined_reward(state, reward, action, done, info):
   return proximity_weight * proximity + efficiency_weight * efficiency
 
 
-def check_success(observation,
-                  terminated,
-                  angle_threshold=0.1,
-                  landing_pad_threshold=0.2,
-                  x_velocity_threshold=0.01,
-                  y_velocity_threshold=0.01):
+def check_success(observation, terminated, angle_threshold=0.1, landing_pad_threshold=0.2, x_velocity_threshold=0.01, y_velocity_threshold=0.01):
   """
-  Determine if the agent has successfully landed in the Continuous Lunar Lander environment.
+    Determine if the agent has successfully landed in the Continuous Lunar Lander environment.
 
-  Parameters:
-  - observation: list or array containing the state values from the environment.
-  - terminated: boolean indicating if the episode has ended in a terminal state.
-  - angle_threshold: maximum allowable angle (in radians) for success.
-  - landing_pad_threshold: maximum allowable horizontal distance from the landing pad center.
-  - x_velocity_threshold: maximum allowable horizontal velocity.
-  - y_velocity_threshold: maximum allowable vertical velocity.
+    Parameters:
+    - observation: list or array containing the state values from the environment.
+    - terminated: boolean indicating if the episode has ended in a terminal state.
+    - angle_threshold: maximum allowable angle (in radians) for success.
+    - landing_pad_threshold: maximum allowable horizontal distance from the landing pad center.
+    - x_velocity_threshold: maximum allowable horizontal velocity.
+    - y_velocity_threshold: maximum allowable vertical velocity.
 
-  Returns:
-  - success: boolean indicating if the agent has successfully landed.
-  """
+    Returns:
+    - success: boolean indicating if the agent has successfully landed.
+    """
   # Extract values from the observation
   x_position = observation[0]
   y_position = observation[1]
@@ -166,8 +160,8 @@ def check_success(observation,
 
 # Registry for reward strategies
 REWARD_STRATEGIES = {
-    "default": default_reward,
-    "proximity": proximity_reward,
-    "energy": energy_efficient_reward,
-    "combined": combined_reward,
+  "default": default_reward,
+  "proximity": proximity_reward,
+  "energy": energy_efficient_reward,
+  "combined": combined_reward,
 }

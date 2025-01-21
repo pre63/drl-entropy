@@ -1,6 +1,5 @@
 Pendulum-v1:
   policy: 'MlpPolicy'
-  n_envs: 10
   n_timesteps: 100000
   reward_threshold: -3.0
   normalize: true
@@ -10,7 +9,6 @@ Pendulum-v1:
 # Tuned
 LunarLanderContinuous-v3:
   policy: 'MlpPolicy'
-  n_envs: 10
   n_timesteps: 100000
   reward_threshold: 195
   ent_coef: 0.0008
@@ -26,7 +24,6 @@ LunarLanderContinuous-v3:
 # Tuned
 Ant-v5:
   policy: 'MlpPolicy'
-  n_envs: 10
   n_timesteps: 100000
   reward_threshold: 1000
   ent_coef: 0.0002
@@ -42,7 +39,6 @@ Ant-v5:
 # Tuned
 Humanoid-v5:
   policy: 'MlpPolicy'
-  n_envs: 10
   n_timesteps: 100000
   n_steps: 256
   gamma: 0.9999
@@ -60,7 +56,6 @@ Humanoid-v5:
 # Tuned
 InvertedDoublePendulum-v5:
   policy: 'MlpPolicy'
-  n_envs: 10
   n_timesteps: 100000
   reward_threshold: 410
   ent_coef: 0.0
@@ -76,7 +71,6 @@ InvertedDoublePendulum-v5:
 # Tuned
 RocketLander-v0:
   policy: 'MlpPolicy'
-  n_envs: 10
   n_timesteps: 100000
   reward_threshold: -3.0
   ent_coef: 0.0001

@@ -14,8 +14,7 @@ from stable_baselines3.common.buffers import RolloutBuffer
 from stable_baselines3.common.distributions import kl_divergence
 from stable_baselines3.common.on_policy_algorithm import OnPolicyAlgorithm
 from stable_baselines3.common.policies import ActorCriticPolicy, BasePolicy
-from stable_baselines3.common.type_aliases import (GymEnv, MaybeCallback, RolloutBufferSamples,
-                                                   Schedule)
+from stable_baselines3.common.type_aliases import GymEnv, MaybeCallback, RolloutBufferSamples, Schedule
 from stable_baselines3.common.utils import explained_variance
 from torch import nn
 from torch.nn import functional as F
@@ -25,17 +24,17 @@ from Models.SB3 import TRPO
 
 class ReplayBuffer:
   """
-  A replay buffer with optional Prioritized Experience Replay (PER).
-  """
+    A replay buffer with optional Prioritized Experience Replay (PER).
+    """
 
   def __init__(self, capacity: int, use_per: bool = False):
     """
-    Initialize the replay buffer.
+        Initialize the replay buffer.
 
-    Args:
-        capacity (int): Maximum number of items the buffer can hold.
-        use_per (bool): Whether to use Prioritized Experience Replay (PER).
-    """
+        Args:
+            capacity (int): Maximum number of items the buffer can hold.
+            use_per (bool): Whether to use Prioritized Experience Replay (PER).
+        """
     self.capacity = capacity
     self.use_per = use_per
     self.observations = deque(maxlen=capacity)
@@ -47,11 +46,11 @@ class ReplayBuffer:
 
   def add(self, observations: th.Tensor, actions: th.Tensor, returns: th.Tensor, advantages: th.Tensor, old_log_prob: th.Tensor):
     """
-    Add a batch of transitions to the buffer. Stores cumulative rewards if PER is enabled.
+        Add a batch of transitions to the buffer. Stores cumulative rewards if PER is enabled.
 
-    Args:
-        observations, actions, returns, advantages, old_log_prob (th.Tensor): Tensors for the experience batch.
-    """
+        Args:
+            observations, actions, returns, advantages, old_log_prob (th.Tensor): Tensors for the experience batch.
+        """
     batch_size = observations.shape[0]
     cumulative_reward = returns.sum().item()  # Calculate cumulative reward
 
@@ -66,14 +65,14 @@ class ReplayBuffer:
 
   def sample_extend(self, batch_size: int, observations: th.Tensor, actions: th.Tensor, returns: th.Tensor, advantages: th.Tensor, old_log_prob: th.Tensor):
     """
-    Sample a batch of transitions and extend the provided tensors with the sampled batch.
+        Sample a batch of transitions and extend the provided tensors with the sampled batch.
 
-    If PER is enabled, experiences are sampled based on cumulative rewards.
-    If PER is disabled, experiences are randomly sampled.
+        If PER is enabled, experiences are sampled based on cumulative rewards.
+        If PER is disabled, experiences are randomly sampled.
 
-    Args:
-        batch_size (int): Number of samples to retrieve.
-    """
+        Args:
+            batch_size (int): Number of samples to retrieve.
+        """
     if len(self.observations) < batch_size:
       return observations, actions, returns, advantages, old_log_prob
 
@@ -102,7 +101,7 @@ class ReplayBuffer:
     return observations, actions, returns, advantages, old_log_prob
 
   def clear(self):
-    """ Clear all stored data in the buffer. """
+    """Clear all stored data in the buffer."""
     self.observations.clear()
     self.actions.clear()
     self.returns.clear()
@@ -111,43 +110,43 @@ class ReplayBuffer:
     self.cumulative_rewards.clear()
 
   def __len__(self):
-    """ Return the current size of the buffer. """
+    """Return the current size of the buffer."""
     return len(self.observations)
 
 
 class EnTRPO(TRPO):
   """
-  Entropy-Regularized Trust Region Policy Optimization (EnTRPO)
+    Entropy-Regularized Trust Region Policy Optimization (EnTRPO)
 
-  EnTRPO extends the standard Trust Region Policy Optimization (TRPO) by incorporating:
-  - A replay buffer for improved sample efficiency, borrowing ideas from off-policy learning.
-  - Entropy regularization to encourage policy exploration.
-  - A reward threshold for buffer clearing based on a percentage of the environment's maximum reward.
+    EnTRPO extends the standard Trust Region Policy Optimization (TRPO) by incorporating:
+    - A replay buffer for improved sample efficiency, borrowing ideas from off-policy learning.
+    - Entropy regularization to encourage policy exploration.
+    - A reward threshold for buffer clearing based on a percentage of the environment's maximum reward.
 
-  The replay buffer stores past transitions and allows mini-batch sampling for policy updates.
-  Entropy regularization modifies the policy loss function to balance exploration and exploitation.
+    The replay buffer stores past transitions and allows mini-batch sampling for policy updates.
+    Entropy regularization modifies the policy loss function to balance exploration and exploitation.
 
-  Key Features:
-  - Replay Buffer: Stores transitions for sequential processing.
-  - Entropy Regularization: Controlled via `ent_coef`.
-  - Reward Clearing Criterion: The buffer is cleared if the reward exceeds `reward_threshold`.
-  - Batch Size: Mini-batch sampling controlled via the `batch_size` parameter.
-  - KL Divergence Constraint: Retains the theoretical guarantees of TRPO using KL constraints.
+    Key Features:
+    - Replay Buffer: Stores transitions for sequential processing.
+    - Entropy Regularization: Controlled via `ent_coef`.
+    - Reward Clearing Criterion: The buffer is cleared if the reward exceeds `reward_threshold`.
+    - Batch Size: Mini-batch sampling controlled via the `batch_size` parameter.
+    - KL Divergence Constraint: Retains the theoretical guarantees of TRPO using KL constraints.
 
-  """
+    """
 
   def __init__(
-      self,
-      *args,
-      epsilon=0.2,
-      ent_coef=0.01,
-      buffer_capacity=10000,
-      reward_threshold=None,
-      replay_strategy="EnTRPO",
-      replay_strategy_threshold=0.0,
-      batch_size=32,
-      use_per=False,
-      **kwargs
+    self,
+    *args,
+    epsilon=0.2,
+    ent_coef=0.01,
+    buffer_capacity=10000,
+    reward_threshold=None,
+    replay_strategy="EnTRPO",
+    replay_strategy_threshold=0.0,
+    batch_size=32,
+    use_per=False,
+    **kwargs
   ):
     super().__init__(*args, **kwargs)
 
@@ -164,8 +163,8 @@ class EnTRPO(TRPO):
 
   def train(self) -> None:
     """
-    Update policy using the currently gathered rollout buffer.
-    """
+        Update policy using the currently gathered rollout buffer.
+        """
     # Switch to train mode (this affects batch norm / dropout)
     self.policy.set_training_mode(True)
     # Update optimizer learning rate
@@ -181,12 +180,12 @@ class EnTRPO(TRPO):
       # Optional: sub-sample data for faster computation
       if self.sub_sampling_factor > 1:
         rollout_data = RolloutBufferSamples(
-            rollout_data.observations[:: self.sub_sampling_factor],
-            rollout_data.actions[:: self.sub_sampling_factor],
-            None,  # type: ignore[arg-type]  # old values, not used here
-            rollout_data.old_log_prob[:: self.sub_sampling_factor],
-            rollout_data.advantages[:: self.sub_sampling_factor],
-            None,  # type: ignore[arg-type]  # returns, not used here
+          rollout_data.observations[:: self.sub_sampling_factor],
+          rollout_data.actions[:: self.sub_sampling_factor],
+          None,  # type: ignore[arg-type]  # old values, not used here
+          rollout_data.old_log_prob[:: self.sub_sampling_factor],
+          rollout_data.advantages[:: self.sub_sampling_factor],
+          None,  # type: ignore[arg-type]  # returns, not used here
         )
 
       observations = rollout_data.observations
@@ -216,19 +215,12 @@ class EnTRPO(TRPO):
         # Sample data from the replay buffer and
         # concatenate with the current rollout data,
         # effectively doubling the batch size
-        data = self.replay_buffer.sample_extend(
-            self.batch_size,
-            observations,
-            actions,
-            returns,
-            advantages,
-            old_log_prob)
+        data = self.replay_buffer.sample_extend(self.batch_size, observations, actions, returns, advantages, old_log_prob)
 
         observations, actions, returns, advantages, old_log_prob = data
 
       # Add the current rollout data to the replay buffer for next iteration
-      self.replay_buffer.add(rollout_data.observations, rollout_data.actions, rollout_data.returns,
-                             rollout_data.advantages, rollout_data.old_log_prob)
+      self.replay_buffer.add(rollout_data.observations, rollout_data.actions, rollout_data.returns, rollout_data.advantages, rollout_data.old_log_prob)
 
       if isinstance(self.action_space, spaces.Discrete):
         # Convert discrete action from float to long
@@ -273,16 +265,14 @@ class EnTRPO(TRPO):
 
       # Computing search direction
       search_direction = conjugate_gradient_solver(
-          hessian_vector_product_fn,
-          policy_objective_gradients,
-          max_iter=self.cg_max_steps,
+        hessian_vector_product_fn,
+        policy_objective_gradients,
+        max_iter=self.cg_max_steps,
       )
 
       # Maximal step length
       line_search_max_step_size = 2 * self.target_kl
-      line_search_max_step_size /= th.matmul(
-          search_direction, hessian_vector_product_fn(search_direction, retain_graph=False)
-      )
+      line_search_max_step_size /= th.matmul(search_direction, hessian_vector_product_fn(search_direction, retain_graph=False))
       line_search_max_step_size = th.sqrt(line_search_max_step_size)  # type: ignore[assignment, arg-type]
 
       line_search_backtrack_coeff = 1.0
@@ -296,12 +286,9 @@ class EnTRPO(TRPO):
           # Applying the scaled step direction
           for param, original_param, shape in zip(actor_params, original_actor_params, grad_shape):
             n_params = param.numel()
-            param.data = (
-                original_param.data
-                + line_search_backtrack_coeff
-                * line_search_max_step_size
-                * search_direction[start_idx: (start_idx + n_params)].view(shape)
-            )
+            param.data = original_param.data + line_search_backtrack_coeff * line_search_max_step_size * search_direction[
+              start_idx : (start_idx + n_params)
+            ].view(shape)
             start_idx += n_params
 
           # Recomputing the policy log-probabilities
@@ -382,18 +369,18 @@ class EnTRPOHigh(EnTRPO):
 
 def sample_entrpo_params(trial, n_actions, n_envs, additional_args):
   """
-  Sampler for EnTRPO hyperparameters using Optuna.
+    Sampler for EnTRPO hyperparameters using Optuna.
 
-  This function generates hyperparameters for the Entropy-Regularized Trust Region Policy Optimization (EnTRPO).
-  The hyperparameters control aspects such as batch size, number of steps per update, entropy regularization,
-  and neural network architecture.
+    This function generates hyperparameters for the Entropy-Regularized Trust Region Policy Optimization (EnTRPO).
+    The hyperparameters control aspects such as batch size, number of steps per update, entropy regularization,
+    and neural network architecture.
 
-  :param trial: An Optuna trial object used for hyperparameter sampling.
-  :param n_actions: Number of actions in the environment.
-  :param n_envs: Number of parallel environments.
-  :param additional_args: Dictionary for additional arguments if needed.
-  :return: A dictionary containing the sampled hyperparameters for EnTRPO.
-  """
+    :param trial: An Optuna trial object used for hyperparameter sampling.
+    :param n_actions: Number of actions in the environment.
+    :param n_envs: Number of parallel environments.
+    :param additional_args: Dictionary for additional arguments if needed.
+    :return: A dictionary containing the sampled hyperparameters for EnTRPO.
+    """
   # Sampling core hyperparameters
   n_steps = trial.suggest_categorical("n_steps", [8, 16, 32, 64, 128, 256, 512, 1024, 2048])
   gamma = trial.suggest_categorical("gamma", [0.8, 0.85, 0.9, 0.95, 0.99])
@@ -408,16 +395,13 @@ def sample_entrpo_params(trial, n_actions, n_envs, additional_args):
   # Neural network architecture selection
   net_arch_type = trial.suggest_categorical("net_arch", ["small", "medium"])
   net_arch = {
-      "small": dict(pi=[64, 64], vf=[64, 64]),
-      "medium": dict(pi=[256, 256], vf=[256, 256]),
+    "small": dict(pi=[64, 64], vf=[64, 64]),
+    "medium": dict(pi=[256, 256], vf=[256, 256]),
   }[net_arch_type]
 
   # Activation function selection
   activation_fn_name = trial.suggest_categorical("activation_fn", ["tanh", "relu"])
-  activation_fn = {
-      "tanh": nn.Tanh,
-      "relu": nn.ReLU
-  }[activation_fn_name]
+  activation_fn = {"tanh": nn.Tanh, "relu": nn.ReLU}[activation_fn_name]
 
   # Entropy coefficient for regularization
   ent_coef = trial.suggest_float("ent_coef", 0.0, 0.001, step=0.0001)
@@ -439,28 +423,32 @@ def sample_entrpo_params(trial, n_actions, n_envs, additional_args):
 
   orthogonal_init = trial.suggest_categorical("orthogonal_init", [True, False])
 
+  n_timesteps = trial.suggest_int("n_timesteps", 100000, 1000000, step=100000)
+  n_envs = trial.suggest_categorical("n_envs", [n_envs] if n_envs > 0 else [1, 2, 4, 6, 8, 10])
+
   # Returning the sampled hyperparameters as a dictionary
   return {
-      "policy": "MlpPolicy",
-      "n_envs": n_envs,
-      "epsilon": epsilon,
-      "use_per": use_per,
-      "ent_coef": ent_coef,
-      "n_steps": n_steps,
-      "batch_size": batch_size,
-      "gamma": gamma,
-      "cg_max_steps": cg_max_steps,
-      "n_critic_updates": n_critic_updates,
-      "target_kl": target_kl,
-      "learning_rate": learning_rate,
-      "gae_lambda": gae_lambda,
-      "buffer_capacity": buffer_capacity,
-      "reward_threshold": reward_threshold,
-      "replay_strategy_threshold": replay_strategy_threshold,
-      "policy_kwargs": dict(
-          net_arch=net_arch,
-          activation_fn=activation_fn,
-          ortho_init=orthogonal_init,
-      ),
-      **additional_args,
+    "policy": "MlpPolicy",
+    "n_timesteps": n_timesteps,
+    "n_envs": n_envs,
+    "epsilon": epsilon,
+    "use_per": use_per,
+    "ent_coef": ent_coef,
+    "n_steps": n_steps,
+    "batch_size": batch_size,
+    "gamma": gamma,
+    "cg_max_steps": cg_max_steps,
+    "n_critic_updates": n_critic_updates,
+    "target_kl": target_kl,
+    "learning_rate": learning_rate,
+    "gae_lambda": gae_lambda,
+    "buffer_capacity": buffer_capacity,
+    "reward_threshold": reward_threshold,
+    "replay_strategy_threshold": replay_strategy_threshold,
+    "policy_kwargs": dict(
+      net_arch=net_arch,
+      activation_fn=activation_fn,
+      ortho_init=orthogonal_init,
+    ),
+    **additional_args,
   }

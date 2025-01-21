@@ -45,18 +45,18 @@ class PendulumWrapper(gym.Wrapper):
 
 def is_success(state, action, angle_threshold=0.1, velocity_threshold=0.5, torque_threshold=0.1):
   """
-  Determines if the pendulum is in a successful state.
+    Determines if the pendulum is in a successful state.
 
-  Parameters:
-  - state (ndarray): The observation from the environment, [cos(theta), sin(theta), angular_velocity].
-  - action (ndarray): The action taken, [torque].
-  - angle_threshold (float): Maximum allowable deviation from the upright position (in radians).
-  - velocity_threshold (float): Maximum allowable angular velocity.
-  - torque_threshold (float): Maximum allowable torque.
+    Parameters:
+    - state (ndarray): The observation from the environment, [cos(theta), sin(theta), angular_velocity].
+    - action (ndarray): The action taken, [torque].
+    - angle_threshold (float): Maximum allowable deviation from the upright position (in radians).
+    - velocity_threshold (float): Maximum allowable angular velocity.
+    - torque_threshold (float): Maximum allowable torque.
 
-  Returns:
-  - bool: True if the pendulum is in a success state, False otherwise.
-  """
+    Returns:
+    - bool: True if the pendulum is in a success state, False otherwise.
+    """
   x, y, angular_velocity = state
   torque = action[0]
 

@@ -3,13 +3,12 @@ __pycache__
 .venv
 .logs
 .eval
+.eval2
 .vscode
 .models
 .optuna
 .optuna-sbx
 .optuna-zoo
-
-logs
-results
+.optuna-zoo2
 
 Models/sb3_trpo.py

@@ -5,9 +5,17 @@ import shutil
 import matplotlib.pyplot as plt
 import numpy as np
 import optuna
-from optuna.visualization import (plot_contour, plot_edf, plot_intermediate_values,
-                                  plot_optimization_history, plot_parallel_coordinate,
-                                  plot_param_importances, plot_rank, plot_slice, plot_timeline)
+from optuna.visualization import (
+  plot_contour,
+  plot_edf,
+  plot_intermediate_values,
+  plot_optimization_history,
+  plot_parallel_coordinate,
+  plot_param_importances,
+  plot_rank,
+  plot_slice,
+  plot_timeline,
+)
 
 
 def load_and_copy_studies(folder_path, result_path):
@@ -17,7 +25,7 @@ def load_and_copy_studies(folder_path, result_path):
       file_path = os.path.join(folder_path, file)
       dest_path = os.path.join(result_path, file)
       shutil.copy(file_path, dest_path)
-      with open(file_path, 'rb') as f:
+      with open(file_path, "rb") as f:
         try:
           study = pickle.load(f)
           if isinstance(study, optuna.study.Study):
@@ -29,15 +37,15 @@ def load_and_copy_studies(folder_path, result_path):
 
 def save_optuna_plots(study, model_name, result_path):
   plots = {
-      "optimization_history": plot_optimization_history(study),
-      "parallel_coordinate": plot_parallel_coordinate(study),
-      "param_importances": plot_param_importances(study),
-      "edf": plot_edf(study),
-      "intermediate_values": plot_intermediate_values(study),
-      "contour": plot_contour(study),
-      "slice": plot_slice(study),
-      "rank": plot_rank(study),
-      "timeline": plot_timeline(study)
+    "optimization_history": plot_optimization_history(study),
+    "parallel_coordinate": plot_parallel_coordinate(study),
+    "param_importances": plot_param_importances(study),
+    "edf": plot_edf(study),
+    "intermediate_values": plot_intermediate_values(study),
+    "contour": plot_contour(study),
+    "slice": plot_slice(study),
+    "rank": plot_rank(study),
+    "timeline": plot_timeline(study),
   }
 
   for plot_name, plot_object in plots.items():

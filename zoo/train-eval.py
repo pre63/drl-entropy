@@ -25,19 +25,19 @@ from zoo.train_eval_plot import plot_all_from_csv
 
 # Register models
 models = {
-    "entrpo": {"model": EnTRPO, "sample": sample_entrpo_params},
-    "entrpolow": {"model": EnTRPOLow, "sample": sample_entrpo_params},
-    "entrpohigh": {"model": EnTRPOHigh, "sample": sample_entrpo_params},
-    "trpoq": {"model": TRPOQ, "sample": sample_trpoq_params},
-    "trpoq2": {"model": TRPOQ2, "sample": sample_trpoq2_params},
-    "trpor": {"model": TRPOR, "sample": sample_trpor_params},
-    "entrpor": {"model": EnTRPOR, "sample": sample_entrpor_params},
-    "trpoqh": {"model": TRPOQH, "sample": sample_trpoqh_params},
-    "trpoqho": {"model": TRPOQHO, "sample": sample_trpoqho_params},
-    "sac": {"model": SAC},
-    "tqc": {"model": TQC},
-    "trpo": {"model": TRPO},
-    "ppo": {"model": PPO},
+  "entrpo": {"model": EnTRPO, "sample": sample_entrpo_params},
+  "entrpolow": {"model": EnTRPOLow, "sample": sample_entrpo_params},
+  "entrpohigh": {"model": EnTRPOHigh, "sample": sample_entrpo_params},
+  "trpoq": {"model": TRPOQ, "sample": sample_trpoq_params},
+  "trpoq2": {"model": TRPOQ2, "sample": sample_trpoq2_params},
+  "trpor": {"model": TRPOR, "sample": sample_trpor_params},
+  "entrpor": {"model": EnTRPOR, "sample": sample_entrpor_params},
+  "trpoqh": {"model": TRPOQH, "sample": sample_trpoqh_params},
+  "trpoqho": {"model": TRPOQHO, "sample": sample_trpoqho_params},
+  "sac": {"model": SAC},
+  "tqc": {"model": TQC},
+  "trpo": {"model": TRPO},
+  "ppo": {"model": PPO},
 }
 
 for model_name, value in models.items():
@@ -70,30 +70,28 @@ def evaluate_training(algo, env, n_eval_envs, device, optimize_hyperparameters, 
     start_time = time.time()
     log_folder = ".eval"
     exp_manager = configure(
-        algo=algo,
-        env=env,
-        n_eval_envs=n_eval_envs,
-        device=device,
-        optimize_hyperparameters=optimize_hyperparameters,
-        conf_file=conf_file,
-        n_trials=n_trials,
-        n_timesteps=n_timesteps,
-        n_jobs=n_jobs,
-        log_folder=log_folder,
-        verbose=0,
-        train_eval=True,
+      algo=algo,
+      env=env,
+      n_eval_envs=n_eval_envs,
+      device=device,
+      optimize_hyperparameters=optimize_hyperparameters,
+      conf_file=conf_file,
+      n_trials=n_trials,
+      n_timesteps=n_timesteps,
+      n_jobs=n_jobs,
+      log_folder=log_folder,
+      verbose=0,
+      train_eval=True,
     )
     wall_time = time.time() - start_time
     save_path = exp_manager.save_path
     if not os.path.exists(save_path):
-      print(
-          f"Warning: Log path not found for {algo} run {run}. Skipping.")
+      print(f"Warning: Log path not found for {algo} run {run}. Skipping.")
       continue
     rewards = exp_manager.training_rewards
     timesteps = list(range(1, len(rewards) + 1))
     if len(rewards) == 0:
-      print(
-          f"Warning: No timesteps or rewards logged for {algo} on {env}, run {run + 1}. Skipping.")
+      print(f"Warning: No timesteps or rewards logged for {algo} on {env}, run {run + 1}. Skipping.")
       continue
     run_data_file = os.path.join(save_path, f"run_{run + 1}_data.csv")
     run_data = pd.DataFrame({"Timesteps": timesteps, "Reward": rewards})
@@ -111,15 +109,15 @@ def evaluate_training(algo, env, n_eval_envs, device, optimize_hyperparameters, 
           sample_complexity = i
           break
     run_metrics = {
-        "Model": algo,
-        "Env": env,
-        "Run": run + 1,
-        "Wall Time (s)": wall_time,
-        "Sample Complexity": sample_complexity,
-        "Mean Reward": mean_reward,
-        "Std Dev": std_reward,
-        "File": run_data_file,
-        "Save Path": save_path,
+      "Model": algo,
+      "Env": env,
+      "Run": run + 1,
+      "Wall Time (s)": wall_time,
+      "Sample Complexity": sample_complexity,
+      "Mean Reward": mean_reward,
+      "Std Dev": std_reward,
+      "File": run_data_file,
+      "Save Path": save_path,
     }
     run_df = pd.DataFrame([run_metrics])
     if os.path.exists(csv_file):
@@ -150,17 +148,16 @@ if __name__ == "__main__":
     if os.path.exists(default_conf_path):
       params.conf_file = default_conf_path
     else:
-      raise FileNotFoundError(
-          f"Configuration file not found for model {params.model}. Provide a valid --conf_file.")
+      raise FileNotFoundError(f"Configuration file not found for model {params.model}. Provide a valid --conf_file.")
 
   evaluate_training(
-      algo=params.model,
-      env=params.env,
-      n_eval_envs=params.envs,
-      device=params.device,
-      optimize_hyperparameters=params.optimize,
-      conf_file=params.conf_file,
-      n_trials=params.trials,
-      n_timesteps=params.n_timesteps,
-      n_jobs=params.n_jobs,
+    algo=params.model,
+    env=params.env,
+    n_eval_envs=params.envs,
+    device=params.device,
+    optimize_hyperparameters=params.optimize,
+    conf_file=params.conf_file,
+    n_trials=params.trials,
+    n_timesteps=params.n_timesteps,
+    n_jobs=params.n_jobs,
   )

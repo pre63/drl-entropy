@@ -32,8 +32,7 @@ from typing import TYPE_CHECKING, Optional
 import Box2D
 import gymnasium as gym
 import numpy as np
-from Box2D.b2 import (circleShape, contactListener, distanceJointDef, edgeShape, fixtureDef,
-                      polygonShape, revoluteJointDef)
+from Box2D.b2 import circleShape, contactListener, distanceJointDef, edgeShape, fixtureDef, polygonShape, revoluteJointDef
 from gymnasium import spaces
 from gymnasium.error import DependencyNotInstalled
 
@@ -77,10 +76,8 @@ BG_COLOR = (126, 150, 233)
 # SMOKE FOR VISUALS
 MAX_SMOKE_LIFETIME = 2 * FPS
 
-MEAN = np.array([-0.034, -0.15, -0.016, 0.0024, 0.0024, 0.137,
-                 - 0.02, -0.01, -0.8, 0.002])
-VAR = np.sqrt(np.array([0.08, 0.33, 0.0073, 0.0023, 0.0023, 0.8,
-                        0.085, 0.0088, 0.063, 0.076]))
+MEAN = np.array([-0.034, -0.15, -0.016, 0.0024, 0.0024, 0.137, -0.02, -0.01, -0.8, 0.002])
+VAR = np.sqrt(np.array([0.08, 0.33, 0.0073, 0.0023, 0.0023, 0.8, 0.085, 0.0088, 0.063, 0.076]))
 
 
 class ContactDetector(contactListener):
@@ -89,10 +86,12 @@ class ContactDetector(contactListener):
     self.env = env
 
   def BeginContact(self, contact):
-    if self.env.water in [contact.fixtureA.body, contact.fixtureB.body] \
-            or self.env.lander in [contact.fixtureA.body, contact.fixtureB.body] \
-            or self.env.containers[0] in [contact.fixtureA.body, contact.fixtureB.body] \
-            or self.env.containers[1] in [contact.fixtureA.body, contact.fixtureB.body]:
+    if (
+      self.env.water in [contact.fixtureA.body, contact.fixtureB.body]
+      or self.env.lander in [contact.fixtureA.body, contact.fixtureB.body]
+      or self.env.containers[0] in [contact.fixtureA.body, contact.fixtureB.body]
+      or self.env.containers[1] in [contact.fixtureA.body, contact.fixtureB.body]
+    ):
       self.env.game_over = True
     else:
       for i in range(2):
@@ -106,10 +105,7 @@ class ContactDetector(contactListener):
 
 
 class RocketLander(gym.Env):
-  metadata = {
-      'render_modes': ['human', 'rgb_array'],
-      'render_fps': FPS
-  }
+  metadata = {"render_modes": ["human", "rgb_array"], "render_fps": FPS}
 
   def __init__(self, seed: Optional[int] = None, render_mode: str = None):
     self._seed()
@@ -179,103 +175,106 @@ class RocketLander(gym.Env):
     self.helipad_y = self.terrainheigth + SHIP_HEIGHT
 
     self.water = self.world.CreateStaticBody(
-        fixtures=fixtureDef(
-            shape=polygonShape(vertices=((0, 0), (W, 0), (W, self.terrainheigth), (0, self.terrainheigth))),
-            friction=0.1,
-            restitution=0.0)
+      fixtures=fixtureDef(shape=polygonShape(vertices=((0, 0), (W, 0), (W, self.terrainheigth), (0, self.terrainheigth))), friction=0.1, restitution=0.0)
     )
 
     self.ship = self.world.CreateStaticBody(
-        fixtures=fixtureDef(
-            shape=polygonShape(
-                vertices=((self.helipad_x1, self.terrainheigth),
-                          (self.helipad_x2, self.terrainheigth),
-                          (self.helipad_x2, self.terrainheigth + SHIP_HEIGHT),
-                          (self.helipad_x1, self.terrainheigth + SHIP_HEIGHT))),
-            friction=0.5,
-            restitution=0.0)
+      fixtures=fixtureDef(
+        shape=polygonShape(
+          vertices=(
+            (self.helipad_x1, self.terrainheigth),
+            (self.helipad_x2, self.terrainheigth),
+            (self.helipad_x2, self.terrainheigth + SHIP_HEIGHT),
+            (self.helipad_x1, self.terrainheigth + SHIP_HEIGHT),
+          )
+        ),
+        friction=0.5,
+        restitution=0.0,
+      )
     )
 
     self.containers = []
     for side in [-1, 1]:
-      self.containers.append(self.world.CreateStaticBody(
+      self.containers.append(
+        self.world.CreateStaticBody(
           fixtures=fixtureDef(
-              shape=polygonShape(
-                  vertices=((ship_pos + side * 0.95 * SHIP_WIDTH / 2, self.helipad_y),
-                            (ship_pos + side * 0.95 * SHIP_WIDTH / 2, self.helipad_y + SHIP_HEIGHT),
-                            (ship_pos + side * 0.95 * SHIP_WIDTH / 2 - side * SHIP_HEIGHT,
-                             self.helipad_y + SHIP_HEIGHT),
-                            (ship_pos + side * 0.95 * SHIP_WIDTH / 2 - side * SHIP_HEIGHT, self.helipad_y)
-                            )),
-              friction=0.2,
-              restitution=0.0)
-      ))
+            shape=polygonShape(
+              vertices=(
+                (ship_pos + side * 0.95 * SHIP_WIDTH / 2, self.helipad_y),
+                (ship_pos + side * 0.95 * SHIP_WIDTH / 2, self.helipad_y + SHIP_HEIGHT),
+                (ship_pos + side * 0.95 * SHIP_WIDTH / 2 - side * SHIP_HEIGHT, self.helipad_y + SHIP_HEIGHT),
+                (ship_pos + side * 0.95 * SHIP_WIDTH / 2 - side * SHIP_HEIGHT, self.helipad_y),
+              )
+            ),
+            friction=0.2,
+            restitution=0.0,
+          )
+        )
+      )
 
     initial_x = W / 2 + W * np.random.uniform(-0.3, 0.3)
     initial_y = H * 0.95
     self.lander = self.world.CreateDynamicBody(
-        position=(initial_x, initial_y),
-        angle=0.0,
-        fixtures=fixtureDef(
-            shape=polygonShape(vertices=((-ROCKET_WIDTH / 2, 0),
-                                         (+ROCKET_WIDTH / 2, 0),
-                                         (ROCKET_WIDTH / 2, +ROCKET_HEIGHT),
-                                         (-ROCKET_WIDTH / 2, +ROCKET_HEIGHT))),
-            density=1.0,
-            friction=0.5,
-            categoryBits=0x0010,
-            maskBits=0x001,
-            restitution=0.0)
+      position=(initial_x, initial_y),
+      angle=0.0,
+      fixtures=fixtureDef(
+        shape=polygonShape(vertices=((-ROCKET_WIDTH / 2, 0), (+ROCKET_WIDTH / 2, 0), (ROCKET_WIDTH / 2, +ROCKET_HEIGHT), (-ROCKET_WIDTH / 2, +ROCKET_HEIGHT))),
+        density=1.0,
+        friction=0.5,
+        categoryBits=0x0010,
+        maskBits=0x001,
+        restitution=0.0,
+      ),
     )
 
     for i in [-1, +1]:
       leg = self.world.CreateDynamicBody(
-          position=(initial_x - i * LEG_AWAY, initial_y + ROCKET_WIDTH * 0.2),
-          angle=(i * BASE_ANGLE),
-          fixtures=fixtureDef(
-              shape=polygonShape(
-                  vertices=((0, 0), (0, LEG_LENGTH / 25), (i * LEG_LENGTH, 0), (i * LEG_LENGTH, -LEG_LENGTH / 20),
-                            (i * LEG_LENGTH / 3, -LEG_LENGTH / 7))),
-              density=1,
-              restitution=0.0,
-              friction=0.2,
-              categoryBits=0x0020,
-              maskBits=0x001)
+        position=(initial_x - i * LEG_AWAY, initial_y + ROCKET_WIDTH * 0.2),
+        angle=(i * BASE_ANGLE),
+        fixtures=fixtureDef(
+          shape=polygonShape(
+            vertices=((0, 0), (0, LEG_LENGTH / 25), (i * LEG_LENGTH, 0), (i * LEG_LENGTH, -LEG_LENGTH / 20), (i * LEG_LENGTH / 3, -LEG_LENGTH / 7))
+          ),
+          density=1,
+          restitution=0.0,
+          friction=0.2,
+          categoryBits=0x0020,
+          maskBits=0x001,
+        ),
       )
       leg.ground_contact = False
       leg.color1 = (0.25, 0.25, 0.25)
       rjd = revoluteJointDef(
-          bodyA=self.lander,
-          bodyB=leg,
-          localAnchorA=(i * LEG_AWAY, ROCKET_WIDTH * 0.2),
-          localAnchorB=(0, 0),
-          enableLimit=True,
-          maxMotorTorque=2500.0,
-          motorSpeed=-0.05 * i,
-          enableMotor=True
+        bodyA=self.lander,
+        bodyB=leg,
+        localAnchorA=(i * LEG_AWAY, ROCKET_WIDTH * 0.2),
+        localAnchorB=(0, 0),
+        enableLimit=True,
+        maxMotorTorque=2500.0,
+        motorSpeed=-0.05 * i,
+        enableMotor=True,
       )
-      djd = distanceJointDef(bodyA=self.lander,
-                             bodyB=leg,
-                             anchorA=(i * LEG_AWAY, ROCKET_HEIGHT / 8),
-                             anchorB=leg.fixtures[0].body.transform * (i * LEG_LENGTH, 0),
-                             collideConnected=False,
-                             frequencyHz=0.01,
-                             dampingRatio=0.9
-                             )
+      djd = distanceJointDef(
+        bodyA=self.lander,
+        bodyB=leg,
+        anchorA=(i * LEG_AWAY, ROCKET_HEIGHT / 8),
+        anchorB=leg.fixtures[0].body.transform * (i * LEG_LENGTH, 0),
+        collideConnected=False,
+        frequencyHz=0.01,
+        dampingRatio=0.9,
+      )
       if i == 1:
         rjd.lowerAngle = -SPRING_ANGLE
         rjd.upperAngle = 0
       else:
         rjd.lowerAngle = 0
-        rjd.upperAngle = + SPRING_ANGLE
+        rjd.upperAngle = +SPRING_ANGLE
       leg.joint = self.world.CreateJoint(rjd)
       leg.joint2 = self.world.CreateJoint(djd)
 
       self.legs.append(leg)
 
-    self.lander.linearVelocity = (
-        -np.random.uniform(0, INITIAL_RANDOM) * START_SPEED * (initial_x - W / 2) / W,
-        -START_SPEED)
+    self.lander.linearVelocity = (-np.random.uniform(0, INITIAL_RANDOM) * START_SPEED * (initial_x - W / 2) / W, -START_SPEED)
 
     self.lander.angularVelocity = (1 + INITIAL_RANDOM) * np.random.uniform(-1, 1)
 
@@ -302,15 +301,15 @@ class RocketLander(gym.Env):
 
     # main engine force
     force_pos = (self.lander.position[0], self.lander.position[1])
-    force = (-np.sin(self.lander.angle + self.gimbal) * MAIN_ENGINE_POWER * self.power,
-             np.cos(self.lander.angle + self.gimbal) * MAIN_ENGINE_POWER * self.power)
+    force = (
+      -np.sin(self.lander.angle + self.gimbal) * MAIN_ENGINE_POWER * self.power,
+      np.cos(self.lander.angle + self.gimbal) * MAIN_ENGINE_POWER * self.power,
+    )
     self.lander.ApplyForce(force=force, point=force_pos, wake=False)
 
     # control thruster force
-    force_pos_c = self.lander.position + THRUSTER_HEIGHT * np.array(
-        (np.sin(self.lander.angle), np.cos(self.lander.angle)))
-    force_c = (-self.force_dir * np.cos(self.lander.angle) * SIDE_ENGINE_POWER,
-               self.force_dir * np.sin(self.lander.angle) * SIDE_ENGINE_POWER)
+    force_pos_c = self.lander.position + THRUSTER_HEIGHT * np.array((np.sin(self.lander.angle), np.cos(self.lander.angle)))
+    force_c = (-self.force_dir * np.cos(self.lander.angle) * SIDE_ENGINE_POWER, self.force_dir * np.sin(self.lander.angle) * SIDE_ENGINE_POWER)
     self.lander.ApplyLinearImpulse(impulse=force_c, point=force_pos_c, wake=False)
 
     self.world.Step(1.0 / FPS, 60, 60)
@@ -326,18 +325,16 @@ class RocketLander(gym.Env):
       angle -= 2
 
     state = [
-        2 * x_distance,
-        2 * (y_distance - 0.5),
-        angle,
-        1.0 if self.legs[0].ground_contact else 0.0,
-        1.0 if self.legs[1].ground_contact else 0.0,
-        2 * (self.throttle - 0.5),
-        (self.gimbal / GIMBAL_THRESHOLD)
+      2 * x_distance,
+      2 * (y_distance - 0.5),
+      angle,
+      1.0 if self.legs[0].ground_contact else 0.0,
+      1.0 if self.legs[1].ground_contact else 0.0,
+      2 * (self.throttle - 0.5),
+      (self.gimbal / GIMBAL_THRESHOLD),
     ]
     if VEL_STATE:
-      state.extend([vel_l[0],
-                    vel_l[1],
-                    vel_a])
+      state.extend([vel_l[0], vel_l[1], vel_a])
 
     # # print state
     # if self.viewer is not None:
@@ -389,7 +386,7 @@ class RocketLander(gym.Env):
 
     self.stepnumber += 1
 
-    state = (state - MEAN[:len(state)]) / VAR[:len(state)]
+    state = (state - MEAN[: len(state)]) / VAR[: len(state)]
     terminated = done
     truncated = False
 

@@ -18,14 +18,14 @@ SelfTRPOR = TypeVar("SelfTRPOR", bound="TRPOR")
 
 class TRPOR(TRPO):
   """
-  Trust Region Policy Optimization with Entropy Regularization (TRPO-R) implementation.
-  """
+    Trust Region Policy Optimization with Entropy Regularization (TRPO-R) implementation.
+    """
 
   def __init__(
-      self,
-      *args,
-      ent_coef: float = 0.01,
-      **kwargs,
+    self,
+    *args,
+    ent_coef: float = 0.01,
+    **kwargs,
   ):
     super().__init__(*args, **kwargs)
     self.ent_coef = ent_coef
@@ -37,8 +37,8 @@ class TRPOR(TRPO):
 
   def train(self) -> None:
     """
-    Update policy using the currently gathered rollout buffer.
-    """
+        Update policy using the currently gathered rollout buffer.
+        """
     # Switch to train mode (this affects batch norm / dropout)
     self.policy.set_training_mode(True)
 
@@ -55,12 +55,12 @@ class TRPOR(TRPO):
       # Optional: sub-sample data for faster computation
       if self.sub_sampling_factor > 1:
         rollout_data = RolloutBufferSamples(
-            rollout_data.observations[:: self.sub_sampling_factor],
-            rollout_data.actions[:: self.sub_sampling_factor],
-            None,  # type: ignore[arg-type]  # old values, not used here
-            rollout_data.old_log_prob[:: self.sub_sampling_factor],
-            rollout_data.advantages[:: self.sub_sampling_factor],
-            None,  # type: ignore[arg-type]  # returns, not used here
+          rollout_data.observations[:: self.sub_sampling_factor],
+          rollout_data.actions[:: self.sub_sampling_factor],
+          None,  # type: ignore[arg-type]  # old values, not used here
+          rollout_data.old_log_prob[:: self.sub_sampling_factor],
+          rollout_data.advantages[:: self.sub_sampling_factor],
+          None,  # type: ignore[arg-type]  # returns, not used here
         )
 
       actions = rollout_data.actions
@@ -100,16 +100,11 @@ class TRPOR(TRPO):
       hessian_vector_product_fn = partial(self.hessian_vector_product, actor_params, grad_kl)
 
       # Computing search direction
-      search_direction = conjugate_gradient_solver(
-          hessian_vector_product_fn,
-          policy_objective_gradients,
-          max_iter=self.cg_max_steps)
+      search_direction = conjugate_gradient_solver(hessian_vector_product_fn, policy_objective_gradients, max_iter=self.cg_max_steps)
 
       # Maximal step length
       line_search_max_step_size = 2 * self.target_kl
-      line_search_max_step_size /= th.matmul(
-          search_direction, hessian_vector_product_fn(search_direction, retain_graph=False)
-      )
+      line_search_max_step_size /= th.matmul(search_direction, hessian_vector_product_fn(search_direction, retain_graph=False))
       line_search_max_step_size = th.sqrt(line_search_max_step_size)  # type: ignore[assignment, arg-type]
 
       line_search_backtrack_coeff = 1.0
@@ -123,12 +118,9 @@ class TRPOR(TRPO):
           # Applying the scaled step direction
           for param, original_param, shape in zip(actor_params, original_actor_params, grad_shape):
             n_params = param.numel()
-            param.data = (
-                original_param.data
-                + line_search_backtrack_coeff
-                * line_search_max_step_size
-                * search_direction[start_idx: (start_idx + n_params)].view(shape)
-            )
+            param.data = original_param.data + line_search_backtrack_coeff * line_search_max_step_size * search_direction[
+              start_idx : (start_idx + n_params)
+            ].view(shape)
             start_idx += n_params
 
           # Recomputing the policy log-probabilities
@@ -206,14 +198,14 @@ class TRPOR(TRPO):
 
 def sample_trpor_params(trial, n_actions, n_envs, additional_args):
   """
-  Sampler for TRPO with Quantile Value Estimation hyperparameters.
+    Sampler for TRPO with Quantile Value Estimation hyperparameters.
 
-  :param trial: Optuna trial object
-  :param n_actions: Number of actions in the environment
-  :param n_envs: Number of parallel environments
-  :param additional_args: Additional arguments for sampling
-  :return: Dictionary of sampled hyperparameters
-  """
+    :param trial: Optuna trial object
+    :param n_actions: Number of actions in the environment
+    :param n_envs: Number of parallel environments
+    :param additional_args: Additional arguments for sampling
+    :return: Dictionary of sampled hyperparameters
+    """
   n_steps = trial.suggest_categorical("n_steps", [8, 16, 32, 64, 128, 256, 512, 1024, 2048])
   gamma = trial.suggest_categorical("gamma", [0.9, 0.95, 0.98, 0.99, 0.995, 0.999, 0.9999])
   learning_rate = trial.suggest_float("learning_rate", 1e-5, 1, log=True)
@@ -231,31 +223,32 @@ def sample_trpor_params(trial, n_actions, n_envs, additional_args):
 
   # Neural network architecture configuration
   net_arch = {
-      "small": dict(pi=[64, 64], vf=[64, 64]),
-      "medium": dict(pi=[256, 256], vf=[256, 256]),
+    "small": dict(pi=[64, 64], vf=[64, 64]),
+    "medium": dict(pi=[256, 256], vf=[256, 256]),
   }[net_arch_type]
 
-  activation_fn = {
-      "tanh": nn.Tanh,
-      "relu": nn.ReLU
-  }[activation_fn_name]
+  activation_fn = {"tanh": nn.Tanh, "relu": nn.ReLU}[activation_fn_name]
 
   ent_coef = trial.suggest_float("ent_coef", 0.0, 0.001, step=0.0001)
 
+  n_timesteps = trial.suggest_int("n_timesteps", 100000, 1000000, step=100000)
+  n_envs = trial.suggest_categorical("n_envs", [n_envs] if n_envs > 0 else [1, 2, 4, 6, 8, 10])
+
   return {
-      "policy": "MlpPolicy",
-      "n_envs": n_envs,
-      "ent_coef": ent_coef,
-      "n_steps": n_steps,
-      "batch_size": batch_size,
-      "gamma": gamma,
-      "cg_max_steps": cg_max_steps,
-      "n_critic_updates": n_critic_updates,
-      "target_kl": target_kl,
-      "learning_rate": learning_rate,
-      "gae_lambda": gae_lambda,
-      "policy_kwargs": dict(
-          net_arch=net_arch,
-          activation_fn=activation_fn,
-      ),
+    "policy": "MlpPolicy",
+    "n_timesteps": n_timesteps,
+    "n_envs": n_envs,
+    "ent_coef": ent_coef,
+    "n_steps": n_steps,
+    "batch_size": batch_size,
+    "gamma": gamma,
+    "cg_max_steps": cg_max_steps,
+    "n_critic_updates": n_critic_updates,
+    "target_kl": target_kl,
+    "learning_rate": learning_rate,
+    "gae_lambda": gae_lambda,
+    "policy_kwargs": dict(
+      net_arch=net_arch,
+      activation_fn=activation_fn,
+    ),
   }

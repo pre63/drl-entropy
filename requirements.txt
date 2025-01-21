@@ -23,5 +23,5 @@ jax[cuda12]
 plotly==6.0.0rc0
 scikit-learn
 isort
-autopep8
 scipy
+git+https://github.com/pre63/black.git

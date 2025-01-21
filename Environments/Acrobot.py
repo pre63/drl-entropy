@@ -44,18 +44,18 @@ class AcrobotContinuousWrapper(gym.Wrapper):
 
 def is_success(state, action, angle_threshold=0.1, velocity_threshold=0.5, torque_threshold=0.1):
   """
-  Determines if the acrobot is in a successful state.
+    Determines if the acrobot is in a successful state.
 
-  Parameters:
-  - state (ndarray): The observation from the environment.
-  - action (ndarray): The action taken.
-  - angle_threshold (float): Maximum allowable deviation from the upright position (in radians).
-  - velocity_threshold (float): Maximum allowable angular velocity.
-  - torque_threshold (float): Maximum allowable torque.
+    Parameters:
+    - state (ndarray): The observation from the environment.
+    - action (ndarray): The action taken.
+    - angle_threshold (float): Maximum allowable deviation from the upright position (in radians).
+    - velocity_threshold (float): Maximum allowable angular velocity.
+    - torque_threshold (float): Maximum allowable torque.
 
-  Returns:
-  - bool: True if the acrobot is in a success state, False otherwise.
-  """
+    Returns:
+    - bool: True if the acrobot is in a success state, False otherwise.
+    """
   x1, y1, x2, y2, angular_velocity1, angular_velocity2 = state
   torque = action[0]
 
