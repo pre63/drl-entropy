@@ -309,7 +309,8 @@ def sample_trpoqho_params(trial, n_actions, n_envs, additional_args):
   batch_size = trial.suggest_categorical("batch_size", [8, 16, 32, 64, 128, 256, 512, 1024])
 
   n_timesteps = trial.suggest_int("n_timesteps", 100000, 1000000, step=100000)
-  n_envs = trial.suggest_categorical("n_envs", [n_envs] if n_envs > 0 else [1, 2, 4, 6, 8, 10])
+  n_envs_choice = [2, 4, 6, 8, 10]
+  n_envs = trial.suggest_categorical("n_envs", n_envs_choice)
 
   return {
     "policy": "MlpPolicy",
@@ -361,7 +362,8 @@ def sample_trpoqh_params(trial, n_actions, n_envs, additional_args):
   batch_size = trial.suggest_categorical("batch_size", [8, 16, 32, 64, 128, 256, 512, 1024])
 
   n_timesteps = trial.suggest_int("n_timesteps", 100000, 1000000, step=100000)
-  n_envs = trial.suggest_categorical("n_envs", [n_envs] if n_envs > 0 else [1, 2, 4, 6, 8, 10])
+  n_envs_choice = [2, 4, 6, 8, 10]
+  n_envs = trial.suggest_categorical("n_envs", n_envs_choice)
 
   return {
     "policy": "MlpPolicy",

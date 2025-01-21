@@ -62,7 +62,6 @@ class ExperimentManager:
     env_id: str,
     log_folder: str,
     tensorboard_log: str = "",
-    n_timesteps: int = 0,
     eval_freq: int = 10000,
     n_eval_episodes: int = 5,
     save_freq: int = -1,
@@ -108,7 +107,6 @@ class ExperimentManager:
 
     self.config = config or str(default_path / f"hyperparams/{self.algo}.yml")
     self.env_kwargs: Dict[str, Any] = env_kwargs or {}
-    self.n_timesteps = n_timesteps
     self.normalize = False
     self.normalize_kwargs: Dict[str, Any] = {}
     self.env_wrapper: Optional[Callable] = None
@@ -132,7 +130,7 @@ class ExperimentManager:
     self.n_eval_episodes = n_eval_episodes
     self.n_eval_envs = n_eval_envs
 
-    self.n_envs = 1  # it will be updated when reading hyperparams
+    self.n_envs = 0  # it will be updated when reading hyperparams
     self.n_actions = 0  # For DDPG/TD3 action noise objects
     self._hyperparams: Dict[str, Any] = {}
     self.monitor_kwargs: Dict[str, Any] = {}
@@ -367,10 +365,7 @@ class ExperimentManager:
   def _preprocess_hyperparams(  # noqa: C901
     self, hyperparams: Dict[str, Any]
   ) -> Tuple[Dict[str, Any], Optional[Callable], List[BaseCallback], Optional[Callable]]:
-    self.n_envs = hyperparams.get("n_envs", 1)
-
-    if self.verbose > 0:
-      print(f"Using {self.n_envs} environments")
+    self.n_envs = hyperparams.get("n_envs", 0)
 
     # Convert schedule strings to objects
     hyperparams = self._preprocess_schedules(hyperparams)
@@ -380,16 +375,13 @@ class ExperimentManager:
       hyperparams["train_freq"] = tuple(hyperparams["train_freq"])
 
     # Should we overwrite the number of timesteps?
-    if self.n_timesteps > 0:
-      print(f"Overwriting n_timesteps with n={self.n_timesteps}")
-    else:
-      self.n_timesteps = int(hyperparams["n_timesteps"])
-      print(f"Using {self.n_timesteps} timesteps")
+    self.n_timesteps = int(hyperparams["n_timesteps"])
+    print(f"Using {self.n_timesteps} timesteps")
 
     # Derive n_evaluations from number of timesteps if needed
     if self.n_evaluations is None and self.optimize_hyperparameters:
-      self.n_evaluations = max(1, self.n_timesteps // int(1e4))
-      print(f"Doing {self.n_evaluations} intermediate evaluations for pruning based on the number of timesteps." " (1 evaluation every 10k timesteps)")
+      self.n_evaluations = max(1, self.n_timesteps // int(5e4))
+      print(f"Doing {self.n_evaluations} intermediate evaluations for pruning based on the number of timesteps." " (1 evaluation every 50k timesteps)")
 
     # Pre-process normalize config
     hyperparams = self._preprocess_normalization(hyperparams)
@@ -605,6 +597,9 @@ class ExperimentManager:
 
     # On most env, SubprocVecEnv does not help and is quite memory hungry,
     # therefore, we use DummyVecEnv by default
+    if n_envs < 1:
+      print("Warning: you cannot have less than 1 environment")
+
     env = make_vec_env(
       make_env,
       n_envs=n_envs,
@@ -719,6 +714,15 @@ class ExperimentManager:
     # Sample candidate hyperparameters
     sampled_hyperparams = HYPERPARAMS_SAMPLER[self.algo](trial, self.n_actions, n_envs, additional_args)
     kwargs.update(sampled_hyperparams)
+
+    if sampled_hyperparams.get("n_envs") is not None:
+      self.n_envs = n_envs = sampled_hyperparams["n_envs"]
+
+    if sampled_hyperparams.get("n_timesteps") is not None:
+      self.n_timesteps = sampled_hyperparams["n_timesteps"]
+
+    if self.verbose > 0:
+      print(f"Using {self.n_timesteps} timesteps and {n_envs} environments for trial {trial.number}")
 
     env = self.create_envs(n_envs, no_log=True)
 

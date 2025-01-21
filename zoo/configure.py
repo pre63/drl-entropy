@@ -28,7 +28,6 @@ def configure(**params):
     "tensorboard_log": "",
     "trained_agent": "",
     "truncate_last_trajectory": True,
-    "n_timesteps": -1,
     "num_threads": -1,
     "log_interval": -1,
     "eval_freq": 25000,
@@ -118,8 +117,6 @@ def configure(**params):
     study_name = f"{args['algo']}_{args['env']}_study"
     args["study_name"] = study_name
 
-  print(f"Timesteps: {args['n_timesteps']}")
-
   # Initialize the experiment manager
   if args["train_eval"]:
     exp_manager_class = EvalExperimentManager
@@ -132,7 +129,6 @@ def configure(**params):
     env_id=env_id,
     log_folder=args["log_folder"],
     tensorboard_log=args["tensorboard_log"],
-    n_timesteps=args["n_timesteps"],
     eval_freq=args["eval_freq"],
     n_eval_episodes=args["eval_episodes"],
     save_freq=args["save_freq"],
@@ -183,7 +179,6 @@ if __name__ == "__main__":
   configure(
     algo="ppo",
     env="CartPole-v1",
-    n_timesteps=10000,
     seed=42,
     optimize_hyperparameters=False,
   )

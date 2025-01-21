@@ -1,0 +1,21 @@
+# Tuned
+# Environment: Ant-v5
+# Best Trial Number: 8
+# Best Value: 834.2794822
+# Parameters: {'n_steps': 1024, 'gamma': 0.95, 'learning_rate': 4.405850598495134e-05, 'batch_size': 8, 'n_critic_updates': 30, 'cg_max_steps': 25, 'target_kl': 0.01, 'truncation_threshold': 20, 'n_value_networks': 3, 'net_arch': 'large', 'activation_fn': 'tanh', 'n_quantiles': 25, 'n_timesteps': 600000, 'n_envs': 1}
+
+Ant-v5:
+  activation_fn: tanh
+  batch_size: 8
+  cg_max_steps: 25
+  gamma: 0.95
+  learning_rate: 4.405850598495134e-05
+  n_critic_updates: 30
+  n_envs: 1
+  n_quantiles: 25
+  n_steps: 1024
+  n_timesteps: 600000
+  n_value_networks: 3
+  net_arch: large
+  target_kl: 0.01
+  truncation_threshold: 20

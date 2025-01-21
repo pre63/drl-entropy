@@ -232,7 +232,8 @@ def sample_trpor_params(trial, n_actions, n_envs, additional_args):
   ent_coef = trial.suggest_float("ent_coef", 0.0, 0.001, step=0.0001)
 
   n_timesteps = trial.suggest_int("n_timesteps", 100000, 1000000, step=100000)
-  n_envs = trial.suggest_categorical("n_envs", [n_envs] if n_envs > 0 else [1, 2, 4, 6, 8, 10])
+  n_envs_choice = [2, 4, 6, 8, 10]
+  n_envs = trial.suggest_categorical("n_envs", n_envs_choice)
 
   return {
     "policy": "MlpPolicy",

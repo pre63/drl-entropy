@@ -123,7 +123,9 @@ def sample_trpo_params(trial: optuna.Trial, n_actions: int, n_envs: int, additio
   activation_fn = {"tanh": nn.Tanh, "relu": nn.ReLU, "elu": nn.ELU, "leaky_relu": nn.LeakyReLU}[activation_fn_name]
 
   n_timesteps = trial.suggest_int("n_timesteps", 100000, 1000000, step=100000)
-  n_envs = trial.suggest_categorical("n_envs", [n_envs] if n_envs > 0 else [1, 2, 4, 6, 8, 10])
+
+  n_envs_choice = [2, 4, 6, 8, 10]
+  n_envs = trial.suggest_categorical("n_envs", n_envs_choice)
 
   return {
     "n_timesteps": n_timesteps,
@@ -262,7 +264,8 @@ def sample_ppo_params(trial: optuna.Trial, n_actions: int, n_envs: int, addition
   activation_fn = {"tanh": nn.Tanh, "relu": nn.ReLU, "elu": nn.ELU, "leaky_relu": nn.LeakyReLU}[activation_fn_name]
 
   n_timesteps = trial.suggest_int("n_timesteps", 100000, 1000000, step=100000)
-  n_envs = trial.suggest_categorical("n_envs", [n_envs] if n_envs > 0 else [1, 2, 4, 6, 8, 10])
+  n_envs_choice = [2, 4, 6, 8, 10]
+  n_envs = trial.suggest_categorical("n_envs", n_envs_choice)
 
   return {
     "n_timesteps": n_timesteps,
