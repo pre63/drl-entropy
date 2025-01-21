@@ -39,19 +39,15 @@ from torch import nn as nn
 
 
 class SaveBestTrialCallback:
-  def __init__(
-    self,
-    env_name,
-    results_path="results",
-  ):
+  def __init__(self, env_name, yaml_file_path="results/env/model.yaml"):
     """
         Callback to save the best trial to a YAML file during optimization.
 
-        :param results_path: Path to the YAML file where the best trial will be saved.
         :param env_name: Name of the environment.
+        :param yaml_file_path: Path to the YAML file where the best trial will be saved.
         """
-    self.results_path = results_path
-    self.env_name = env_name
+    self.yaml_file_path = yaml_file_path
+    self.env_name = str(env_name)
 
   def __call__(self, study, trial):
     """
@@ -60,40 +56,58 @@ class SaveBestTrialCallback:
         :param study: The Optuna study object.
         :param trial: The trial object.
         """
-    print(f"Trial {trial.number} finished with value: {trial.value}")
-    # Check if the current trial is the best
-    if study.best_trial == trial:
-      # Extract the best trial details
-      best_trial = study.best_trial
+    print(f"Recording best trial to {self.yaml_file_path}.")
+    try:
+      try:
+        # Get the best trial
+        best_trial = study.best_trial
+      except:
+        best_trial = trial
+
+      # Prepare the best trial details
       best_trial_details = {
-        "trial_number": best_trial.number,
-        "value": best_trial.value,
-        "params": best_trial.params,
-        "comment": f"Best Trial: {best_trial.number}, Value: {best_trial.value}, Params: {best_trial.params}",
+        "trial_number": int(best_trial.number),
+        "value": float(best_trial.value),
+        "params": {k: float(v) if isinstance(v, (int, float)) else v for k, v in best_trial.params.items()},
+        "comment": f"Best trial value: {best_trial.value}, params: {best_trial.params}",
       }
-      new_entry = {self.env_name: best_trial_details}
 
-      # Ensure the directory exists
-      os.makedirs(os.path.dirname(self.results_path), exist_ok=True)
-
-      # Read the existing YAML file or start a new one
-      if os.path.exists(self.results_path):
-        with open(self.results_path, "r") as f:
+      # Read the existing YAML data or initialize a new dictionary
+      if os.path.exists(self.yaml_file_path):
+        with open(self.yaml_file_path, "r") as f:
           existing_data = yaml.safe_load(f) or {}
       else:
         existing_data = {}
 
-      # Update the data with the new entry
-      existing_data.update(new_entry)
+      # Check if the existing value is greater
+      if self.env_name in existing_data:
+        existing_value = existing_data[self.env_name].get("value", float("-inf"))
+        if existing_value > best_trial_details["value"]:
+          print(f"Existing value {existing_value} is better than current trial value {best_trial_details['value']}. Skipping update.")
+          return
+
+      # Update the data for the current environment
+      existing_data[self.env_name] = best_trial_details
 
       # Sort the data alphabetically by environment name
       sorted_data = OrderedDict(sorted(existing_data.items()))
 
-      # Write the updated YAML file
-      with open(self.results_path, "w") as f:
-        yaml.dump(sorted_data, f, default_flow_style=False)
+      # Write each environment entry using `yaml.dump`
+      os.makedirs(os.path.dirname(self.yaml_file_path), exist_ok=True)
+      with open(self.yaml_file_path, "w") as f:
+        for env, details in sorted_data.items():
+          yaml.dump(
+            {env: details},
+            f,
+            default_flow_style=False,
+            allow_unicode=True,
+            sort_keys=False,
+          )
 
       print(f"Updated YAML file with the best trial for environment '{self.env_name}'.")
+    except Exception as e:
+      print(f"Failed to record best trial to {self.yaml_file_path}.")
+      print(e)
 
 
 class ExperimentManager:
@@ -218,6 +232,7 @@ class ExperimentManager:
     self.log_path = f"{log_folder}/{self.algo}/"
     self.save_path = os.path.join(self.log_path, f"{self.env_name}_{get_latest_run_id(self.log_path, self.env_name) + 1}{uuid_str}")
     self.params_path = f"{self.save_path}/{self.env_name}"
+    self.best_save_path = f"results/{self.algo}.yml"
 
   def setup_experiment(self) -> Optional[Tuple[BaseAlgorithm, Dict[str, Any]]]:
     """
@@ -897,12 +912,14 @@ class ExperimentManager:
                 self.max_total_trials,
                 states=counted_states,
               ),
-              SaveBestTrialCallback(self.env_name),
+              SaveBestTrialCallback(self.env_name, yaml_file_path=self.best_save_path),
             ],
           )
       else:
         print("No limit on the number of trials")
-        study.optimize(self.objective, n_jobs=self.n_jobs, n_trials=self.n_trials, callbacks=[SaveBestTrialCallback(self.env_name)])
+        study.optimize(
+          self.objective, n_jobs=self.n_jobs, n_trials=self.n_trials, callbacks=[SaveBestTrialCallback(self.env_name, yaml_file_path=self.best_save_path)]
+        )
     except KeyboardInterrupt:
       pass
 
