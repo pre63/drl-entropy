@@ -12,9 +12,6 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 import gymnasium as gym
 import numpy as np
 import optuna
-
-# Register custom envs
-# Register custom envs
 import rl_zoo3.import_envs  # noqa: F401
 import torch as th
 import yaml
@@ -29,9 +26,6 @@ from rl_zoo3.callbacks import SaveVecNormalizeCallback, TrialEvalCallback
 from rl_zoo3.hyperparams_opt import HYPERPARAMS_SAMPLER
 from rl_zoo3.utils import ALGOS, get_callback_list, get_class_by_name, get_latest_run_id, get_wrapper_class, linear_schedule
 from sb3_contrib.common.vec_env import AsyncEval
-
-# For using HER with GoalEnv
-# For using HER with GoalEnv
 from stable_baselines3 import HerReplayBuffer
 from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback, EvalCallback, ProgressBarCallback
@@ -41,10 +35,65 @@ from stable_baselines3.common.preprocessing import is_image_space, is_image_spac
 from stable_baselines3.common.sb2_compat.rmsprop_tf_like import RMSpropTFLike  # noqa: F401
 from stable_baselines3.common.utils import constant_fn
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecEnv, VecFrameStack, VecNormalize, VecTransposeImage, is_vecenv_wrapped
-
-# For custom activation fn
-# For custom activation fn
 from torch import nn as nn
+
+
+class SaveBestTrialCallback:
+  def __init__(
+    self,
+    env_name,
+    results_path="results",
+  ):
+    """
+        Callback to save the best trial to a YAML file during optimization.
+
+        :param results_path: Path to the YAML file where the best trial will be saved.
+        :param env_name: Name of the environment.
+        """
+    self.results_path = results_path
+    self.env_name = env_name
+
+  def __call__(self, study, trial):
+    """
+        Callback function called after each trial.
+
+        :param study: The Optuna study object.
+        :param trial: The trial object.
+        """
+    print(f"Trial {trial.number} finished with value: {trial.value}")
+    # Check if the current trial is the best
+    if study.best_trial == trial:
+      # Extract the best trial details
+      best_trial = study.best_trial
+      best_trial_details = {
+        "trial_number": best_trial.number,
+        "value": best_trial.value,
+        "params": best_trial.params,
+        "comment": f"Best Trial: {best_trial.number}, Value: {best_trial.value}, Params: {best_trial.params}",
+      }
+      new_entry = {self.env_name: best_trial_details}
+
+      # Ensure the directory exists
+      os.makedirs(os.path.dirname(self.results_path), exist_ok=True)
+
+      # Read the existing YAML file or start a new one
+      if os.path.exists(self.results_path):
+        with open(self.results_path, "r") as f:
+          existing_data = yaml.safe_load(f) or {}
+      else:
+        existing_data = {}
+
+      # Update the data with the new entry
+      existing_data.update(new_entry)
+
+      # Sort the data alphabetically by environment name
+      sorted_data = OrderedDict(sorted(existing_data.items()))
+
+      # Write the updated YAML file
+      with open(self.results_path, "w") as f:
+        yaml.dump(sorted_data, f, default_flow_style=False)
+
+      print(f"Updated YAML file with the best trial for environment '{self.env_name}'.")
 
 
 class ExperimentManager:
@@ -799,40 +848,6 @@ class ExperimentManager:
 
     return reward
 
-  def save_best_hyperparameters(self, trial: optuna.Trial, results_path: str) -> None:
-    """
-        Save the best hyperparameters to a YAML file with comments including trial details.
-
-        :param trial: The best trial containing parameters and metadata.
-        :param results_path: The path to the YAML file where results should be saved.
-        """
-    # Load existing results if available
-    if os.path.exists(results_path):
-      with open(results_path, "r") as f:
-        results = yaml.safe_load(f) or {}
-    else:
-      results = {}
-
-    # Update results with the best trial
-    env_name = self.env_name.gym_id
-    results[env_name] = trial.params
-
-    # Sort environments by name
-    sorted_results = {k: results[k] for k in sorted(results.keys())}
-
-    # Generate comments with trial details
-    comments = (
-      f"# Tuned\n# Environment: {env_name}\n" f"# Best Trial Number: {trial.number}\n" f"# Best Value: {trial.value}\n" f"# Parameters: {trial.params}\n\n"
-    )
-
-    # Write back to the YAML file with comments
-    os.makedirs(os.path.dirname(results_path), exist_ok=True)
-    with open(results_path, "w") as f:
-      f.write(comments)
-      yaml.dump(sorted_results, f)
-
-    print(f"Best hyperparameters saved to {results_path}")
-
   def hyperparameters_optimization(self) -> None:
     if self.verbose > 0:
       print("Optimizing hyperparameters")
@@ -873,6 +888,7 @@ class ExperimentManager:
         ]
         completed_trials = len(study.get_trials(states=counted_states))
         if completed_trials < self.max_total_trials:
+          print("Max total trials set to", self.max_total_trials)
           study.optimize(
             self.objective,
             n_jobs=self.n_jobs,
@@ -880,11 +896,13 @@ class ExperimentManager:
               MaxTrialsCallback(
                 self.max_total_trials,
                 states=counted_states,
-              )
+              ),
+              SaveBestTrialCallback(self.env_name),
             ],
           )
       else:
-        study.optimize(self.objective, n_jobs=self.n_jobs, n_trials=self.n_trials)
+        print("No limit on the number of trials")
+        study.optimize(self.objective, n_jobs=self.n_jobs, n_trials=self.n_trials, callbacks=[SaveBestTrialCallback(self.env_name)])
     except KeyboardInterrupt:
       pass
 
@@ -898,13 +916,6 @@ class ExperimentManager:
     print("Params: ")
     for key, value in trial.params.items():
       print(f"    {key}: {value}")
-
-    # Save the best hyperparameters
-    try:
-      results_path = f"results/{self.algo}.yaml"
-      self.save_best_hyperparameters(trial, results_path)
-    except Exception as e:
-      print(f"Failed to save best hyperparameters: {e}")
 
     report_name = f"report_{self.env_name}_{self.n_trials}-trials-{self.n_timesteps}" f"-{self.sampler}-{self.pruner}_{int(time.time())}"
 
