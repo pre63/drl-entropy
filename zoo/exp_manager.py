@@ -104,7 +104,6 @@ class SaveBestTrialCallback:
             sort_keys=False,
           )
 
-      print(f"Updated YAML file with the best trial for environment '{self.env_name}'.")
     except Exception as e:
       print(f"Failed to record best trial to {self.yaml_file_path}.")
       print(e)
