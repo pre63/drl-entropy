@@ -1,0 +1,30 @@
+Ant-v5:
+  trial_number: 2
+  value: 2169.9441983999996
+  params:
+    n_steps: 1024.0
+    gamma: 0.95
+    learning_rate: 1.9519399171888235e-05
+    n_critic_updates: 5.0
+    cg_max_steps: 10.0
+    target_kl: 0.1
+    gae_lambda: 0.98
+    batch_size: 64.0
+    net_arch: medium
+    activation_fn: relu
+    ent_coef: 0.0008
+    buffer_capacity: 32000.0
+    reward_threshold: 200.0
+    replay_strategy_threshold: -7.988535990451293
+    epsilon: 0.1
+    use_per: 1.0
+    orthogonal_init: 1.0
+    n_timesteps: 700000.0
+    n_envs: 4.0
+  comment: 'Best trial value: 2169.9441983999996, params: {''n_steps'': 1024, ''gamma'':
+    0.95, ''learning_rate'': 1.9519399171888235e-05, ''n_critic_updates'': 5, ''cg_max_steps'':
+    10, ''target_kl'': 0.1, ''gae_lambda'': 0.98, ''batch_size'': 64, ''net_arch'':
+    ''medium'', ''activation_fn'': ''relu'', ''ent_coef'': 0.0008, ''buffer_capacity'':
+    32000, ''reward_threshold'': 200.0, ''replay_strategy_threshold'': -7.988535990451293,
+    ''epsilon'': 0.1, ''use_per'': True, ''orthogonal_init'': True, ''n_timesteps'':
+    700000, ''n_envs'': 4}'
