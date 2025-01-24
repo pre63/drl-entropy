@@ -40,6 +40,7 @@ Ant-v5:
   gae_lambda: 0.92
   net_arch: small
   activation_fn: relu
+  n_envs: 2
 
 # Tuned
 Humanoid-v5:
