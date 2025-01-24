@@ -12,3 +12,5 @@ __pycache__
 .optuna-zoo2
 
 Models/sb3_trpo.py
+
+.DS_Store
