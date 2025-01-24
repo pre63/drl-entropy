@@ -31,3 +31,5 @@ This repository employs automated hyperparameter tuning frameworks to ensure fai
 ## Why This Repository?
 
 This platform is a one-stop solution for exploring entropy-driven reinforcement learning strategies in continuous control. It provides the tools and infrastructure needed to validate and expand upon the findings presented in *Chaos to Knowledge: Entropy in Continuous Control*, offering a solid foundation for advancing research in entropy-regularized RL methods.
+
+
