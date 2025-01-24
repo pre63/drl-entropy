@@ -28,41 +28,58 @@ LunarLanderContinuous-v3:
 # Tuned
 Ant-v5:
   policy: 'MlpPolicy'
-  n_timesteps: 100000
   reward_threshold: 1000
-  batch_size: 256
-  n_steps: 2048
-  gamma: 0.98
-  learning_rate: 0.09620160300295108
-  n_critic_updates: 10
-  cg_max_steps: 5
-  target_kl: 0.001
-  n_quantiles: 50
-  truncation_threshold: 5
-  n_value_networks: 7
+  n_steps: 2048.0
+  gamma: 0.999
+  learning_rate: 0.00045781721516444703
+  batch_size: 128.0
+  n_critic_updates: 25
+  cg_max_steps: 30
+  target_kl: 0.05
+  truncation_threshold: 10
+  n_value_networks: 5
+  net_arch: medium
+  activation_fn: relu
+  n_quantiles: 25
+  n_timesteps: 500000
+  n_envs: 10
 
 Humanoid-v5:
   policy: 'MlpPolicy'
-  n_timesteps: 100000
-  reward_threshold: 450
+  reward_threshold: 410
+  n_steps: 512.0
+  gamma: 0.98
+  learning_rate: 0.0007850220924511517
+  batch_size: 512.0
+  n_critic_updates: 30.0
+  cg_max_steps: 5.0
+  target_kl: 0.03
+  truncation_threshold: 20.0
+  n_value_networks: 7.0
+  net_arch: large
+  activation_fn: relu
+  n_quantiles: 50.0
+  n_timesteps: 700000.0
+  n_envs: 2.0
 
 # Tuned
 InvertedDoublePendulum-v5:
   policy: 'MlpPolicy'
-  n_timesteps: 100000
   reward_threshold: 410
-  n_steps: 1024
+  n_steps: 1024.0
   gamma: 0.995
-  learning_rate: 0.004344331454565199
-  batch_size: 8
-  n_critic_updates: 10
-  cg_max_steps: 20
+  learning_rate: 0.0038240054814221523
+  batch_size: 64.0
+  n_critic_updates: 20.0
+  cg_max_steps: 30.0
   target_kl: 0.01
-  truncation_threshold: 20
-  n_value_networks: 3
-  net_arch: medium
+  truncation_threshold: 20.0
+  n_value_networks: 3.0
+  net_arch: large
   activation_fn: tanh
-  n_quantiles: 10
+  n_quantiles: 10.0
+  n_timesteps: 900000.0
+  n_envs: 6.0
 
 RocketLander-v0:
   policy: 'MlpPolicy'
