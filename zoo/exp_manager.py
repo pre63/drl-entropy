@@ -975,6 +975,7 @@ class EvalExperimentManager(ExperimentManager):
     kwargs: Dict[str, Any] = {}
     if self.log_interval > -1:
       kwargs = {"log_interval": self.log_interval}
+      print(f"Using log interval: {self.log_interval}")
 
     if len(self.callbacks) > 0:
       kwargs["callback"] = self.callbacks

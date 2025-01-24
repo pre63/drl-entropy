@@ -24,6 +24,7 @@ LunarLanderContinuous-v3:
   n_quantiles: 50
   truncation_threshold: 10
   n_value_networks: 5
+  n_envs: 8
 
 # Tuned
 Ant-v5:
@@ -40,6 +41,7 @@ Ant-v5:
   n_quantiles: 50
   truncation_threshold: 5
   n_value_networks: 7
+  n_envs: 8
 
 Humanoid-v5:
   policy: 'MlpPolicy'
@@ -61,6 +63,7 @@ InvertedDoublePendulum-v5:
   n_quantiles: 50
   truncation_threshold: 20
   n_value_networks: 7
+  n_envs: 8
 
 RocketLander-v0:
   policy: 'MlpPolicy'

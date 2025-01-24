@@ -26,6 +26,7 @@ LunarLanderContinuous-v3:
   n_value_networks: 5
   adaptive_truncation: True
   penalty_coef: 0.0026
+  n_envs: 8
 
 # Tuned
 Ant-v5:
@@ -44,6 +45,7 @@ Ant-v5:
   n_value_networks: 3
   adaptive_truncation: False
   penalty_coef: 0.0013900553786711622
+  n_envs: 8
 
 Humanoid-v5:
   policy: 'MlpPolicy'
@@ -68,6 +70,7 @@ InvertedDoublePendulum-v5:
   net_arch: small
   activation_fn: relu
   n_quantiles: 25
+  n_envs: 8
 
 RocketLander-v0:
   policy: 'MlpPolicy'

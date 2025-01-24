@@ -24,6 +24,7 @@ LunarLanderContinuous-v3:
   gae_lambda: 0.92
   net_arch: medium
   activation_fn: relu
+  n_envs: 8
 
 # Tuned
 Ant-v5:
@@ -57,6 +58,7 @@ Humanoid-v5:
   net_arch: small
   activation_fn: tanh
   reward_threshold: 450
+  n_envs: 8
 
 # Tuned
 InvertedDoublePendulum-v5:
@@ -73,6 +75,7 @@ InvertedDoublePendulum-v5:
   gae_lambda: 0.99
   net_arch: medium
   activation_fn: relu
+  n_envs: 8
 
 # Tuned
 RocketLander-v0:

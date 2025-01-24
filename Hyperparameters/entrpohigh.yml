@@ -29,6 +29,7 @@ Ant-v5:
   epsilon: 0.15000000000000002
   use_per: True
   orthogonal_init: True
+  n_envs: 8
 
 
 # Tuned
@@ -53,6 +54,7 @@ Humanoid-v5:
   use_per: True
   orthogonal_init: True
   gradient_clip: 0.5
+  n_envs: 8
 
 # Tuned
 InvertedDoublePendulum-v5:
@@ -75,6 +77,7 @@ InvertedDoublePendulum-v5:
   epsilon: 0.65
   use_per: True
   orthogonal_init: False
+  n_envs: 8
 
 # Tuned
 RocketLander-v0:

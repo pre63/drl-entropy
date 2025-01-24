@@ -29,6 +29,7 @@ Ant-v5:
   epsilon: 0.75
   use_per: True
   orthogonal_init: False
+  n_envs: 8
 
 # Tuned
 Humanoid-v5:
@@ -51,6 +52,7 @@ Humanoid-v5:
   epsilon: 0.8
   use_per: False
   orthogonal_init: False
+  n_envs: 8
 
 # Tuned
 InvertedDoublePendulum-v5:
@@ -73,6 +75,7 @@ InvertedDoublePendulum-v5:
   epsilon: 0.35
   use_per: False
   orthogonal_init: False
+  n_envs: 8
 
 RocketLander-v0:
   policy: "MlpPolicy"

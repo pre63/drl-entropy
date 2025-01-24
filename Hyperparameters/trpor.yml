@@ -24,6 +24,7 @@ LunarLanderContinuous-v3:
   net_arch: medium
   activation_fn: tanh
   ent_coef: 0.0003
+  n_envs: 8
 
 # Tuned
 Ant-v5:
@@ -59,6 +60,7 @@ Humanoid-v5:
   activation_fn: tanh
   batch_size: 16
   ent_coef: 0.0005
+  n_envs: 8
 
 # Tuned
 InvertedDoublePendulum-v5:
@@ -76,6 +78,7 @@ InvertedDoublePendulum-v5:
   net_arch: small
   activation_fn: relu
   ent_coef: 0.0004
+  n_envs: 8
 
 RocketLander-v0:
   policy: 'MlpPolicy'

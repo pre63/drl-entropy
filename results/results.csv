@@ -32,3 +32,6 @@ trpor,Ant-v5,2,991.7717752456665,inf,653.3440483955824,704.1410472761088,.eval/t
 trpo,Ant-v5,5,440.81585335731506,inf,113.20342207536233,298.78269580648356,.eval/trpo/Ant-v5_5/run_5_data.csv,.eval/trpo/Ant-v5_5
 trpo,Ant-v5,6,404.32467222213745,inf,140.93703087457627,362.4430152998998,.eval/trpo/Ant-v5_6/run_6_data.csv,.eval/trpo/Ant-v5_6
 trpor,Ant-v5,3,897.0784602165222,inf,609.8964410612613,720.9683522876617,.eval/trpor/Ant-v5_15/run_3_data.csv,.eval/trpor/Ant-v5_15
+entrpo,Ant-v5,1,6203.171769857407,1907,503.7208007042002,749.1609701152677,.eval/entrpo/Ant-v5_1/run_1_data.csv,.eval/entrpo/Ant-v5_1
+trpor,Ant-v5,1,9166.69328904152,inf,728.015294006725,742.3067373060791,.eval/trpor/Ant-v5_17/run_1_data.csv,.eval/trpor/Ant-v5_17
+entrpo,Ant-v5,2,6841.996432304382,1828,505.94699250069283,727.4309451402752,.eval/entrpo/Ant-v5_2/run_2_data.csv,.eval/entrpo/Ant-v5_2

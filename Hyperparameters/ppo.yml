@@ -24,6 +24,7 @@ Ant-v5:
   vf_coef: 0.8262092832719824
   net_arch: small
   activation_fn: relu
+  n_envs: 8
 
 # Tuned
 Humanoid-v5:
@@ -42,6 +43,7 @@ Humanoid-v5:
   net_arch: medium
   activation_fn: tanh
   reward_threshold: 450
+  n_envs: 8
 
 # Tuned
 InvertedDoublePendulum-v5:
@@ -60,6 +62,7 @@ InvertedDoublePendulum-v5:
   net_arch: medium
   activation_fn: tanh
   reward_threshold: 410
+  n_envs: 8
 
 RocketLander-v0:
   policy: "MlpPolicy"

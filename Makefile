@@ -135,3 +135,45 @@ list:
 	trials=$(trials); \
 	total_combinations=$$(echo "$$zoologyenvs_count * $$zoology_count * $$trials" | bc); \
 	echo "Total number of combinations: $$total_combinations"
+
+
+eval-all:
+	$(MAKE) train-eval model=entrpohigh env=Ant-v5
+	$(MAKE) train-eval model=entrpohigh env=Humanoid-v5
+	$(MAKE) train-eval model=entrpohigh env=InvertedPendulum-v5
+	$(MAKE) train-eval model=entrpolow env=Ant-v5
+	$(MAKE) train-eval model=entrpolow env=Humanoid-v5
+	$(MAKE) train-eval model=entrpolow env=InvertedPendulum-v5
+	$(MAKE) train-eval model=entrpor env=Ant-v5
+	$(MAKE) train-eval model=entrpor env=Humanoid-v5
+	$(MAKE) train-eval model=entrpor env=InvertedPendulum-v5
+	# $(MAKE) train-eval model=entrpo env=Ant-v5
+	$(MAKE) train-eval model=entrpo env=Humanoid-v5
+	$(MAKE) train-eval model=entrpo env=InvertedPendulum-v5
+	$(MAKE) train-eval model=ppo env=Ant-v5
+	$(MAKE) train-eval model=ppo env=Humanoid-v5
+	$(MAKE) train-eval model=ppo env=InvertedPendulum-v5
+	$(MAKE) train-eval model=sac env=Ant-v5
+	$(MAKE) train-eval model=sac env=Humanoid-v5
+	$(MAKE) train-eval model=sac env=InvertedPendulum-v5
+	$(MAKE) train-eval model=tqc env=Ant-v5
+	$(MAKE) train-eval model=tqc env=Humanoid-v5
+	$(MAKE) train-eval model=tqc env=InvertedPendulum-v5
+	$(MAKE) train-eval model=trpoq2 env=Ant-v5
+	$(MAKE) train-eval model=trpoq2 env=Humanoid-v5
+	$(MAKE) train-eval model=trpoq2 env=InvertedPendulum-v5
+	$(MAKE) train-eval model=trpoqho env=Ant-v5
+	$(MAKE) train-eval model=trpoqho env=Humanoid-v5
+	$(MAKE) train-eval model=trpoqho env=InvertedPendulum-v5
+	$(MAKE) train-eval model=trpoqh env=Ant-v5
+	$(MAKE) train-eval model=trpoqh env=Humanoid-v5
+	$(MAKE) train-eval model=trpoqh env=InvertedPendulum-v5
+	$(MAKE) train-eval model=trpoq env=Ant-v5
+	$(MAKE) train-eval model=trpoq env=Humanoid-v5
+	$(MAKE) train-eval model=trpoq env=InvertedPendulum-v5
+	# $(MAKE) train-eval model=trpor env=Ant-v5
+	$(MAKE) train-eval model=trpor env=Humanoid-v5
+	$(MAKE) train-eval model=trpor env=InvertedPendulum-v5
+	# $(MAKE) train-eval model=trpo env=Ant-v5
+	$(MAKE) train-eval model=trpo env=Humanoid-v5
+	$(MAKE) train-eval model=trpo env=InvertedPendulum-v5

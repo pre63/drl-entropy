@@ -22,6 +22,7 @@ LunarLanderContinuous-v3:
   buffer_capacity: 20000
   replay_strategy_threshold: -4.105715891723701
   epsilon: 0.4
+  n_envs: 8
 
 # Tuned
 Ant-v5:
@@ -61,6 +62,7 @@ Humanoid-v5:
   gae_lambda: 1
   net_arch: small
   activation_fn: tanh
+  n_envs: 8
 
 
 
@@ -83,6 +85,7 @@ InvertedDoublePendulum-v5:
   reward_threshold: 400
   replay_strategy_threshold: 7.361296528960423
   epsilon: 0.35
+  n_envs: 8
 
 # Tuned
 RocketLander-v0:
