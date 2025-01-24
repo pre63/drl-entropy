@@ -1,5 +1,5 @@
 entrpo: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5
 entrpohigh: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5
 entrpolow: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5
-entrpor: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5
+trpor: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5
 trpo: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5

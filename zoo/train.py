@@ -13,7 +13,6 @@ from sbx import SAC, TQC
 
 import Environments
 from Models.EnTRPO.EnTRPO import EnTRPO, EnTRPOHigh, EnTRPOLow, sample_entrpo_params
-from Models.EnTRPOR.EnTRPOR import EnTRPOR, sample_entrpor_params
 from Models.SB3 import PPO, TRPO, sample_ppo_params, sample_trpo_params
 from Models.SBX import SAC, TQC
 from Models.TRPOQ.TRPOQ import TRPOQ, sample_trpoq_params
@@ -30,7 +29,6 @@ models = {
   "trpoq": {"model": TRPOQ, "sample": sample_trpoq_params},
   "trpoq2": {"model": TRPOQ2, "sample": sample_trpoq2_params},
   "trpor": {"model": TRPOR, "sample": sample_trpor_params},
-  "entrpor": {"model": EnTRPOR, "sample": sample_entrpor_params},
   "trpoqh": {"model": TRPOQH, "sample": sample_trpoqh_params},
   "trpoqho": {"model": TRPOQHO, "sample": sample_trpoqho_params},
   "sac": {"model": SAC},

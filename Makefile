@@ -11,7 +11,7 @@ n_timesteps=0 # Default number of timesteps to train for
 env=Humanoid-v5 # Default environment to train on
 configs=configs.txt # Default configuration file
 
-zoology=entrpo entrpor trpo entrpohigh entrpolow
+zoology=entrpo trpor trpo entrpohigh entrpolow
 zoologyenvs=Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5
 
 default: install
