@@ -128,10 +128,17 @@ def group_paths_by_env(paths):
 
 
 # Good
-def plot_from_path(env_path, results_dir, filter_envs=None):
-
+def plot_from_path(env_path, results_dir, filter_envs=None, filter_models=None):
   csv_files = get_data_csv_files(env_path)
   grouped = group_paths_by_env(csv_files)
+
+  # filter_envs is a list of environment names to plot
+  if filter_envs:
+    grouped = {env: paths for env, paths in grouped.items() if env in filter_envs}
+
+  # filter_models is a list of model names to plot
+  if filter_models:
+    grouped = {env: [path for path in paths if any(model in path for model in filter_models)] for env, paths in grouped.items()}
 
   plot_rewards_from_grouped_paths(grouped, results_dir)
 
@@ -219,8 +226,9 @@ def plot_rewards_from_grouped_paths(grouped, results_dir, num_points=10000):
 
 
 if __name__ == "__main__":
-  filter_envs = ["Ant-v5", "Humanoid-v5", "InvertedDoublePendulum-v5"]
+  filter_envs = ["Ant-v5"]  # , "Humanoid-v5", "InvertedDoublePendulum-v5"]
+  filter_models = ["trpor", "entrpo", "trpo"]
   results_dir = ".plots"
-  plot_from_path(".eval", results_dir, filter_envs=filter_envs)
+  plot_from_path(".eval", results_dir, filter_envs=filter_envs, filter_models=filter_models)
 
   plot_all_from_csv("results/results.csv", results_dir)
