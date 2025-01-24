@@ -103,7 +103,7 @@ def plot_all_from_csv(csv_path, results_dir):
     ax.axis("off")
 
   plt.tight_layout()
-  plot_path = os.path.join(results_dir, "combined_env_rewards.png")
+  plot_path = os.path.join(results_dir, "results.png")
   plt.savefig(plot_path, dpi=150)
   plt.close()
   print(f"Combined plot for all environments saved at: {plot_path}")
@@ -136,15 +136,13 @@ def plot_from_path(env_path, results_dir, filter_envs=None):
   plot_rewards_from_grouped_paths(grouped, results_dir)
 
 
-# Good
-def resample_to_fixed_points(dataframe, num_points=1000):
+def resample_to_fixed_points(dataframe, num_points):
   new_timesteps = np.linspace(dataframe.index.min(), dataframe.index.max(), num=num_points)
   interpolated_rewards = np.interp(new_timesteps, dataframe.index, dataframe.values)
   return pd.DataFrame({"Timesteps": new_timesteps, "Reward": interpolated_rewards})
 
 
-# Good
-def plot_rewards_from_grouped_paths(grouped, results_dir, num_points=1000):
+def plot_rewards_from_grouped_paths(grouped, results_dir, num_points=100):
   os.makedirs(results_dir, exist_ok=True)
 
   n_envs = len(grouped)
@@ -152,8 +150,13 @@ def plot_rewards_from_grouped_paths(grouped, results_dir, num_points=1000):
   fig, axes = plt.subplots(2, n_cols, figsize=(12 * n_cols, 10), dpi=150)
   axes = axes.flatten()
 
+  # Define patterns and markers for accessibility
+  line_styles = ["-", "--", "-.", ":"]
+  markers = ["o", "s", "^", "D"]
+
   for ax, (env, paths) in zip(axes, grouped.items()):
     model_aggregated = {}
+    common_timesteps = np.linspace(0, 1, num=num_points)  # Shared resampling scale
 
     for file_path in paths:
       if os.path.exists(file_path):
@@ -161,28 +164,42 @@ def plot_rewards_from_grouped_paths(grouped, results_dir, num_points=1000):
         run_data = pd.read_csv(file_path)
         run_data.set_index("Timesteps", inplace=True)
 
-        # Resample the run data
-        resampled_data = resample_to_fixed_points(run_data["Reward"], num_points)
+        # Normalize timesteps to [0, 1] and resample
+        normalized_timesteps = (run_data.index - run_data.index.min()) / (run_data.index.max() - run_data.index.min())
+        interpolated_rewards = np.interp(common_timesteps, normalized_timesteps, run_data["Reward"])
+        resampled_data = pd.DataFrame({"Timesteps": common_timesteps, "Reward": interpolated_rewards})
 
         if model not in model_aggregated:
-          model_aggregated[model] = pd.DataFrame()
-        model_aggregated[model] = pd.concat([model_aggregated[model], resampled_data["Reward"]], axis=1)
+          model_aggregated[model] = []
+        model_aggregated[model].append(resampled_data["Reward"])
 
-    for model, aggregated_df in model_aggregated.items():
-      if not aggregated_df.empty:
-        mean_rewards = aggregated_df.mean(axis=1)
-        std_rewards = aggregated_df.std(axis=1)
+    for idx, (model, rewards_list) in enumerate(model_aggregated.items()):
+      if rewards_list:
+        stacked_rewards = pd.concat(rewards_list, axis=1)
+        mean_rewards = stacked_rewards.mean(axis=1)
+        std_rewards = stacked_rewards.std(axis=1)
+
+        # Use styles and markers to differentiate
+        line_style = line_styles[idx % len(line_styles)]
+        marker = markers[idx % len(markers)]
 
         ax.fill_between(
-          resampled_data["Timesteps"],
+          common_timesteps,
           mean_rewards - std_rewards,
           mean_rewards + std_rewards,
           alpha=0.2,
         )
-        ax.plot(resampled_data["Timesteps"], mean_rewards, label=model, linewidth=1.5)
+        ax.plot(
+          common_timesteps,
+          mean_rewards,
+          label=model,
+          linewidth=1.5,
+          linestyle=line_style,
+          marker=marker,
+        )
 
     ax.set_title(env)
-    ax.set_xlabel("Timesteps")
+    ax.set_xlabel("Normalized Timesteps (0 to 1)")
     ax.set_ylabel("Reward")
     ax.legend(loc="upper left")
 
@@ -190,7 +207,7 @@ def plot_rewards_from_grouped_paths(grouped, results_dir, num_points=1000):
     ax.axis("off")
 
   plt.tight_layout()
-  plot_path = os.path.join(results_dir, "combined_env_rewards.png")
+  plot_path = os.path.join(results_dir, "resampled.png")
   plt.savefig(plot_path, dpi=150)
   plt.close()
   print(f"Combined plot for all environments saved at: {plot_path}")
