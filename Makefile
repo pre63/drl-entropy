@@ -107,7 +107,7 @@ nightly:
 
 train-eval:
 	@echo "Will evaluate model $(model) on environment $(env)"
-	@. .venv/bin/activate; PYTHONPATH=. python -u zoo/train-eval.py --model=$(model) --env=$(env) --n_timesteps=$(n_timesteps) 2>&1 | tee -a .logs/eval-$(model)-$(env)-$(shell date +"%Y%m%d").log
+	@. .venv/bin/activate; PYTHONPATH=. python -u zoo/train-eval.py --model=$(model) --env=$(env) 2>&1 | tee -a .logs/eval-$(model)-$(env)-$(shell date +"%Y%m%d").log
 
 train-eval-all:
 	@echo "Will evaluate all models in zoo"

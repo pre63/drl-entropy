@@ -19,3 +19,16 @@ entrpo,Ant-v5,7,445.40401005744934,1820,539.204603855948,801.2778416657128,.eval
 trpor,Ant-v5,1,369.4446783065796,inf,708.1836471263409,810.6843652824872,.eval/trpor/Ant-v5_11/run_1_data.csv,.eval/trpor/Ant-v5_11
 entrpo,Ant-v5,8,465.3031716346741,2691,367.7411703122348,656.9778883104078,.eval/entrpo/Ant-v5_8/run_8_data.csv,.eval/entrpo/Ant-v5_8
 entrpo,Ant-v5,9,400.57060647010803,2433,387.3087141780085,675.1867700586566,.eval/entrpo/Ant-v5_9/run_9_data.csv,.eval/entrpo/Ant-v5_9
+entrpo,Ant-v5,10,457.2473192214966,1801,458.7217314038741,660.3017262319041,.eval/entrpo/Ant-v5_10/run_10_data.csv,.eval/entrpo/Ant-v5_10
+trpo,Ant-v5,1,198.78887367248535,inf,114.73316992068966,319.9009393281262,.eval/trpo/Ant-v5_3/run_1_data.csv,.eval/trpo/Ant-v5_3
+trpo,Ant-v5,1,327.49566769599915,inf,169.90229015151516,383.13108566327185,.eval/trpo/Ant-v5_1/run_1_data.csv,.eval/trpo/Ant-v5_1
+trpo,Ant-v5,2,489.1090681552887,inf,162.8040493815261,357.5420180549668,.eval/trpo/Ant-v5_2/run_2_data.csv,.eval/trpo/Ant-v5_2
+entrpo,Ant-v5,1,964.7377023696899,2185,452.83921019870496,749.4805350876766,.eval/entrpo/Ant-v5_11/run_1_data.csv,.eval/entrpo/Ant-v5_11
+trpor,Ant-v5,1,981.3558096885681,inf,525.2625275296319,575.3484426853842,.eval/trpor/Ant-v5_13/run_1_data.csv,.eval/trpor/Ant-v5_13
+trpo,Ant-v5,3,441.6831123828888,inf,132.72656674358976,334.83418553680724,.eval/trpo/Ant-v5_3/run_3_data.csv,.eval/trpo/Ant-v5_3
+trpo,Ant-v5,4,448.51839447021484,inf,124.22643741296929,331.03879944345516,.eval/trpo/Ant-v5_4/run_4_data.csv,.eval/trpo/Ant-v5_4
+entrpo,Ant-v5,2,1175.1910665035248,2803,388.77405820060994,770.5252223922731,.eval/entrpo/Ant-v5_12/run_2_data.csv,.eval/entrpo/Ant-v5_12
+trpor,Ant-v5,2,991.7717752456665,inf,653.3440483955824,704.1410472761088,.eval/trpor/Ant-v5_14/run_2_data.csv,.eval/trpor/Ant-v5_14
+trpo,Ant-v5,5,440.81585335731506,inf,113.20342207536233,298.78269580648356,.eval/trpo/Ant-v5_5/run_5_data.csv,.eval/trpo/Ant-v5_5
+trpo,Ant-v5,6,404.32467222213745,inf,140.93703087457627,362.4430152998998,.eval/trpo/Ant-v5_6/run_6_data.csv,.eval/trpo/Ant-v5_6
+trpor,Ant-v5,3,897.0784602165222,inf,609.8964410612613,720.9683522876617,.eval/trpor/Ant-v5_15/run_3_data.csv,.eval/trpor/Ant-v5_15

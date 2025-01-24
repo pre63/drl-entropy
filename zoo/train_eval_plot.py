@@ -40,7 +40,6 @@ def downsample_data_with_smoothing(timesteps, rewards, max_points=1000, window_s
   return binned_timesteps, binned_rewards
 
 
-# Good
 def plot_all_from_csv(csv_path, results_dir):
   """
     Generate plots for all environments in a grid with 2 rows.
@@ -56,6 +55,10 @@ def plot_all_from_csv(csv_path, results_dir):
   results_df = pd.read_csv(csv_path)
   grouped = results_df.groupby("Env")
   n_envs = len(grouped)
+  line_styles = ["-", "--", "-.", ":"]
+  markers = ["o", "s", "^", "D"]
+  max_points = 1000
+  marker_interval = max(1, max_points // 50)  # Ensure no more than 100 markers per line
 
   # Calculate grid dimensions
   n_cols = (n_envs + 1) // 2  # Ensure all plots fit into a 2-row grid
@@ -65,7 +68,7 @@ def plot_all_from_csv(csv_path, results_dir):
   axes = axes.flatten()
 
   for ax, (env, group) in zip(axes, grouped):
-    for model in group["Model"].unique():
+    for idx, model in enumerate(group["Model"].unique()):
       model_data = group[group["Model"] == model]
       aggregated_df = pd.DataFrame()
 
@@ -84,6 +87,10 @@ def plot_all_from_csv(csv_path, results_dir):
         downsampled_timesteps, downsampled_mean_rewards = downsample_data_with_smoothing(mean_rewards.index.values, mean_rewards.values)
         _, downsampled_std_rewards = downsample_data_with_smoothing(mean_rewards.index.values, std_rewards.values)
 
+        # Select line style and marker
+        line_style = line_styles[idx % len(line_styles)]
+        marker = markers[idx % len(markers)]
+
         # Plot mean and standard deviation
         ax.fill_between(
           downsampled_timesteps,
@@ -91,7 +98,15 @@ def plot_all_from_csv(csv_path, results_dir):
           downsampled_mean_rewards + downsampled_std_rewards,
           alpha=0.2,
         )
-        ax.plot(downsampled_timesteps, downsampled_mean_rewards, label=f"{model}", linewidth=1.5)
+        ax.plot(
+          downsampled_timesteps,
+          downsampled_mean_rewards,
+          label=f"{model}",
+          linewidth=1.5,
+          linestyle=line_style,
+          marker=marker,
+          markevery=marker_interval,
+        )
 
     ax.set_title(env)
     ax.set_xlabel("Timesteps")
