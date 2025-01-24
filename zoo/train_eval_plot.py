@@ -1,5 +1,6 @@
 import os
 import time
+from collections import defaultdict
 from math import inf
 from statistics import mean, stdev
 
@@ -9,6 +10,7 @@ import pandas as pd
 import yaml
 
 
+# Good
 def downsample_data_with_smoothing(timesteps, rewards, max_points=1000, window_size=50):
 
   if len(timesteps) <= max_points:
@@ -38,6 +40,7 @@ def downsample_data_with_smoothing(timesteps, rewards, max_points=1000, window_s
   return binned_timesteps, binned_rewards
 
 
+# Good
 def plot_all_from_csv(csv_path, results_dir):
   """
     Generate plots for all environments in a grid with 2 rows.
@@ -106,5 +109,96 @@ def plot_all_from_csv(csv_path, results_dir):
   print(f"Combined plot for all environments saved at: {plot_path}")
 
 
+# Good
+def get_data_csv_files(path):
+  return [os.path.join(root, file) for root, _, files in os.walk(path) for file in files if file.endswith("data.csv")]
+
+
+# Good
+def group_paths_by_env(paths):
+  grouped = defaultdict(list)
+  for path in paths:
+    # Extract environment name from the path
+    # Assuming environment name is the part before the last underscore in the second-to-last folder
+    parts = path.split("/")
+    if len(parts) > 2:
+      env_name = parts[-2].split("_")[0]
+      grouped[env_name].append(path)
+  return dict(grouped)
+
+
+# Good
+def plot_from_path(env_path, results_dir, filter_envs=None):
+
+  csv_files = get_data_csv_files(env_path)
+  grouped = group_paths_by_env(csv_files)
+
+  plot_rewards_from_grouped_paths(grouped, results_dir)
+
+
+# Good
+def resample_to_fixed_points(dataframe, num_points=1000):
+  new_timesteps = np.linspace(dataframe.index.min(), dataframe.index.max(), num=num_points)
+  interpolated_rewards = np.interp(new_timesteps, dataframe.index, dataframe.values)
+  return pd.DataFrame({"Timesteps": new_timesteps, "Reward": interpolated_rewards})
+
+
+# Good
+def plot_rewards_from_grouped_paths(grouped, results_dir, num_points=1000):
+  os.makedirs(results_dir, exist_ok=True)
+
+  n_envs = len(grouped)
+  n_cols = (n_envs + 1) // 2
+  fig, axes = plt.subplots(2, n_cols, figsize=(12 * n_cols, 10), dpi=150)
+  axes = axes.flatten()
+
+  for ax, (env, paths) in zip(axes, grouped.items()):
+    model_aggregated = {}
+
+    for file_path in paths:
+      if os.path.exists(file_path):
+        model = os.path.basename(os.path.dirname(os.path.dirname(file_path)))  # Extract model name
+        run_data = pd.read_csv(file_path)
+        run_data.set_index("Timesteps", inplace=True)
+
+        # Resample the run data
+        resampled_data = resample_to_fixed_points(run_data["Reward"], num_points)
+
+        if model not in model_aggregated:
+          model_aggregated[model] = pd.DataFrame()
+        model_aggregated[model] = pd.concat([model_aggregated[model], resampled_data["Reward"]], axis=1)
+
+    for model, aggregated_df in model_aggregated.items():
+      if not aggregated_df.empty:
+        mean_rewards = aggregated_df.mean(axis=1)
+        std_rewards = aggregated_df.std(axis=1)
+
+        ax.fill_between(
+          resampled_data["Timesteps"],
+          mean_rewards - std_rewards,
+          mean_rewards + std_rewards,
+          alpha=0.2,
+        )
+        ax.plot(resampled_data["Timesteps"], mean_rewards, label=model, linewidth=1.5)
+
+    ax.set_title(env)
+    ax.set_xlabel("Timesteps")
+    ax.set_ylabel("Reward")
+    ax.legend(loc="upper left")
+
+  for ax in axes[len(grouped) :]:
+    ax.axis("off")
+
+  plt.tight_layout()
+  plot_path = os.path.join(results_dir, "combined_env_rewards.png")
+  plt.savefig(plot_path, dpi=150)
+  plt.close()
+  print(f"Combined plot for all environments saved at: {plot_path}")
+
+
 if __name__ == "__main__":
-  plot_all_from_csv("results/results.csv", "results")
+  filter_envs = ["Ant-v5", "Humanoid-v5", "InvertedDoublePendulum-v5"]
+  results_dir = ".plots"
+  plot_from_path(".eval", results_dir, filter_envs=filter_envs)
+
+  plot_all_from_csv("results/results.csv", results_dir)

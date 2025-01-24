@@ -1,0 +1,22 @@
+Ant-v5:
+  trial_number: 19
+  value: 2412.6239924
+  params:
+    n_steps: 256.0
+    gamma: 0.95
+    learning_rate: 0.0028043544531411563
+    n_critic_updates: 5.0
+    cg_max_steps: 30.0
+    target_kl: 0.01
+    gae_lambda: 0.9
+    net_arch: small
+    activation_fn: tanh
+    batch_size: 256.0
+    ent_coef: 0.001
+    n_timesteps: 800000.0
+    n_envs: 4.0
+  comment: 'Best trial value: 2412.6239924, params: {''n_steps'': 256, ''gamma'':
+    0.95, ''learning_rate'': 0.0028043544531411563, ''n_critic_updates'': 5, ''cg_max_steps'':
+    30, ''target_kl'': 0.01, ''gae_lambda'': 0.9, ''net_arch'': ''small'', ''activation_fn'':
+    ''tanh'', ''batch_size'': 256, ''ent_coef'': 0.001, ''n_timesteps'': 800000, ''n_envs'':
+    4}'

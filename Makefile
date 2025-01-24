@@ -120,6 +120,7 @@ train-eval-all:
 	done
 
 train-eval-plot:
+	@$(MAKE) fix
 	@echo "Will evaluate model $(model) on environment $(env) and generate a plot"
 	@. .venv/bin/activate; PYTHONPATH=. python -u zoo/train_eval_plot.py
 
