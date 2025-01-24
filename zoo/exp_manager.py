@@ -67,9 +67,12 @@ class SaveBestTrialCallback:
       # Prepare the best trial details
       best_trial_details = {
         "trial_number": int(best_trial.number),
-        "value": float(best_trial.value),
-        "params": {k: float(v) if isinstance(v, (int, float)) else v for k, v in best_trial.params.items()},
-        "comment": f"Best trial value: {best_trial.value}, params: {best_trial.params}",
+        "value": int(best_trial.value) if float(best_trial.value).is_integer() else float(best_trial.value),
+        "params": {
+          k: int(v) if isinstance(v, (int, float)) and float(v).is_integer() else float(v) if isinstance(v, (int, float)) else v
+          for k, v in best_trial.params.items()
+        },
+        "comment": f"Best trial details: {', '.join(f'{k}={v}' for k, v in best_trial.__dict__.items())}",
       }
 
       # Read the existing YAML data or initialize a new dictionary
