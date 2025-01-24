@@ -136,13 +136,13 @@ def plot_from_path(env_path, results_dir, filter_envs=None):
   plot_rewards_from_grouped_paths(grouped, results_dir)
 
 
-def resample_to_fixed_points(dataframe, num_points):
-  new_timesteps = np.linspace(dataframe.index.min(), dataframe.index.max(), num=num_points)
-  interpolated_rewards = np.interp(new_timesteps, dataframe.index, dataframe.values)
-  return pd.DataFrame({"Timesteps": new_timesteps, "Reward": interpolated_rewards})
+def resample_to_fixed_points(run_data, num_points, common_timesteps):
+  normalized_timesteps = (run_data.index - run_data.index.min()) / (run_data.index.max() - run_data.index.min())
+  interpolated_rewards = np.interp(common_timesteps, normalized_timesteps, run_data["Reward"])
+  return pd.DataFrame({"Timesteps": common_timesteps, "Reward": interpolated_rewards})
 
 
-def plot_rewards_from_grouped_paths(grouped, results_dir, num_points=100):
+def plot_rewards_from_grouped_paths(grouped, results_dir, num_points=10000):
   os.makedirs(results_dir, exist_ok=True)
 
   n_envs = len(grouped)
@@ -153,10 +153,12 @@ def plot_rewards_from_grouped_paths(grouped, results_dir, num_points=100):
   # Define patterns and markers for accessibility
   line_styles = ["-", "--", "-.", ":"]
   markers = ["o", "s", "^", "D"]
+  max_points = 1000
+  marker_interval = max(1, max_points // 50)  # Ensure no more than 100 markers per line
 
   for ax, (env, paths) in zip(axes, grouped.items()):
     model_aggregated = {}
-    common_timesteps = np.linspace(0, 1, num=num_points)  # Shared resampling scale
+    common_timesteps = np.linspace(0, 1, num=num_points)
 
     for file_path in paths:
       if os.path.exists(file_path):
@@ -164,14 +166,16 @@ def plot_rewards_from_grouped_paths(grouped, results_dir, num_points=100):
         run_data = pd.read_csv(file_path)
         run_data.set_index("Timesteps", inplace=True)
 
-        # Normalize timesteps to [0, 1] and resample
-        normalized_timesteps = (run_data.index - run_data.index.min()) / (run_data.index.max() - run_data.index.min())
-        interpolated_rewards = np.interp(common_timesteps, normalized_timesteps, run_data["Reward"])
-        resampled_data = pd.DataFrame({"Timesteps": common_timesteps, "Reward": interpolated_rewards})
+        resampled_data = resample_to_fixed_points(run_data, num_points, common_timesteps)
+
+        # Downsample the resampled data
+        downsampled_timesteps, downsampled_rewards = downsample_data_with_smoothing(
+          resampled_data.index, resampled_data["Reward"], max_points=1000, window_size=50
+        )
 
         if model not in model_aggregated:
           model_aggregated[model] = []
-        model_aggregated[model].append(resampled_data["Reward"])
+        model_aggregated[model].append(pd.Series(downsampled_rewards, index=downsampled_timesteps))
 
     for idx, (model, rewards_list) in enumerate(model_aggregated.items()):
       if rewards_list:
@@ -184,18 +188,19 @@ def plot_rewards_from_grouped_paths(grouped, results_dir, num_points=100):
         marker = markers[idx % len(markers)]
 
         ax.fill_between(
-          common_timesteps,
+          mean_rewards.index,
           mean_rewards - std_rewards,
           mean_rewards + std_rewards,
           alpha=0.2,
         )
         ax.plot(
-          common_timesteps,
+          mean_rewards.index,
           mean_rewards,
           label=model,
           linewidth=1.5,
           linestyle=line_style,
           marker=marker,
+          markevery=marker_interval,  # Plot markers only at intervals
         )
 
     ax.set_title(env)

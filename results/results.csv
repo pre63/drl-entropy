@@ -1,2 +1,6 @@
 Model,Env,Run,Wall Time (s),Sample Complexity,Mean Reward,Std Dev,File,Save Path
 trpor,Ant-v5,1,679.5123393535614,inf,632.7773141940789,534.5313417595854,.eval/trpor/Ant-v5_8/run_1_data.csv,.eval/trpor/Ant-v5_8
+trpor,Ant-v5,2,640.6316969394684,inf,586.6742929210355,633.0321525953052,.eval/trpor/Ant-v5_9/run_2_data.csv,.eval/trpor/Ant-v5_9
+trpor,Ant-v5,3,677.6704835891724,inf,589.0591427505703,573.0361122070924,.eval/trpor/Ant-v5_10/run_3_data.csv,.eval/trpor/Ant-v5_10
+trpor,Ant-v5,4,683.3908529281616,inf,721.8233391480447,735.0207574224262,.eval/trpor/Ant-v5_11/run_4_data.csv,.eval/trpor/Ant-v5_11
+trpor,Ant-v5,5,690.1009473800659,inf,525.240168092008,542.5048477080724,.eval/trpor/Ant-v5_12/run_5_data.csv,.eval/trpor/Ant-v5_12
