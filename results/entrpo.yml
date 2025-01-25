@@ -1,10 +1,10 @@
 Ant-v5:
-  trial_number: 507
-  value: 4168.5055776
+  trial_number: 587
+  value: 4208.2877528
   params:
     n_steps: 512.0
     gamma: 0.99
-    learning_rate: 0.00024168630638910285
+    learning_rate: 0.00043525325527895637
     n_critic_updates: 25.0
     cg_max_steps: 25.0
     target_kl: 0.03
@@ -12,19 +12,19 @@ Ant-v5:
     batch_size: 512.0
     net_arch: small
     activation_fn: tanh
-    ent_coef: 0.0006000000000000001
-    buffer_capacity: 29000.0
-    reward_threshold: 300.0
-    replay_strategy_threshold: -7.1517577680190945
-    epsilon: 0.5
+    ent_coef: 0.0009000000000000001
+    buffer_capacity: 26000.0
+    reward_threshold: 250.0
+    replay_strategy_threshold: -8.283014615932519
+    epsilon: 0.30000000000000004
     use_per: 1.0
     orthogonal_init: 0.0
-    n_timesteps: 1000000.0
+    n_timesteps: 900000.0
     n_envs: 8.0
-  comment: 'Best trial value: 4168.5055776, params: {''n_steps'': 512, ''gamma'':
-    0.99, ''learning_rate'': 0.00024168630638910285, ''n_critic_updates'': 25, ''cg_max_steps'':
+  comment: 'Best trial value: 4208.2877528, params: {''n_steps'': 512, ''gamma'':
+    0.99, ''learning_rate'': 0.00043525325527895637, ''n_critic_updates'': 25, ''cg_max_steps'':
     25, ''target_kl'': 0.03, ''gae_lambda'': 0.9, ''batch_size'': 512, ''net_arch'':
-    ''small'', ''activation_fn'': ''tanh'', ''ent_coef'': 0.0006000000000000001, ''buffer_capacity'':
-    29000, ''reward_threshold'': 300.0, ''replay_strategy_threshold'': -7.1517577680190945,
-    ''epsilon'': 0.5, ''use_per'': True, ''orthogonal_init'': False, ''n_timesteps'':
-    1000000, ''n_envs'': 8}'
+    ''small'', ''activation_fn'': ''tanh'', ''ent_coef'': 0.0009000000000000001, ''buffer_capacity'':
+    26000, ''reward_threshold'': 250.0, ''replay_strategy_threshold'': -8.283014615932519,
+    ''epsilon'': 0.30000000000000004, ''use_per'': True, ''orthogonal_init'': False,
+    ''n_timesteps'': 900000, ''n_envs'': 8}'
