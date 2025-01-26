@@ -241,7 +241,7 @@ def plot_rewards_from_grouped_paths(grouped, results_dir, num_points=10000):
 
 
 if __name__ == "__main__":
-  filter_envs = ["Ant-v5"]  # , "Humanoid-v5", "InvertedDoublePendulum-v5"]
+  filter_envs = ["Ant-v5", "Humanoid-v5", "InvertedDoublePendulum-v5"]
   filter_models = ["trpor", "entrpo", "trpo"]
   results_dir = ".plots"
   plot_from_path(".eval", results_dir, filter_envs=filter_envs, filter_models=filter_models)
