@@ -175,3 +175,7 @@ eval-all:
 	# $(MAKE) train-eval model=trpo env=Ant-v5
 	# $(MAKE) train-eval model=trpo env=Humanoid-v5
 	$(MAKE) train-eval model=trpo env=InvertedDoublePendulum-v5
+
+	$(MAKE) train-eval model=trpo env=Pendulum-v1
+	# $(MAKE) train-eval model=trpor env=Pendulum-v1
+	# $(MAKE) train-eval model=entrpo env=Pendulum-v1

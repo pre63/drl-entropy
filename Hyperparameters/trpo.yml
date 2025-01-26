@@ -8,6 +8,7 @@ Pendulum-v1:
   n_critic_updates: 15
   use_sde: True
   sde_sample_freq: 4
+  n_envs: 2
 
 # Tuned
 LunarLanderContinuous-v3:

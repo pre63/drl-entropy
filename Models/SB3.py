@@ -3,6 +3,7 @@ from typing import Any, ClassVar, Dict, List, Optional, Tuple, Type, TypeVar, Un
 import optuna
 import torch as th
 import torch.nn as nn
+from rl_zoo3 import linear_schedule
 from sb3_contrib import TRPO
 from stable_baselines3 import PPO
 from stable_baselines3.common.buffers import RolloutBuffer
@@ -101,7 +102,7 @@ def sample_trpo_params(trial: optuna.Trial, n_actions: int, n_envs: int, additio
   # Orthogonal initialization
   ortho_init = False
   ortho_init = trial.suggest_categorical("ortho_init", [False, True])
-  activation_fn = trial.suggest_categorical("activation_fn", ["tanh", "relu", "elu", "leaky_relu"])
+  # activation_fn = trial.suggest_categorical("activation_fn", ["tanh", "relu", "elu", "leaky_relu"])
   activation_fn_name = trial.suggest_categorical("activation_fn", ["tanh", "relu"])
   # lr_schedule = "constant"
   # Uncomment to enable learning rate schedule
