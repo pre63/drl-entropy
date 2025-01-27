@@ -14,7 +14,6 @@ import yaml
 import Environments
 from Models.EnTRPO.EnTRPO import EnTRPO, EnTRPOHigh, EnTRPOLow, sample_entrpo_params
 from Models.SB3 import PPO, TRPO
-from Models.SBX import SAC, TQC
 from Models.TRPOQ.TRPOQ import TRPOQ, sample_trpoq_params
 from Models.TRPOQ.TRPOQ2 import TRPOQ2, sample_trpoq2_params
 from Models.TRPOQ.TRPOQH import TRPOQH, TRPOQHO, sample_trpoqh_params, sample_trpoqho_params
@@ -32,8 +31,6 @@ models = {
   "trpor": {"model": TRPOR, "sample": sample_trpor_params},
   "trpoqh": {"model": TRPOQH, "sample": sample_trpoqh_params},
   "trpoqho": {"model": TRPOQHO, "sample": sample_trpoqho_params},
-  "sac": {"model": SAC},
-  "tqc": {"model": TQC},
   "trpo": {"model": TRPO},
   "ppo": {"model": PPO},
 }
@@ -57,7 +54,7 @@ def load_reward_threshold(conf_file, env):
   raise ValueError(f"Reward threshold not found for environment: {env}")
 
 
-def evaluate_training(algo, env, n_eval_envs, device, optimize_hyperparameters, conf_file, n_trials, n_timesteps, n_jobs):
+def evaluate_training(algo, env, device, optimize_hyperparameters, conf_file, n_trials, n_timesteps, n_jobs):
   results_dir = "results/"
   csv_file = f"{results_dir}results.csv"
   os.makedirs(results_dir, exist_ok=True)
@@ -70,7 +67,7 @@ def evaluate_training(algo, env, n_eval_envs, device, optimize_hyperparameters, 
     exp_manager = configure(
       algo=algo,
       env=env,
-      n_eval_envs=n_eval_envs,
+      n_eval_envs=10,
       device=device,
       optimize_hyperparameters=optimize_hyperparameters,
       conf_file=conf_file,
@@ -135,7 +132,7 @@ if __name__ == "__main__":
   parser.add_argument("--conf_file", type=str, default=None)
   parser.add_argument("--trials", type=int, default=40)
   parser.add_argument("--n_jobs", type=int, default=10)
-  parser.add_argument("--n_timesteps", type=int, default=1000000)
+  parser.add_argument("--n_timesteps", type=int, default=100000)
 
   params = parser.parse_args()
 
