@@ -11,7 +11,7 @@ import yaml
 
 
 # Good
-def downsample_data_with_smoothing(timesteps, rewards, max_points=1000, window_size=50):
+def downsample_data_with_smoothing(timesteps, rewards, max_points=1000, window_size=500):
 
   if len(timesteps) <= max_points:
     # Apply rolling average smoothing only
@@ -40,13 +40,7 @@ def downsample_data_with_smoothing(timesteps, rewards, max_points=1000, window_s
   return binned_timesteps, binned_rewards
 
 
-def plot_all_from_csv(csv_path, results_dir):
-  """
-    Generate plots for all environments in a grid with 2 rows.
-    Args:
-        csv_path (str): Path to the CSV containing the aggregated results.
-        results_dir (str): Directory to save the resulting plot.
-    """
+def plot_all_from_csv(csv_path, results_dir, filter_envs=None, filter_models=None):
   os.makedirs(results_dir, exist_ok=True)
   if not os.path.exists(csv_path):
     print(f"CSV file not found: {csv_path}")
@@ -58,17 +52,19 @@ def plot_all_from_csv(csv_path, results_dir):
   line_styles = ["-", "--", "-.", ":"]
   markers = ["o", "s", "^", "D"]
   max_points = 1000
-  marker_interval = max(1, max_points // 50)  # Ensure no more than 100 markers per line
+  marker_interval = max(1, max_points // 50)
 
-  # Calculate grid dimensions
-  n_cols = (n_envs + 1) // 2  # Ensure all plots fit into a 2-row grid
+  # Predefine style and marker mappings for consistent ordering
+  all_models = sorted(results_df["Model"].unique())
+  style_mapping = {model: line_styles[i % len(line_styles)] for i, model in enumerate(all_models)}
+  marker_mapping = {model: markers[i % len(markers)] for i, model in enumerate(all_models)}
+
+  n_cols = (n_envs + 1) // 2
   fig, axes = plt.subplots(2, n_cols, figsize=(12 * n_cols, 10), dpi=150)
-
-  # Flatten axes for easier iteration, in case of a single row/column
   axes = axes.flatten()
 
   for ax, (env, group) in zip(axes, grouped):
-    for idx, model in enumerate(group["Model"].unique()):
+    for model in sorted(group["Model"].unique()):  # Sort models for consistent order
       model_data = group[group["Model"] == model]
       aggregated_df = pd.DataFrame()
 
@@ -83,15 +79,12 @@ def plot_all_from_csv(csv_path, results_dir):
         mean_rewards = aggregated_df.mean(axis=1)
         std_rewards = aggregated_df.std(axis=1)
 
-        # Downsample data
         downsampled_timesteps, downsampled_mean_rewards = downsample_data_with_smoothing(mean_rewards.index.values, mean_rewards.values)
         _, downsampled_std_rewards = downsample_data_with_smoothing(mean_rewards.index.values, std_rewards.values)
 
-        # Select line style and marker
-        line_style = line_styles[idx % len(line_styles)]
-        marker = markers[idx % len(markers)]
+        line_style = style_mapping[model]
+        marker = marker_mapping[model]
 
-        # Plot mean and standard deviation
         ax.fill_between(
           downsampled_timesteps,
           downsampled_mean_rewards - downsampled_std_rewards,
@@ -109,11 +102,10 @@ def plot_all_from_csv(csv_path, results_dir):
         )
 
     ax.set_title(env)
-    ax.set_xlabel("Timesteps")
-    ax.set_ylabel("Reward")
+    ax.set_xlabel("Episodes")
+    ax.set_ylabel("Rewards")
     ax.legend(loc="upper left")
 
-  # Hide unused subplots
   for ax in axes[len(grouped) :]:
     ax.axis("off")
 
@@ -172,17 +164,20 @@ def plot_rewards_from_grouped_paths(grouped, results_dir, num_points=10000):
   fig, axes = plt.subplots(2, n_cols, figsize=(12 * n_cols, 10), dpi=150)
   axes = axes.flatten()
 
-  # Define patterns and markers for accessibility
+  # Define styles and markers for consistent mapping
+  all_models = sorted(set(model for paths in grouped.values() for path in paths for model in [os.path.basename(os.path.dirname(os.path.dirname(path)))]))
   line_styles = ["-", "--", "-.", ":"]
   markers = ["o", "s", "^", "D"]
+  style_mapping = {model: line_styles[i % len(line_styles)] for i, model in enumerate(all_models)}
+  marker_mapping = {model: markers[i % len(markers)] for i, model in enumerate(all_models)}
   max_points = 1000
-  marker_interval = max(1, max_points // 50)  # Ensure no more than 100 markers per line
+  marker_interval = max(1, max_points // 50)
 
-  for ax, (env, paths) in zip(axes, grouped.items()):
+  for ax, (env, paths) in zip(axes, sorted(grouped.items())):  # Sort environments for consistent order
     model_aggregated = {}
     common_timesteps = np.linspace(0, 1, num=num_points)
 
-    for file_path in paths:
+    for file_path in sorted(paths):  # Sort paths for consistent processing order
       if os.path.exists(file_path):
         model = os.path.basename(os.path.dirname(os.path.dirname(file_path)))  # Extract model name
         run_data = pd.read_csv(file_path)
@@ -190,24 +185,23 @@ def plot_rewards_from_grouped_paths(grouped, results_dir, num_points=10000):
 
         resampled_data = resample_to_fixed_points(run_data, num_points, common_timesteps)
 
-        # Downsample the resampled data
         downsampled_timesteps, downsampled_rewards = downsample_data_with_smoothing(
-          resampled_data.index, resampled_data["Reward"], max_points=1000, window_size=50
+          resampled_data.index, resampled_data["Reward"], max_points=1000, window_size=500
         )
 
         if model not in model_aggregated:
           model_aggregated[model] = []
         model_aggregated[model].append(pd.Series(downsampled_rewards, index=downsampled_timesteps))
 
-    for idx, (model, rewards_list) in enumerate(model_aggregated.items()):
+    for model in sorted(model_aggregated.keys()):  # Sort models for consistent legend order
+      rewards_list = model_aggregated[model]
       if rewards_list:
         stacked_rewards = pd.concat(rewards_list, axis=1)
         mean_rewards = stacked_rewards.mean(axis=1)
         std_rewards = stacked_rewards.std(axis=1)
 
-        # Use styles and markers to differentiate
-        line_style = line_styles[idx % len(line_styles)]
-        marker = markers[idx % len(markers)]
+        line_style = style_mapping[model]
+        marker = marker_mapping[model]
 
         ax.fill_between(
           mean_rewards.index,
@@ -222,12 +216,12 @@ def plot_rewards_from_grouped_paths(grouped, results_dir, num_points=10000):
           linewidth=1.5,
           linestyle=line_style,
           marker=marker,
-          markevery=marker_interval,  # Plot markers only at intervals
+          markevery=marker_interval,
         )
 
     ax.set_title(env)
-    ax.set_xlabel("Normalized Timesteps (0 to 1)")
-    ax.set_ylabel("Reward")
+    ax.set_xlabel("Normalized Episodes")
+    ax.set_ylabel("Rewards")
     ax.legend(loc="upper left")
 
   for ax in axes[len(grouped) :]:
@@ -241,9 +235,9 @@ def plot_rewards_from_grouped_paths(grouped, results_dir, num_points=10000):
 
 
 if __name__ == "__main__":
-  filter_envs = ["Ant-v5", "Humanoid-v5", "InvertedDoublePendulum-v5", "Pendulum-v1"]
-  filter_models = ["trpor", "entrpo", "trpo"]
+  filter_envs = None
+  filter_models = None
   results_dir = ".plots"
   plot_from_path(".eval", results_dir, filter_envs=filter_envs, filter_models=filter_models)
 
-  plot_all_from_csv("results/results.csv", results_dir)
+  plot_all_from_csv("results/results.csv", results_dir, filter_envs=filter_envs, filter_models=filter_models)

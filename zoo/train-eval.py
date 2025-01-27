@@ -130,7 +130,6 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument("--model", type=str, default="ppo")
   parser.add_argument("--env", type=str, default="LunarLanderContinuous-v3")
-  parser.add_argument("--envs", type=int, default=10)
   parser.add_argument("--device", type=str, default="cpu")
   parser.add_argument("--optimize", type=bool, default=False)
   parser.add_argument("--conf_file", type=str, default=None)
@@ -151,7 +150,6 @@ if __name__ == "__main__":
   evaluate_training(
     algo=params.model,
     env=params.env,
-    n_eval_envs=params.envs,
     device=params.device,
     optimize_hyperparameters=params.optimize,
     conf_file=params.conf_file,

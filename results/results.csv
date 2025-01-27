@@ -262,3 +262,6 @@ trpo,Pendulum-v1,7,587.4315419197083,inf,-699.861493176,424.31018350845466,.eval
 trpo,Pendulum-v1,8,573.3733625411987,inf,-734.151635812,419.77725805656144,.eval/trpo/Pendulum-v1_8/run_8_data.csv,.eval/trpo/Pendulum-v1_8
 trpo,Pendulum-v1,9,589.2948982715607,inf,-699.432308078,428.21394924088946,.eval/trpo/Pendulum-v1_9/run_9_data.csv,.eval/trpo/Pendulum-v1_9
 trpo,Pendulum-v1,10,575.7709486484528,inf,-732.634537334,432.87736075730123,.eval/trpo/Pendulum-v1_10/run_10_data.csv,.eval/trpo/Pendulum-v1_10
+entrpo,Ant-v5,1,399.25687432289124,2180,415.2182594989456,676.9218747397292,.eval/entrpo/Ant-v5_1/run_1_data.csv,.eval/entrpo/Ant-v5_1
+entrpo,Ant-v5,2,379.16665863990784,2690,412.74373402984037,783.2196386986873,.eval/entrpo/Ant-v5_2/run_2_data.csv,.eval/entrpo/Ant-v5_2
+entrpo,Ant-v5,3,371.27709460258484,2077,456.2434972150814,729.214364369707,.eval/entrpo/Ant-v5_3/run_3_data.csv,.eval/entrpo/Ant-v5_3
