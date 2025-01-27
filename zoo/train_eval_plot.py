@@ -113,7 +113,7 @@ def plot_all_from_csv(csv_path, results_dir, filter_envs=None, filter_models=Non
   plot_path = os.path.join(results_dir, "results.png")
   plt.savefig(plot_path, dpi=150)
   plt.close()
-  print(f"Combined plot for all environments saved at: {plot_path}")
+  print(plot_path)
 
 
 # Good
@@ -228,7 +228,7 @@ def plot_learning_stability_cv(grouped, results_dir, num_points=10000):
   plot_path = os.path.join(results_dir, "learning_stability_cv.png")
   plt.savefig(plot_path, dpi=150)
   plt.close()
-  print(f"Learning stability (CV) plot saved at: {plot_path}")
+  print(plot_path)
 
 
 def plot_learning_stability(grouped, results_dir, num_points=10000):
@@ -311,7 +311,7 @@ def plot_learning_stability(grouped, results_dir, num_points=10000):
   plot_path = os.path.join(results_dir, "learning_stability.png")
   plt.savefig(plot_path, dpi=150)
   plt.close()
-  print(f"Learning stability plot saved at: {plot_path}")
+  print(plot_path)
 
 
 def plot_rewards_from_grouped_paths(grouped, results_dir, num_points=10000):
@@ -389,7 +389,7 @@ def plot_rewards_from_grouped_paths(grouped, results_dir, num_points=10000):
   plot_path = os.path.join(results_dir, "resampled.png")
   plt.savefig(plot_path, dpi=150)
   plt.close()
-  print(f"Combined plot for all environments saved at: {plot_path}")
+  print(plot_path)
 
 
 def plot_sample_efficiency(grouped, results_dir, filter_envs=None, filter_models=None):
@@ -458,7 +458,7 @@ def plot_sample_efficiency(grouped, results_dir, filter_envs=None, filter_models
   plot_path = os.path.join(results_dir, "sample_efficiency.png")
   plt.savefig(plot_path, dpi=150)
   plt.close()
-  print(f"Sample efficiency plot saved at: {plot_path}")
+  print(plot_path)
 
 
 def plot_sample_efficiency_combined(grouped, results_dir, filter_envs=None, filter_models=None):
@@ -534,7 +534,7 @@ def plot_sample_efficiency_combined(grouped, results_dir, filter_envs=None, filt
   plot_path = os.path.join(results_dir, "sample_efficiency_combined.png")
   plt.savefig(plot_path, dpi=150)
   plt.close()
-  print(f"Combined sample efficiency plot saved at: {plot_path}")
+  print(plot_path)
 
 
 if __name__ == "__main__":
