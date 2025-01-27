@@ -20,3 +20,44 @@ Ant-v5:
     30, ''target_kl'': 0.01, ''gae_lambda'': 0.92, ''net_arch'': ''medium'', ''activation_fn'':
     ''tanh'', ''batch_size'': 512, ''ent_coef'': 0.0002, ''n_timesteps'': 900000,
     ''n_envs'': 8}'
+Pendulum-v1:
+  trial_number: 18
+  value: -176.8826876
+  params:
+    n_steps: 1024
+    gamma: 0.95
+    learning_rate: 1.9474089130206888e-05
+    n_critic_updates: 20
+    cg_max_steps: 30
+    target_kl: 0.02
+    gae_lambda: 0.95
+    batch_size: 256
+    net_arch: medium
+    activation_fn: relu
+    ent_coef: 0.0009000000000000001
+    epsilon: 0.2
+    orthogonal_init: 1
+    n_timesteps: 400000
+    n_envs: 4
+  comment: 'Best trial details: _number=18, state=1, _values=[-176.8826876], _datetime_start=2025-01-26
+    16:41:25.658661, datetime_complete=2025-01-26 17:36:00.376104, _params={''n_steps'':
+    1024, ''gamma'': 0.95, ''learning_rate'': 1.9474089130206888e-05, ''n_critic_updates'':
+    20, ''cg_max_steps'': 30, ''target_kl'': 0.02, ''gae_lambda'': 0.95, ''batch_size'':
+    256, ''net_arch'': ''medium'', ''activation_fn'': ''relu'', ''ent_coef'': 0.0009000000000000001,
+    ''epsilon'': 0.2, ''orthogonal_init'': True, ''n_timesteps'': 400000, ''n_envs'':
+    4}, _user_attrs={}, _system_attrs={''completed_rung_0'': -150.4111426}, intermediate_values={1:
+    -150.4111426, 2: -176.8826876}, _distributions={''n_steps'': CategoricalDistribution(choices=(8,
+    16, 32, 64, 128, 256, 512, 1024, 2048)), ''gamma'': CategoricalDistribution(choices=(0.8,
+    0.85, 0.9, 0.95, 0.99)), ''learning_rate'': FloatDistribution(high=1.0, log=True,
+    low=1e-05, step=None), ''n_critic_updates'': CategoricalDistribution(choices=(5,
+    10, 20, 25, 30)), ''cg_max_steps'': CategoricalDistribution(choices=(5, 10, 20,
+    25, 30)), ''target_kl'': CategoricalDistribution(choices=(0.1, 0.05, 0.03, 0.02,
+    0.01, 0.005, 0.001)), ''gae_lambda'': CategoricalDistribution(choices=(0.8, 0.9,
+    0.92, 0.95, 0.98, 0.99, 1.0)), ''batch_size'': CategoricalDistribution(choices=(8,
+    16, 32, 64, 128, 256, 512, 1024)), ''net_arch'': CategoricalDistribution(choices=(''small'',
+    ''medium'')), ''activation_fn'': CategoricalDistribution(choices=(''tanh'', ''relu'')),
+    ''ent_coef'': FloatDistribution(high=0.001, log=False, low=0.0, step=0.0001),
+    ''epsilon'': FloatDistribution(high=0.9, log=False, low=0.1, step=0.05), ''orthogonal_init'':
+    CategoricalDistribution(choices=(True, False)), ''n_timesteps'': IntDistribution(high=1000000,
+    log=False, low=100000, step=100000), ''n_envs'': CategoricalDistribution(choices=(2,
+    4, 6, 8, 10))}, _trial_id=18'
