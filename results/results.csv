@@ -265,3 +265,10 @@ trpo,Pendulum-v1,10,575.7709486484528,inf,-732.634537334,432.87736075730123,.eva
 entrpo,Ant-v5,1,399.25687432289124,2180,415.2182594989456,676.9218747397292,.eval/entrpo/Ant-v5_1/run_1_data.csv,.eval/entrpo/Ant-v5_1
 entrpo,Ant-v5,2,379.16665863990784,2690,412.74373402984037,783.2196386986873,.eval/entrpo/Ant-v5_2/run_2_data.csv,.eval/entrpo/Ant-v5_2
 entrpo,Ant-v5,3,371.27709460258484,2077,456.2434972150814,729.214364369707,.eval/entrpo/Ant-v5_3/run_3_data.csv,.eval/entrpo/Ant-v5_3
+entrpo,Ant-v5,4,378.60661268234253,2532,361.35601737589457,629.6684701051125,.eval/entrpo/Ant-v5_4/run_4_data.csv,.eval/entrpo/Ant-v5_4
+entrpo,Ant-v5,5,361.1722528934479,1730,631.9382282035441,926.4936069334,.eval/entrpo/Ant-v5_5/run_5_data.csv,.eval/entrpo/Ant-v5_5
+entrpo,Ant-v5,6,371.1120216846466,1503,586.6590775091863,769.5053122256007,.eval/entrpo/Ant-v5_6/run_6_data.csv,.eval/entrpo/Ant-v5_6
+entrpo,Ant-v5,7,360.7989995479584,inf,291.4883191959938,591.0908801789365,.eval/entrpo/Ant-v5_7/run_7_data.csv,.eval/entrpo/Ant-v5_7
+entrpo,Ant-v5,8,384.8200206756592,2783,374.6685110464716,730.815439335706,.eval/entrpo/Ant-v5_8/run_8_data.csv,.eval/entrpo/Ant-v5_8
+entrpo,Ant-v5,9,372.6683347225189,1221,626.3089357238938,712.076501062307,.eval/entrpo/Ant-v5_9/run_9_data.csv,.eval/entrpo/Ant-v5_9
+entrpo,Ant-v5,10,375.1168580055237,2507,386.4008912809948,674.6978880817375,.eval/entrpo/Ant-v5_10/run_10_data.csv,.eval/entrpo/Ant-v5_10
