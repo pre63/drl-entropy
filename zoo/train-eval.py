@@ -120,7 +120,7 @@ def evaluate_training(algo, env, device, optimize_hyperparameters, conf_file, n_
     else:
       run_df.to_csv(csv_file, index=False)
     print(f"Summary metrics for run {run + 1} saved to {csv_file}")
-  plot_all_from_csv(csv_file, results_dir)
+  plot_all_from_csv(csv_file, ".plots")
 
 
 if __name__ == "__main__":
