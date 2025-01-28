@@ -4,8 +4,6 @@ import time
 from math import inf
 from statistics import mean, stdev
 
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import rl_zoo3
 import rl_zoo3.train
@@ -13,6 +11,7 @@ import yaml
 
 import Environments
 from Models.EnTRPO.EnTRPO import EnTRPO, EnTRPOHigh, EnTRPOLow, sample_entrpo_params
+from Models.GenTRPO.GenTRPO import GenTRPO, sample_gentrpo_params
 from Models.SB3 import PPO, TRPO
 from Models.TRPOQ.TRPOQ import TRPOQ, sample_trpoq_params
 from Models.TRPOQ.TRPOQ2 import TRPOQ2, sample_trpoq2_params
@@ -33,6 +32,7 @@ models = {
   "trpoqho": {"model": TRPOQHO, "sample": sample_trpoqho_params},
   "trpo": {"model": TRPO},
   "ppo": {"model": PPO},
+  "gentrpo": {"model": GenTRPO, "sample": sample_gentrpo_params},
 }
 
 for model_name, value in models.items():
