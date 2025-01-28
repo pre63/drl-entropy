@@ -5,6 +5,7 @@ __pycache__
 .venv
 .logs
 .eval
+.eval1
 .eval2
 .vscode
 .models
