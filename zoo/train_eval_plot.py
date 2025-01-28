@@ -153,7 +153,7 @@ def plot_from_path(env_path, results_dir, filter_envs=None, filter_models=None):
   if filter_models:
     grouped = {env: [path for path in paths if any(model in path for model in filter_models)] for env, paths in grouped.items()}
 
-  plot_rewards_from_grouped_paths(grouped, results_dir)
+  plot_rewards_sd_and_reject_outliers(grouped, results_dir)
   plot_sample_efficiency(grouped, results_dir)
   plot_learning_stability(grouped, results_dir)
   plot_learning_stability_cv(grouped, results_dir)
@@ -314,7 +314,7 @@ def plot_learning_stability(grouped, results_dir, num_points=10000):
   print(plot_path)
 
 
-def plot_rewards_from_grouped_paths(grouped, results_dir, num_points=10000):
+def plot_rewards_sd_and_reject_outliers(grouped, results_dir, num_points=10000, outlier_threshold=2.5):
   os.makedirs(results_dir, exist_ok=True)
 
   n_envs = len(grouped)
@@ -331,13 +331,13 @@ def plot_rewards_from_grouped_paths(grouped, results_dir, num_points=10000):
   max_points = 1000
   marker_interval = max(1, max_points // 25)
 
-  for ax, (env, paths) in zip(axes, sorted(grouped.items())):  # Sort environments for consistent order
+  for ax, (env, paths) in zip(axes, sorted(grouped.items())):
     model_aggregated = {}
     common_timesteps = np.linspace(0, 1, num=num_points)
 
-    for file_path in sorted(paths):  # Sort paths for consistent processing order
+    for file_path in sorted(paths):
       if os.path.exists(file_path):
-        model = os.path.basename(os.path.dirname(os.path.dirname(file_path)))  # Extract model name
+        model = os.path.basename(os.path.dirname(os.path.dirname(file_path)))
         run_data = pd.read_csv(file_path)
         run_data.set_index("Timesteps", inplace=True)
 
@@ -351,12 +351,19 @@ def plot_rewards_from_grouped_paths(grouped, results_dir, num_points=10000):
           model_aggregated[model] = []
         model_aggregated[model].append(pd.Series(downsampled_rewards, index=downsampled_timesteps))
 
-    for model in sorted(model_aggregated.keys()):  # Sort models for consistent legend order
+    for model in sorted(model_aggregated.keys()):
       rewards_list = model_aggregated[model]
       if rewards_list:
         stacked_rewards = pd.concat(rewards_list, axis=1)
-        mean_rewards = stacked_rewards.mean(axis=1)
-        std_rewards = stacked_rewards.std(axis=1)
+
+        mean_rewards = stacked_rewards.mean(axis=1).to_numpy()
+        std_rewards = stacked_rewards.std(axis=1).to_numpy()
+
+        z_scores = (stacked_rewards.to_numpy() - mean_rewards[:, None]) / std_rewards[:, None]
+        filtered_rewards = stacked_rewards.loc[:, (np.abs(z_scores) < outlier_threshold).all(axis=0)]
+
+        mean_rewards = filtered_rewards.mean(axis=1)
+        std_rewards = filtered_rewards.std(axis=1)
 
         line_style = style_mapping[model]
         marker = marker_mapping[model]
@@ -386,7 +393,7 @@ def plot_rewards_from_grouped_paths(grouped, results_dir, num_points=10000):
     ax.axis("off")
 
   plt.tight_layout()
-  plot_path = os.path.join(results_dir, "resampled.png")
+  plot_path = os.path.join(results_dir, "resampled_outlier.png")
   plt.savefig(plot_path, dpi=150)
   plt.close()
   print(plot_path)

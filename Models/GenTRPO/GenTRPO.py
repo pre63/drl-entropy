@@ -132,96 +132,96 @@ class GenTRPO(TRPO):
     self.entropy_coeff = entropy_coeff
 
   def train(self) -> None:
-      """
-            Core TRPO training loop with rollout buffer usage.
-            """
-      self.policy.set_training_mode(True)
-      self._update_learning_rate(self.policy.optimizer)
+    """
+        Core TRPO training loop with rollout buffer usage.
+        """
+    self.policy.set_training_mode(True)
+    self._update_learning_rate(self.policy.optimizer)
 
-      policy_objective_values = []
-      kl_divergences = []
-      line_search_results = []
-      value_losses = []
+    policy_objective_values = []
+    kl_divergences = []
+    line_search_results = []
+    value_losses = []
 
-      for rollout_data in self.rollout_buffer.get(batch_size=None):
-        observations = rollout_data.observations
-        actions = rollout_data.actions
-        returns = rollout_data.returns
-        advantages = rollout_data.advantages
-        old_log_prob = rollout_data.old_log_prob
+    for rollout_data in self.rollout_buffer.get(batch_size=None):
+      observations = rollout_data.observations
+      actions = rollout_data.actions
+      returns = rollout_data.returns
+      advantages = rollout_data.advantages
+      old_log_prob = rollout_data.old_log_prob
 
-        # Get the policy distribution and compute log probabilities
-        distribution = self.policy.get_distribution(observations)
-        log_prob = distribution.log_prob(actions)
+      # Get the policy distribution and compute log probabilities
+      distribution = self.policy.get_distribution(observations)
+      log_prob = distribution.log_prob(actions)
 
-        if self.normalize_advantage:
-          advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
+      if self.normalize_advantage:
+        advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
 
-        # Compute the policy objective and KL divergence
-        ratio = th.exp(log_prob - old_log_prob)
-        policy_objective = (advantages * ratio).mean() + self.entropy_coeff * distribution.entropy().mean()
-        kl_div = kl_divergence(distribution, self.policy.get_distribution(observations)).mean()
+      # Compute the policy objective and KL divergence
+      ratio = th.exp(log_prob - old_log_prob)
+      policy_objective = (advantages * ratio).mean() + self.entropy_coeff * distribution.entropy().mean()
+      kl_div = kl_divergence(distribution, self.policy.get_distribution(observations)).mean()
+
+      self.policy.optimizer.zero_grad()
+      actor_params, policy_grad, grad_kl, grad_shape = self._compute_actor_grad(kl_div, policy_objective)
+
+      # Hessian-vector product for conjugate gradient
+      hessian_vector_product_fn = partial(self.hessian_vector_product, actor_params, grad_kl)
+      search_direction = conjugate_gradient_solver(hessian_vector_product_fn, policy_grad, max_iter=self.cg_max_steps)
+
+      # Line search to satisfy KL constraint
+      max_step = th.sqrt(2 * self.target_kl / th.matmul(search_direction, hessian_vector_product_fn(search_direction)))
+      line_search_backtrack_coeff = 1.0
+      original_actor_params = [param.detach().clone() for param in actor_params]
+      is_successful = False
+
+      with th.no_grad():
+        for _ in range(self.line_search_max_iter):
+          start_idx = 0
+          for param, original_param, shape in zip(actor_params, original_actor_params, grad_shape):
+            param.data = original_param.data + line_search_backtrack_coeff * max_step * search_direction[start_idx : start_idx + param.numel()].view(shape)
+            start_idx += param.numel()
+
+          # Recompute the KL divergence and policy objective
+          distribution = self.policy.get_distribution(observations)
+          log_prob = distribution.log_prob(actions)
+          ratio = th.exp(log_prob - old_log_prob)
+          new_policy_objective = (advantages * ratio).mean()
+          kl_div = kl_divergence(distribution, self.policy.get_distribution(observations)).mean()
+
+          if (kl_div < self.target_kl) and (new_policy_objective > policy_objective):
+            is_successful = True
+            break
+          line_search_backtrack_coeff *= self.line_search_shrinking_factor
+
+      if not is_successful:
+        # Revert to original parameters
+        for param, original_param in zip(actor_params, original_actor_params):
+          param.data = original_param.data.clone()
+
+      line_search_results.append(is_successful)
+      policy_objective_values.append(new_policy_objective.item() if is_successful else policy_objective.item())
+      kl_divergences.append(kl_div.item())
+
+    # Critic update
+    for _ in range(self.n_critic_updates):
+      for rollout_data in self.rollout_buffer.get(self.batch_size):
+        values_pred = self.policy.predict_values(rollout_data.observations)
+        value_loss = F.mse_loss(rollout_data.returns, values_pred.flatten())
+        value_losses.append(value_loss.item())
 
         self.policy.optimizer.zero_grad()
-        actor_params, policy_grad, grad_kl, grad_shape = self._compute_actor_grad(kl_div, policy_objective)
+        value_loss.backward()
+        self.policy.optimizer.step()
 
-        # Hessian-vector product for conjugate gradient
-        hessian_vector_product_fn = partial(self.hessian_vector_product, actor_params, grad_kl)
-        search_direction = conjugate_gradient_solver(hessian_vector_product_fn, policy_grad, max_iter=self.cg_max_steps)
-
-        # Line search to satisfy KL constraint
-        max_step = th.sqrt(2 * self.target_kl / th.matmul(search_direction, hessian_vector_product_fn(search_direction)))
-        line_search_backtrack_coeff = 1.0
-        original_actor_params = [param.detach().clone() for param in actor_params]
-        is_successful = False
-
-        with th.no_grad():
-          for _ in range(self.line_search_max_iter):
-            start_idx = 0
-            for param, original_param, shape in zip(actor_params, original_actor_params, grad_shape):
-              param.data = original_param.data + line_search_backtrack_coeff * max_step * search_direction[start_idx : start_idx + param.numel()].view(shape)
-              start_idx += param.numel()
-
-            # Recompute the KL divergence and policy objective
-            distribution = self.policy.get_distribution(observations)
-            log_prob = distribution.log_prob(actions)
-            ratio = th.exp(log_prob - old_log_prob)
-            new_policy_objective = (advantages * ratio).mean()
-            kl_div = kl_divergence(distribution, self.policy.get_distribution(observations)).mean()
-
-            if (kl_div < self.target_kl) and (new_policy_objective > policy_objective):
-              is_successful = True
-              break
-            line_search_backtrack_coeff *= self.line_search_shrinking_factor
-
-        if not is_successful:
-          # Revert to original parameters
-          for param, original_param in zip(actor_params, original_actor_params):
-            param.data = original_param.data.clone()
-
-        line_search_results.append(is_successful)
-        policy_objective_values.append(new_policy_objective.item() if is_successful else policy_objective.item())
-        kl_divergences.append(kl_div.item())
-
-      # Critic update
-      for _ in range(self.n_critic_updates):
-        for rollout_data in self.rollout_buffer.get(self.batch_size):
-          values_pred = self.policy.predict_values(rollout_data.observations)
-          value_loss = F.mse_loss(rollout_data.returns, values_pred.flatten())
-          value_losses.append(value_loss.item())
-
-          self.policy.optimizer.zero_grad()
-          value_loss.backward()
-          self.policy.optimizer.step()
-
-      # Logging
-      self._n_updates += 1
-      explained_var = explained_variance(self.rollout_buffer.values.flatten(), self.rollout_buffer.returns.flatten())
-      self.logger.record("train/policy_objective", np.mean(policy_objective_values))
-      self.logger.record("train/value_loss", np.mean(value_losses))
-      self.logger.record("train/kl_divergence", np.mean(kl_divergences))
-      self.logger.record("train/explained_variance", explained_var)
-      self.logger.record("train/n_updates", self._n_updates, exclude="tensorboard")
+    # Logging
+    self._n_updates += 1
+    explained_var = explained_variance(self.rollout_buffer.values.flatten(), self.rollout_buffer.returns.flatten())
+    self.logger.record("train/policy_objective", np.mean(policy_objective_values))
+    self.logger.record("train/value_loss", np.mean(value_losses))
+    self.logger.record("train/kl_divergence", np.mean(kl_divergences))
+    self.logger.record("train/explained_variance", explained_var)
+    self.logger.record("train/n_updates", self._n_updates, exclude="tensorboard")
 
   def _compute_relevance(self, transition):
     """
