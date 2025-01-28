@@ -27,7 +27,7 @@ LunarLanderContinuous-v3:
 # Tuned
 Ant-v5:
   policy: "MlpPolicy"
-  n_steps: 512.0
+  n_steps: 512
   gamma: 0.99
   learning_rate: 0.0009783065937853852
   n_critic_updates: 10
