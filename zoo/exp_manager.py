@@ -157,6 +157,7 @@ class ExperimentManager:
     device: Union[th.device, str] = "auto",
     config: Optional[str] = None,
     show_progress: bool = False,
+    n_timesteps: int = int(1e5),
   ):
     super().__init__()
     self.algo = algo
@@ -235,6 +236,8 @@ class ExperimentManager:
     self.save_path = os.path.join(self.log_path, f"{self.env_name}_{get_latest_run_id(self.log_path, self.env_name) + 1}{uuid_str}")
     self.params_path = f"{self.save_path}/{self.env_name}"
     self.best_save_path = f"results/{self.algo}.yml"
+
+    self.n_timesteps = n_timesteps
 
   def setup_experiment(self) -> Optional[Tuple[BaseAlgorithm, Dict[str, Any]]]:
     """
@@ -441,8 +444,9 @@ class ExperimentManager:
       hyperparams["train_freq"] = tuple(hyperparams["train_freq"])
 
     # Should we overwrite the number of timesteps?
-    self.n_timesteps = int(hyperparams["n_timesteps"])
-    print(f"Using {self.n_timesteps} timesteps")
+    if not self.evaluating:
+      self.n_timesteps = int(hyperparams["n_timesteps"])
+      print(f"Using {self.n_timesteps} timesteps")
 
     # Derive n_evaluations from number of timesteps if needed
     if self.n_evaluations is None and self.optimize_hyperparameters:
@@ -967,6 +971,11 @@ class ExperimentManager:
 
 
 class EvalExperimentManager(ExperimentManager):
+
+  def __init__(self, **kwargs: Any):
+    super().__init__(**kwargs)
+    self.evaluating = True
+
   def learn(self, model: BaseAlgorithm) -> None:
     """
         Train the model and capture training rewards and timesteps.
@@ -994,6 +1003,7 @@ class EvalExperimentManager(ExperimentManager):
         return True
 
       # Use the custom reward logger
+      print(f"Evaluating model for {self.n_timesteps} timesteps")
       model.learn(self.n_timesteps, callback=reward_logger, **kwargs)
     except KeyboardInterrupt:
       # Allow saving the model if interrupted

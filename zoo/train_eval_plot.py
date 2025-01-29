@@ -10,7 +10,6 @@ import pandas as pd
 import yaml
 
 
-# Good
 def downsample_data_with_smoothing(timesteps, rewards, max_points=1000, window_size=500):
 
   if len(timesteps) <= max_points:
@@ -76,24 +75,23 @@ def plot_all_from_csv(csv_path, results_dir, filter_envs=None, filter_models=Non
           aggregated_df = pd.concat([aggregated_df, run_data["Reward"]], axis=1)
 
       if not aggregated_df.empty:
-        mean_rewards = aggregated_df.mean(axis=1)
-        std_rewards = aggregated_df.std(axis=1)
+        mean_returns = aggregated_df.mean(axis=1)
+        std_returns = aggregated_df.std(axis=1)
 
-        downsampled_timesteps, downsampled_mean_rewards = downsample_data_with_smoothing(mean_rewards.index.values, mean_rewards.values)
-        _, downsampled_std_rewards = downsample_data_with_smoothing(mean_rewards.index.values, std_rewards.values)
+        timesteps = mean_returns.index
 
         line_style = style_mapping[model]
         marker = marker_mapping[model]
 
         ax.fill_between(
-          downsampled_timesteps,
-          downsampled_mean_rewards - downsampled_std_rewards,
-          downsampled_mean_rewards + downsampled_std_rewards,
+          timesteps,
+          mean_returns - std_returns,
+          mean_returns + std_returns,
           alpha=0.2,
         )
         ax.plot(
-          downsampled_timesteps,
-          downsampled_mean_rewards,
+          timesteps,
+          mean_returns,
           label=f"{model}",
           linewidth=1.5,
           linestyle=line_style,
@@ -110,18 +108,16 @@ def plot_all_from_csv(csv_path, results_dir, filter_envs=None, filter_models=Non
     ax.axis("off")
 
   plt.tight_layout()
-  plot_path = os.path.join(results_dir, "results.png")
+  plot_path = os.path.join(results_dir, "raw_data.png")
   plt.savefig(plot_path, dpi=150)
   plt.close()
   print(plot_path)
 
 
-# Good
 def get_data_csv_files(path):
   return [os.path.join(root, file) for root, _, files in os.walk(path) for file in files if file.endswith("data.csv")]
 
 
-# Good
 def group_paths_by_env(paths):
   grouped = defaultdict(list)
   for path in paths:
@@ -140,34 +136,7 @@ def resample_to_fixed_points(run_data, num_points, common_timesteps):
   return pd.DataFrame({"Timesteps": common_timesteps, "Reward": interpolated_rewards})
 
 
-# Good
-def plot_from_path(env_path, results_dir, filter_envs=None, filter_models=None):
-  csv_files = get_data_csv_files(env_path)
-  grouped = group_paths_by_env(csv_files)
-
-  # filter_envs is a list of environment names to plot
-  if filter_envs:
-    grouped = {env: paths for env, paths in grouped.items() if env in filter_envs}
-
-  # filter_models is a list of model names to plot
-  if filter_models:
-    grouped = {env: [path for path in paths if any(model in path for model in filter_models)] for env, paths in grouped.items()}
-
-  plot_rewards_sd_and_reject_outliers(grouped, results_dir)
-  plot_sample_efficiency(grouped, results_dir)
-  plot_learning_stability(grouped, results_dir)
-  plot_learning_stability_cv(grouped, results_dir)
-  plot_sample_efficiency_combined(grouped, results_dir)
-
-
-def plot_learning_stability_cv(grouped, results_dir, num_points=10000):
-  """
-    Plots learning stability using the Coefficient of Variation (CV) to show relative variability.
-
-    Args:
-        grouped (dict): Dictionary with environments as keys and lists of file paths as values.
-        results_dir (str): Directory to save the resulting plots.
-    """
+def plot_learning_stability_cv(grouped, results_dir, num_points):
   os.makedirs(results_dir, exist_ok=True)
 
   n_envs = len(grouped)
@@ -231,13 +200,14 @@ def plot_learning_stability_cv(grouped, results_dir, num_points=10000):
   print(plot_path)
 
 
-def plot_learning_stability(grouped, results_dir, num_points=10000):
+def plot_learning_stability(grouped, results_dir, num_points):
   """
-    Plots learning stability by showing mean rewards with standard deviation as a shaded region.
+    Plot learning stability for different models across multiple environments.
 
-    Args:
-        grouped (dict): Dictionary with environments as keys and lists of file paths as values.
-        results_dir (str): Directory to save the resulting plots.
+    Parameters:
+    grouped (dict): Dictionary mapping environments to lists of file paths.
+    results_dir (str): Directory to save the plots.
+    num_points (int): Number of points to normalize timesteps.
     """
   os.makedirs(results_dir, exist_ok=True)
 
@@ -246,7 +216,6 @@ def plot_learning_stability(grouped, results_dir, num_points=10000):
   fig, axes = plt.subplots(2, n_cols, figsize=(12 * n_cols, 10), dpi=150)
   axes = axes.flatten()
 
-  # Define consistent styles and markers
   all_models = sorted(set(model for paths in grouped.values() for path in paths for model in [os.path.basename(os.path.dirname(os.path.dirname(path)))]))
   line_styles = ["-", "--", "-.", ":"]
   markers = ["o", "s", "^", "D"]
@@ -263,12 +232,19 @@ def plot_learning_stability(grouped, results_dir, num_points=10000):
         run_data = pd.read_csv(file_path)
         run_data.set_index("Timesteps", inplace=True)
 
+        if run_data.empty or "Reward" not in run_data:
+          continue  # Skip empty or invalid files
+
         # Resample rewards for consistent comparison
         resampled_data = resample_to_fixed_points(run_data, num_points, common_timesteps)
 
-        downsampled_timesteps, downsampled_rewards = downsample_data_with_smoothing(
-          resampled_data.index, resampled_data["Reward"], max_points=1000, window_size=500
-        )
+        # Check if downsampling is necessary
+        if len(resampled_data) > 1000:
+          downsampled_timesteps, downsampled_rewards = downsample_data_with_smoothing(
+            resampled_data.index, resampled_data["Reward"], max_points=1000, window_size=500
+          )
+        else:
+          downsampled_timesteps, downsampled_rewards = resampled_data.index, resampled_data["Reward"].values
 
         if model not in model_aggregated:
           model_aggregated[model] = []
@@ -314,7 +290,7 @@ def plot_learning_stability(grouped, results_dir, num_points=10000):
   print(plot_path)
 
 
-def plot_rewards_sd_and_reject_outliers(grouped, results_dir, num_points=10000, outlier_threshold=2.5):
+def plot_rewards_sd_and_reject_outliers(grouped, results_dir, num_points, outlier_threshold=2.5, downsample=True):
   os.makedirs(results_dir, exist_ok=True)
 
   n_envs = len(grouped)
@@ -343,9 +319,13 @@ def plot_rewards_sd_and_reject_outliers(grouped, results_dir, num_points=10000, 
 
         resampled_data = resample_to_fixed_points(run_data, num_points, common_timesteps)
 
-        downsampled_timesteps, downsampled_rewards = downsample_data_with_smoothing(
-          resampled_data.index, resampled_data["Reward"], max_points=1000, window_size=500
-        )
+        if downsample:
+          downsampled_timesteps, downsampled_rewards = downsample_data_with_smoothing(
+            resampled_data.index, resampled_data["Reward"], max_points=max_points, window_size=500
+          )
+        else:
+          downsampled_timesteps = resampled_data.index
+          downsampled_rewards = resampled_data["Reward"]
 
         if model not in model_aggregated:
           model_aggregated[model] = []
@@ -400,13 +380,6 @@ def plot_rewards_sd_and_reject_outliers(grouped, results_dir, num_points=10000, 
 
 
 def plot_sample_efficiency(grouped, results_dir, filter_envs=None, filter_models=None):
-  """
-    Plots sample efficiency for grouped paths based on episode counts within a fixed timestep budget.
-
-    Args:
-        grouped (dict): Dictionary with environments as keys and lists of file paths as values.
-        results_dir (str): Directory to save the resulting plots.
-    """
   os.makedirs(results_dir, exist_ok=True)
 
   n_envs = len(grouped)
@@ -469,15 +442,6 @@ def plot_sample_efficiency(grouped, results_dir, filter_envs=None, filter_models
 
 
 def plot_sample_efficiency_combined(grouped, results_dir, filter_envs=None, filter_models=None):
-  """
-    Plots combined sample efficiency for all environments based on episode counts within a fixed timestep budget.
-
-    Args:
-        grouped (dict): Dictionary with environments as keys and lists of file paths as values.
-        results_dir (str): Directory to save the resulting plot.
-        filter_envs (list): List of environments to include (default: all).
-        filter_models (list): List of models to include (default: all).
-    """
   os.makedirs(results_dir, exist_ok=True)
 
   # Define consistent styles and markers
@@ -488,7 +452,7 @@ def plot_sample_efficiency_combined(grouped, results_dir, filter_envs=None, filt
   marker_mapping = {model: markers[i % len(markers)] for i, model in enumerate(all_models)}
 
   # Timestep budget
-  timestep_budget = 1_000_000
+  timestep_budget = 1000000
   combined_model_data = {model: [] for model in all_models}
 
   # Aggregate episode counts across environments
@@ -544,10 +508,88 @@ def plot_sample_efficiency_combined(grouped, results_dir, filter_envs=None, filt
   print(plot_path)
 
 
+import os
+
+import numpy as np
+import pandas as pd
+
+
+def generate_latex_comparison_table(grouped, results_dir, filename="model_comparison.tex"):
+  """
+    Generate a LaTeX-friendly full-width comparison table for AI models based on their reward statistics.
+    The table places models as rows and environments as columns, with mean ± std values.
+
+    Parameters:
+    grouped (dict): Dictionary mapping environments to lists of file paths containing model evaluation data.
+    results_dir (str): Directory to save the LaTeX table.
+    filename (str): Name of the output LaTeX file.
+
+    Returns:
+    None: Saves the LaTeX table to a file.
+    """
+  model_stats = {}
+
+  for env, paths in grouped.items():
+    for file_path in sorted(paths):
+      if os.path.exists(file_path):
+        model = os.path.basename(os.path.dirname(os.path.dirname(file_path)))  # Extract model name
+        run_data = pd.read_csv(file_path)
+
+        if "Reward" not in run_data or run_data.empty:
+          continue  # Skip files without rewards
+
+        rewards = run_data["Reward"]
+        mean_reward = np.mean(rewards)
+        std_reward = np.std(rewards)
+        max_reward = np.max(rewards)
+
+        # Format as mean ± std for LaTeX
+        stats_str = f"{mean_reward:.2f} $\\pm$ {std_reward:.2f}"
+
+        if model not in model_stats:
+          model_stats[model] = {}
+        model_stats[model][env] = stats_str
+
+  # Create a DataFrame with models as rows and environments as columns
+  df = pd.DataFrame(model_stats).T.fillna("N/A")
+  df.index.name = "Model"
+  df.columns.name = "Environment"
+
+  # Generate LaTeX table with full-width and proper formatting
+  latex_table = df.to_latex(index=True, escape=False, column_format="|l|" + "c|" * len(df.columns))
+
+  # Save to file
+  os.makedirs(results_dir, exist_ok=True)
+  table_path = os.path.join(results_dir, filename)
+  with open(table_path, "w") as f:
+    f.write(latex_table)
+
+  print(table_path)
+
+
+def plot(env_path, results_dir, num_points, filter_envs=None, filter_models=None):
+  csv_files = get_data_csv_files(env_path)
+  grouped = group_paths_by_env(csv_files)
+
+  # filter_envs is a list of environment names to plot
+  if filter_envs:
+    grouped = {env: paths for env, paths in grouped.items() if env in filter_envs}
+
+  # filter_models is a list of model names to plot
+  if filter_models:
+    grouped = {env: [path for path in paths if any(model in path for model in filter_models)] for env, paths in grouped.items()}
+
+  plot_rewards_sd_and_reject_outliers(grouped, results_dir, num_points=num_points)
+  plot_sample_efficiency(grouped, results_dir)
+  plot_learning_stability(grouped, results_dir, num_points=num_points)
+  plot_learning_stability_cv(grouped, results_dir, num_points=num_points)
+  plot_sample_efficiency_combined(grouped, results_dir)
+  generate_latex_comparison_table(grouped, results_dir)
+
+  plot_all_from_csv("results/results.csv", results_dir, filter_envs=filter_envs, filter_models=filter_models)
+
+
 if __name__ == "__main__":
   filter_envs = None
   filter_models = None
-  results_dir = ".plots"
-  plot_from_path(".eval", results_dir, filter_envs=filter_envs, filter_models=filter_models)
-
-  plot_all_from_csv("results/results.csv", results_dir, filter_envs=filter_envs, filter_models=filter_models)
+  plot(".eval", ".assets", 20000, filter_envs=filter_envs, filter_models=filter_models)

@@ -1,11 +1,12 @@
-import gymnasium as gym
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import torch.nn.functional as F
-import numpy as np
 import random
 from collections import deque
+
+import gymnasium as gym
+import numpy as np
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
 
 
 class ReplayBuffer:
@@ -137,43 +138,45 @@ class QNetwork(nn.Module):
     return self.net(torch.cat([s, a], dim=-1))
 
 
-def train_agent(policy, q_net, optimizer_q, buffer_real, buffer_syn, batch_size, gamma=0.99, entropy_coef=0.01):
+def train_agent(policy, q_net, optimizer_q, buffer_real, buffer_syn, batch_size, gamma=0.99):
   s_real, a_real, r_real, s2_real, d_real = buffer_real.sample(batch_size)
   s_syn, a_syn, r_syn, s2_syn, d_syn = buffer_syn.sample(batch_size)
 
+  # Q-value for real data
   q_val_real = q_net(s_real, a_real).squeeze(-1)
   with torch.no_grad():
     mean_next_real, std_next_real = policy(s2_real)
     noise_real = torch.randn_like(mean_next_real)
     a2_real = mean_next_real + std_next_real * noise_real
     q_next_real = q_net(s2_real, a2_real).squeeze(-1)
-    log_prob_real = -0.5 * ((noise_real**2).sum(dim=1) + a2_real.size(1) * np.log(2.0 * np.pi) + 2 * std_next_real.log().sum(dim=1))
-    target_real = r_real + gamma * (1 - d_real) * (q_next_real + (-entropy_coef) * log_prob_real)
+    target_real = r_real + gamma * (1 - d_real) * q_next_real  # Removed entropy term
 
   loss_real = F.mse_loss(q_val_real, target_real)
 
+  # Q-value for synthetic data
   q_val_syn = q_net(s_syn, a_syn).squeeze(-1)
   with torch.no_grad():
     mean_next_syn, std_next_syn = policy(s2_syn)
     noise_syn = torch.randn_like(mean_next_syn)
     a2_syn = mean_next_syn + std_next_syn * noise_syn
     q_next_syn = q_net(s2_syn, a2_syn).squeeze(-1)
-    log_prob_syn = -0.5 * ((noise_syn**2).sum(dim=1) + a2_syn.size(1) * np.log(2.0 * np.pi) + 2 * std_next_syn.log().sum(dim=1))
-    target_syn = r_syn + gamma * (1 - d_syn) * (q_next_syn + (-entropy_coef) * log_prob_syn)
+    target_syn = r_syn + gamma * (1 - d_syn) * q_next_syn  # Removed entropy term
 
   loss_syn = F.mse_loss(q_val_syn, target_syn)
+
+  # Total Q-network loss
   loss_q = loss_real + loss_syn
   optimizer_q.zero_grad()
   loss_q.backward()
   optimizer_q.step()
 
+  # Policy optimization
   policy_optimizer = optim.Adam(policy.parameters(), lr=1e-3)
   mean_now, std_now = policy(s_real)
   noise_now = torch.randn_like(mean_now)
   a_now = mean_now + std_now * noise_now
   q_val_now = q_net(s_real, a_now).squeeze(-1)
-  log_prob_now = -0.5 * ((noise_now**2).sum(dim=1) + a_now.size(1) * np.log(2.0 * np.pi) + 2 * std_now.log().sum(dim=1))
-  loss_policy = -q_val_now.mean() - entropy_coef * log_prob_now.mean()
+  loss_policy = -q_val_now.mean()  # Removed entropy term
   policy_optimizer.zero_grad()
   loss_policy.backward()
   policy_optimizer.step()
@@ -199,7 +202,6 @@ def main():
   episodes = 10000
   max_steps = 1000
   batch_size = 64
-  entropy_coef = 0.01
 
   # Metrics
   reward_history = []
@@ -245,7 +247,7 @@ def main():
           syn_buffer.push(hs[i].numpy(), ha[i].numpy(), hr[i].item(), gen_s[i].numpy(), hd[i].item())
 
     if len(real_buffer) > batch_size and len(syn_buffer) > batch_size:
-      train_agent(policy, q_net, optimizer_q, real_buffer, syn_buffer, batch_size, gamma=0.99, entropy_coef=entropy_coef)
+      train_agent(policy, q_net, optimizer_q, real_buffer, syn_buffer, batch_size, gamma=0.99)
 
   # Print overall statistics
   print("\nTraining Complete")

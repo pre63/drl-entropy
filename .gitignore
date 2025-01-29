@@ -17,3 +17,13 @@ __pycache__
 Models/sb3_trpo.py
 results/results.png
 
+# Latex
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.fdb_latexmk
+*.fls

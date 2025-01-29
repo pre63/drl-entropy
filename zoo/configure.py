@@ -64,6 +64,7 @@ def configure(**params):
     "wandb_tags": [],
     "progress": False,
     "train_eval": False,
+    "n_timesteps": 1000000,
   }
 
   # Update defaults with provided params
@@ -159,6 +160,7 @@ def configure(**params):
     device=args["device"],
     config=args["conf_file"],
     show_progress=args["progress"],
+    n_timesteps=args["n_timesteps"],
   )
 
   # Prepare and start the experiment

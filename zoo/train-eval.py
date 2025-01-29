@@ -11,14 +11,14 @@ import yaml
 
 import Environments
 from Models.EnTRPO.EnTRPO import EnTRPO, EnTRPOHigh, EnTRPOLow, sample_entrpo_params
+from Models.Experimental.TRPOQ.TRPOQ import TRPOQ, sample_trpoq_params
+from Models.Experimental.TRPOQ.TRPOQ2 import TRPOQ2, sample_trpoq2_params
+from Models.Experimental.TRPOQ.TRPOQH import TRPOQH, TRPOQHO, sample_trpoqh_params, sample_trpoqho_params
 from Models.GenTRPO.GenTRPO import GenTRPO, sample_gentrpo_params
 from Models.SB3 import PPO, TRPO
-from Models.TRPOQ.TRPOQ import TRPOQ, sample_trpoq_params
-from Models.TRPOQ.TRPOQ2 import TRPOQ2, sample_trpoq2_params
-from Models.TRPOQ.TRPOQH import TRPOQH, TRPOQHO, sample_trpoqh_params, sample_trpoqho_params
 from Models.TRPOR.TRPOR import TRPOR, sample_trpor_params
 from zoo.configure import configure
-from zoo.train_eval_plot import plot_all_from_csv
+from zoo.train_eval_plot import plot
 
 # Register models
 models = {
@@ -120,8 +120,12 @@ def evaluate_training(algo, env, device, optimize_hyperparameters, conf_file, n_
     else:
       run_df.to_csv(csv_file, index=False)
     print(f"Summary metrics for run {run + 1} saved to {csv_file}")
-  plot_all_from_csv(csv_file, ".plots")
 
+
+
+  filter_envs = None
+  filter_models = None
+  plot(".eval", ".assets", 20000, filter_envs=filter_envs, filter_models=filter_models)
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
@@ -132,7 +136,7 @@ if __name__ == "__main__":
   parser.add_argument("--conf_file", type=str, default=None)
   parser.add_argument("--trials", type=int, default=40)
   parser.add_argument("--n_jobs", type=int, default=10)
-  parser.add_argument("--n_timesteps", type=int, default=100000)
+  parser.add_argument("--n_timesteps", type=int, default=1000000)
 
   params = parser.parse_args()
 

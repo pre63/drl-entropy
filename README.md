@@ -2,6 +2,8 @@
 
 This repository supports the research paper *Chaos to Knowledge: Entropy in Continuous Control*. It serves as a comprehensive platform for training, evaluating, and optimizing reinforcement learning (RL) algorithms in continuous control environments, particularly focusing on entropy-based modifications to Trust Region Policy Optimization (TRPO). The repository provides tools to automate experiments, optimize hyperparameters, and visualize performance, all while enabling seamless exploration of advanced RL strategies.
 
+[Read the generated report here.](report.pdf)
+
 ## Features
 
 This repository is designed to streamline reinforcement learning experimentation. It supports the training of state-of-the-art RL models, including TRPO and entropy-regularized TRPO variants, across diverse continuous control environments. Hyperparameter tuning is a core feature, enabling users to conduct large-scale searches for optimal configurations. Automation capabilities allow for effortless scheduling of nightly experiments, ensuring robust and efficient exploration of various setups. TensorBoard integration further provides a detailed visualization of training progress and performance dynamics, enhancing the interpretability of experimental outcomes.

@@ -8,6 +8,7 @@ model=trpo # Default model to train
 optimize=False # Default to not optimize hyperparameters
 trials=1000 # Default number of trials for hyperparameter optimization
 n_timesteps=0 # Default number of timesteps to train for
+n_eval_timesteps=1000000 # Default number of timesteps to evaluate for
 env=Humanoid-v5 # Default environment to train on
 configs=configs.txt # Default configuration file
 
@@ -108,7 +109,7 @@ nightly:
 
 train-eval:
 	@echo "Will evaluate model $(model) on environment $(env)"
-	@. .venv/bin/activate; PYTHONPATH=. python -u zoo/train-eval.py --model=$(model) --env=$(env) 2>&1 | tee -a .logs/eval-$(model)-$(env)-$(shell date +"%Y%m%d").log
+	@. .venv/bin/activate; PYTHONPATH=. python -u zoo/train-eval.py --n_timesteps=$(n_eval_timesteps) --model=$(model) --env=$(env) 2>&1 | tee -a .logs/eval-$(model)-$(env)-$(shell date +"%Y%m%d").log
 
 train-eval-all:
 	@echo "Will evaluate all models in zoo"
@@ -168,3 +169,8 @@ eval-all:
 	$(MAKE) train-eval model=trpo env=Humanoid-v5
 	$(MAKE) train-eval model=trpo env=InvertedDoublePendulum-v5
 	$(MAKE) train-eval model=trpo env=Pendulum-v1
+
+	$(MAKE) train-eval model=gentrpo env=Ant-v5
+	$(MAKE) train-eval model=gentrpo env=Humanoid-v5
+	$(MAKE) train-eval model=gentrpo env=InvertedDoublePendulum-v5
+	$(MAKE) train-eval model=gentrpo env=Pendulum-v1

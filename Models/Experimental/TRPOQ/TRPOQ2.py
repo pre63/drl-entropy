@@ -12,7 +12,7 @@ from torch import nn
 from torch.nn import functional as F
 
 from Models.SB3 import TRPO
-from Models.TRPOQ.Network import QuantileValueNetwork, optimize_hyperparameters
+from Models.Experimental.TRPOQ.Network import QuantileValueNetwork, optimize_hyperparameters
 
 SelfTRPO = TypeVar("SelfTRPO", bound="TRPO")
 
