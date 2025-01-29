@@ -8,4 +8,13 @@ trpo: Pendulum-v1
 entrpohigh: Pendulum-v1
 entrpolow: Pendulum-v1
 ppo: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5 Pendulum-v1
-trpor: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5
+trpor: LunarLanderContinuous-v3
+entrpo: LunarLanderContinuous-v3
+entrpohigh: LunarLanderContinuous-v3
+entrpolow: LunarLanderContinuous-v3
+ppo: LunarLanderContinuous-v3
+trpor: RocketLander-v0
+entrpo: RocketLander-v0
+entrpohigh: RocketLander-v0
+entrpolow: RocketLander-v0
+ppo: RocketLander-v0
