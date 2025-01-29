@@ -1,11 +1,7 @@
-import copy
 import random
-from functools import partial
-from typing import Any, ClassVar, Optional, TypeVar, Union
 
 import numpy as np
 import torch as th
-from gymnasium import spaces
 from sb3_contrib.common.utils import conjugate_gradient_solver, flat_grad
 from sb3_contrib.trpo.policies import CnnPolicy, MlpPolicy, MultiInputPolicy
 from stable_baselines3.common.distributions import kl_divergence
@@ -17,18 +13,39 @@ from torch.nn import functional as F
 from Models.SB3 import TRPO
 
 
+class ForwardDynamicsModel(nn.Module):
+  def __init__(self, observation_space, action_space, hidden_dim=128):
+    super().__init__()
+
+    self.state_dim = np.prod(observation_space.shape)  # Compute total state dimension
+    self.action_dim = action_space.shape[0]  # Continuous action space
+
+    self.encoder = nn.Sequential(
+        nn.Linear(self.state_dim, hidden_dim),
+        nn.ReLU(),
+        nn.Linear(hidden_dim, hidden_dim),
+        nn.ReLU(),
+    )
+
+    self.forward_model = nn.Sequential(
+        nn.Linear(hidden_dim + self.action_dim, hidden_dim),
+        nn.ReLU(),
+        nn.Linear(hidden_dim, hidden_dim),
+        nn.ReLU(),
+        nn.Linear(hidden_dim, hidden_dim),
+    )
+
+  def forward(self, state, action):
+    state = state.view(state.size(0), -1)  # Ensure correct shape
+    h_s = self.encoder(state)
+    action = action.view(action.size(0), -1)  # Ensure action is 2D
+    x = th.cat([h_s, action], dim=-1)
+    pred_h_next = self.forward_model(x)
+    return h_s, pred_h_next
+
+
 class GenerativeReplayBuffer:
   def __init__(self, real_capacity, synthetic_capacity, relevance_function, generative_model, batch_size):
-    """
-        Replay buffer with generative replay inspired by PGR.
-
-        Args:
-            real_capacity: Maximum capacity for the real buffer.
-            synthetic_capacity: Maximum capacity for the synthetic buffer.
-            relevance_function: Function to prioritize transitions.
-            generative_model: Generative model for creating synthetic transitions.
-            batch_size: Number of transitions to sample for training.
-        """
     self.real_capacity = real_capacity
     self.synthetic_capacity = synthetic_capacity
     self.real_buffer = []
@@ -38,45 +55,42 @@ class GenerativeReplayBuffer:
     self.batch_size = batch_size
 
   def add_real(self, transition):
-    """
-        Adds a real transition to the real buffer.
+    state, action, reward, next_state, done = transition
 
-        Args:
-            transition: A tuple (state, action, reward, next_state, done).
-        """
-    if len(self.real_buffer) >= self.real_capacity:
+    # Ensure state and action are tensors before storing
+    if not isinstance(state, th.Tensor):
+      state = th.as_tensor(state, dtype=th.float32)
+    if not isinstance(action, th.Tensor):
+      action = th.as_tensor(action, dtype=th.float32)
+
+    self.real_buffer.append((state, action, reward, next_state, done))
+    if len(self.real_buffer) > self.real_capacity:
       self.real_buffer.pop(0)
-    self.real_buffer.append(transition)
 
   def generate_synthetic(self):
-    """
-        Generates synthetic transitions and adds them to the synthetic buffer.
-        """
     if len(self.real_buffer) == 0:
-      return  # No real transitions to condition on
+      return
 
-    # Sample a subset of the real buffer to guide generation
-    sampled_real = random.sample(self.real_buffer, min(10, len(self.real_buffer)))
+    # Compute relevance scores and sort
+    scored_samples = sorted(self.real_buffer, key=self.relevance_function, reverse=True)
 
-    # Compute relevance scores
-    relevance_scores = [self.relevance_function(t) for t in sampled_real]
+    # Select the top 10 most relevant transitions
+    sampled_real = scored_samples[:10]
 
-    # Generate synthetic transitions using the generative model
-    synthetic_transitions = self.generative_model.generate(sampled_real, relevance_scores)
+    synthetic_transitions = []
+    for state, action, reward, next_state, done in sampled_real:
+      with th.no_grad():
+        action_distribution = self.generative_model.get_distribution(state)
+        synthetic_action = action_distribution.sample()  # Sample new action
+        synthetic_transitions.append((state, synthetic_action, reward, next_state, done))
 
-    # Add generated transitions to the synthetic buffer
-    for transition in synthetic_transitions:
-      if len(self.synthetic_buffer) >= self.synthetic_capacity:
-        self.synthetic_buffer.pop(0)
-      self.synthetic_buffer.append(transition)
+    # Store synthetic samples
+    self.synthetic_buffer.extend(synthetic_transitions)
+
+    # Trim synthetic buffer if over capacity
+    self.synthetic_buffer = self.synthetic_buffer[-self.synthetic_capacity:]
 
   def sample(self, num_samples):
-    """
-        Samples a batch of transitions from both real and synthetic buffers.
-
-        Returns:
-            A batch of transitions.
-        """
     real_sample_size = num_samples // 2
     synthetic_sample_size = num_samples // 2
 
@@ -116,129 +130,103 @@ def compute_sampling_parameters_gradual_linear(entropy, entropy_coeff, min_sampl
 
 
 class GenTRPO(TRPO):
-
   def __init__(self, *args, epsilon=0.2, buffer_capacity=10000, batch_size=32, entropy_coeff=0.1, **kwargs):
     super().__init__(*args, **kwargs)
 
     self.epsilon = epsilon
-    self.replay_buffer = GenerativeReplayBuffer(
-      real_capacity=buffer_capacity,
-      synthetic_capacity=buffer_capacity,
-      relevance_function=self._compute_relevance,
-      generative_model=self.policy,
-      batch_size=batch_size,
-    )
     self.batch_size = batch_size
     self.entropy_coeff = entropy_coeff
 
+    self.forward_dynamics_model = ForwardDynamicsModel(
+        observation_space=self.observation_space,
+        action_space=self.action_space
+    ).to(self.device)
+
+    self.replay_buffer = GenerativeReplayBuffer(
+        real_capacity=buffer_capacity,
+        synthetic_capacity=buffer_capacity,
+        relevance_function=self._compute_relevance,
+        generative_model=self.policy,
+        batch_size=batch_size,
+    )
+
+  def _compute_relevance(self, transition):
+    state, action, _, _, _ = transition
+
+    with th.no_grad():
+      h_s, pred_h_next = self.forward_dynamics_model(state, action)
+
+    curiosity_score = 0.5 * th.norm(pred_h_next - h_s, p=2).item() ** 2
+    return curiosity_score
+
   def train(self) -> None:
-    """
-        Core TRPO training loop with rollout buffer usage.
-        """
     self.policy.set_training_mode(True)
     self._update_learning_rate(self.policy.optimizer)
 
     policy_objective_values = []
     kl_divergences = []
-    line_search_results = []
     value_losses = []
 
-    for rollout_data in self.rollout_buffer.get(batch_size=None):
+    for rollout_data in self.rollout_buffer.get():
       observations = rollout_data.observations
       actions = rollout_data.actions
       returns = rollout_data.returns
       advantages = rollout_data.advantages
       old_log_prob = rollout_data.old_log_prob
 
-      # Get the policy distribution and compute log probabilities
-      distribution = self.policy.get_distribution(observations)
-      log_prob = distribution.log_prob(actions)
+      transition = (
+          observations.cpu().numpy(),
+          actions.cpu().numpy(),
+          returns.cpu().numpy(),
+          advantages.cpu().numpy(),
+          old_log_prob.cpu().numpy(),
+      )
+      self.replay_buffer.add_real(transition)
 
-      if self.normalize_advantage:
-        advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
+    self.replay_buffer.generate_synthetic()
 
-      # Compute the policy objective and KL divergence
-      ratio = th.exp(log_prob - old_log_prob)
-      policy_objective = (advantages * ratio).mean() + self.entropy_coeff * distribution.entropy().mean()
-      kl_div = kl_divergence(distribution, self.policy.get_distribution(observations)).mean()
+    old_distribution = self.policy.get_distribution(observations)
+    entropy_mean = old_distribution.entropy().mean()
+    avg_entropy = entropy_mean.item()
 
-      self.policy.optimizer.zero_grad()
-      actor_params, policy_grad, grad_kl, grad_shape = self._compute_actor_grad(kl_div, policy_objective)
+    num_replay_samples = compute_sampling_parameters_gradual_linear(
+        entropy=avg_entropy, entropy_coeff=self.entropy_coeff, min_samples=0, max_samples=self.batch_size
+    )
 
-      # Hessian-vector product for conjugate gradient
-      hessian_vector_product_fn = partial(self.hessian_vector_product, actor_params, grad_kl)
-      search_direction = conjugate_gradient_solver(hessian_vector_product_fn, policy_grad, max_iter=self.cg_max_steps)
+    if num_replay_samples > 0:
+      replay_samples = self.replay_buffer.sample(num_replay_samples)
+      replay_obs, replay_actions, replay_returns, replay_advantages, replay_old_log_prob = zip(*replay_samples)
 
-      # Line search to satisfy KL constraint
-      max_step = th.sqrt(2 * self.target_kl / th.matmul(search_direction, hessian_vector_product_fn(search_direction)))
-      line_search_backtrack_coeff = 1.0
-      original_actor_params = [param.detach().clone() for param in actor_params]
-      is_successful = False
+      # Convert lists of tensors into a single tensor
+      replay_obs = th.cat(replay_obs).to(self.device)
+      replay_actions = th.cat(replay_actions).to(self.device)
+      replay_returns = th.cat(replay_returns).to(self.device)
+      replay_advantages = th.cat(replay_advantages).to(self.device)
+      replay_old_log_prob = th.cat(replay_old_log_prob).to(self.device)
 
-      with th.no_grad():
-        for _ in range(self.line_search_max_iter):
-          start_idx = 0
-          for param, original_param, shape in zip(actor_params, original_actor_params, grad_shape):
-            param.data = original_param.data + line_search_backtrack_coeff * max_step * search_direction[start_idx : start_idx + param.numel()].view(shape)
-            start_idx += param.numel()
+      # Concatenate replay samples with on-policy samples
+      observations = th.cat([observations, replay_obs])
+      actions = th.cat([actions, replay_actions])
+      returns = th.cat([returns, replay_returns])
+      advantages = th.cat([advantages, replay_advantages])
+      old_log_prob = th.cat([old_log_prob, replay_old_log_prob])
 
-          # Recompute the KL divergence and policy objective
-          distribution = self.policy.get_distribution(observations)
-          log_prob = distribution.log_prob(actions)
-          ratio = th.exp(log_prob - old_log_prob)
-          new_policy_objective = (advantages * ratio).mean()
-          kl_div = kl_divergence(distribution, self.policy.get_distribution(observations)).mean()
+    if self.normalize_advantage:
+      advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
 
-          if (kl_div < self.target_kl) and (new_policy_objective > policy_objective):
-            is_successful = True
-            break
-          line_search_backtrack_coeff *= self.line_search_shrinking_factor
+    new_distribution = self.policy.get_distribution(observations)
+    log_prob = new_distribution.log_prob(actions)
+    ratio = th.exp(log_prob - old_log_prob)
+    policy_objective = (advantages * ratio).mean() + self.entropy_coeff * new_distribution.entropy().mean()
+    kl_div = kl_divergence(old_distribution, new_distribution).mean()
 
-      if not is_successful:
-        # Revert to original parameters
-        for param, original_param in zip(actor_params, original_actor_params):
-          param.data = original_param.data.clone()
+    self.policy.optimizer.zero_grad()
+    policy_objective.backward()
+    self.policy.optimizer.step()
 
-      line_search_results.append(is_successful)
-      policy_objective_values.append(new_policy_objective.item() if is_successful else policy_objective.item())
-      kl_divergences.append(kl_div.item())
-
-    # Critic update
-    for _ in range(self.n_critic_updates):
-      for rollout_data in self.rollout_buffer.get(self.batch_size):
-        values_pred = self.policy.predict_values(rollout_data.observations)
-        value_loss = F.mse_loss(rollout_data.returns, values_pred.flatten())
-        value_losses.append(value_loss.item())
-
-        self.policy.optimizer.zero_grad()
-        value_loss.backward()
-        self.policy.optimizer.step()
-
-    # Logging
-    self._n_updates += 1
-    explained_var = explained_variance(self.rollout_buffer.values.flatten(), self.rollout_buffer.returns.flatten())
     self.logger.record("train/policy_objective", np.mean(policy_objective_values))
     self.logger.record("train/value_loss", np.mean(value_losses))
     self.logger.record("train/kl_divergence", np.mean(kl_divergences))
-    self.logger.record("train/explained_variance", explained_var)
-    self.logger.record("train/n_updates", self._n_updates, exclude="tensorboard")
-
-  def _compute_relevance(self, transition):
-    """
-        Computes the relevance of a transition based on the advantage estimate.
-
-        Args:
-            transition: A tuple (state, action, reward, _, done).
-
-        Returns:
-            A relevance score (float) for the given transition.
-        """
-    state, action, reward, _, done = transition
-    with th.no_grad():
-      value = self.policy.predict_values(th.tensor(state, dtype=th.float32).to(self.device)).item()
-
-    advantage = reward - value  # Reward minus baseline (value estimate)
-    return abs(advantage)  # Higher advantage magnitude indicates higher relevance
 
 
 def sample_gentrpo_params(trial, n_actions, n_envs, additional_args):
@@ -257,8 +245,8 @@ def sample_gentrpo_params(trial, n_actions, n_envs, additional_args):
   # Neural network architecture selection
   net_arch_type = trial.suggest_categorical("net_arch", ["small", "medium"])
   net_arch = {
-    "small": dict(pi=[64, 64], vf=[64, 64]),
-    "medium": dict(pi=[256, 256], vf=[256, 256]),
+      "small": dict(pi=[64, 64], vf=[64, 64]),
+      "medium": dict(pi=[256, 256], vf=[256, 256]),
   }[net_arch_type]
 
   # Activation function selection
@@ -280,24 +268,24 @@ def sample_gentrpo_params(trial, n_actions, n_envs, additional_args):
 
   # Returning the sampled hyperparameters as a dictionary
   return {
-    "policy": "MlpPolicy",
-    "n_timesteps": n_timesteps,
-    "n_envs": n_envs,
-    "epsilon": epsilon,
-    "entropy_coeff": entropy_coeff,
-    "n_steps": n_steps,
-    "batch_size": batch_size,
-    "gamma": gamma,
-    "cg_max_steps": cg_max_steps,
-    "n_critic_updates": n_critic_updates,
-    "target_kl": target_kl,
-    "learning_rate": learning_rate,
-    "gae_lambda": gae_lambda,
-    "buffer_capacity": buffer_capacity,
-    "policy_kwargs": dict(
-      net_arch=net_arch,
-      activation_fn=activation_fn,
-      ortho_init=orthogonal_init,
-    ),
-    **additional_args,
+      "policy": "MlpPolicy",
+      "n_timesteps": n_timesteps,
+      "n_envs": n_envs,
+      "epsilon": epsilon,
+      "entropy_coeff": entropy_coeff,
+      "n_steps": n_steps,
+      "batch_size": batch_size,
+      "gamma": gamma,
+      "cg_max_steps": cg_max_steps,
+      "n_critic_updates": n_critic_updates,
+      "target_kl": target_kl,
+      "learning_rate": learning_rate,
+      "gae_lambda": gae_lambda,
+      "buffer_capacity": buffer_capacity,
+      "policy_kwargs": dict(
+          net_arch=net_arch,
+          activation_fn=activation_fn,
+          ortho_init=orthogonal_init,
+      ),
+      **additional_args,
   }
