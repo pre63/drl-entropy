@@ -11,25 +11,25 @@ LunarLanderContinuous-v3:
 # Tuned
 Ant-v5:
   policy: "MlpPolicy"
-  n_timesteps: 100000
-  n_steps: 2048
-  gamma: 0.95
-  learning_rate: 0.00010414806516295135
-  n_critic_updates: 5
+  n_steps: 8
+  gamma: 0.99
+  learning_rate: 0.00017742414531568917
+  n_critic_updates: 30
   cg_max_steps: 5
-  target_kl: 0.1
+  target_kl: 0.001
   gae_lambda: 0.95
-  batch_size: 512
+  batch_size: 32
   net_arch: small
-  activation_fn: tanh
-  ent_coef: 0.0009000000000000001
-  buffer_capacity: 47000
-  reward_threshold: 350.0
-  replay_strategy_threshold: 6.7756855411481425
-  epsilon: 0.15000000000000002
-  use_per: True
-  orthogonal_init: True
-  n_envs: 8
+  activation_fn: relu
+  ent_coef: 0.0007
+  buffer_capacity: 81000
+  reward_threshold: 300
+  replay_strategy_threshold: 6.741863699813342
+  epsilon: 0.1
+  use_per: False
+  orthogonal_init: 0
+  n_timesteps: 700000
+  n_envs: 4
 
 
 # Tuned
