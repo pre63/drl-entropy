@@ -100,7 +100,7 @@ nightly:
 		done < $(configs); \
 	done
 
-train-eval:
+eval:
 	@echo "Will evaluate model $(model) on environment $(env)"
 	@. .venv/bin/activate; PYTHONPATH=. python -u Zoo/Eval.py --n_timesteps=$(n_eval_timesteps) --model=$(model) --env=$(env) 2>&1 | tee -a .logs/eval-$(model)-$(env)-$(shell date +"%Y%m%d").log
 
@@ -125,37 +125,37 @@ list:
 
 
 eval-all:
-	$(MAKE) train-eval model=entrpo env=Ant-v5
-	$(MAKE) train-eval model=entrpo env=Humanoid-v5
-	$(MAKE) train-eval model=entrpo env=InvertedDoublePendulum-v5
-	$(MAKE) train-eval model=entrpo env=Pendulum-v1
+	$(MAKE) eval model=trpor env=Ant-v5
+	$(MAKE) eval model=trpor env=Humanoid-v5
+	$(MAKE) eval model=trpor env=InvertedDoublePendulum-v5
+	$(MAKE) eval model=trpor env=Pendulum-v1
 
-	$(MAKE) train-eval model=ppo env=Ant-v5
-	$(MAKE) train-eval model=ppo env=Humanoid-v5
-	$(MAKE) train-eval model=ppo env=InvertedDoublePendulum-v5
-	$(MAKE) train-eval model=ppo env=Pendulum-v1
+	$(MAKE) eval model=ppo env=Ant-v5
+	$(MAKE) eval model=ppo env=Humanoid-v5
+	$(MAKE) eval model=ppo env=InvertedDoublePendulum-v5
+	$(MAKE) eval model=ppo env=Pendulum-v1
 
-	$(MAKE) train-eval model=trpor env=Ant-v5
-	$(MAKE) train-eval model=trpor env=Humanoid-v5
-	$(MAKE) train-eval model=trpor env=InvertedDoublePendulum-v5
-	$(MAKE) train-eval model=trpor env=Pendulum-v1
+	$(MAKE) eval model=trpo env=Ant-v5
+	$(MAKE) eval model=trpo env=Humanoid-v5
+	$(MAKE) eval model=trpo env=InvertedDoublePendulum-v5
+	$(MAKE) eval model=trpo env=Pendulum-v1
 
-	$(MAKE) train-eval model=entrpohigh env=Ant-v5
-	$(MAKE) train-eval model=entrpohigh env=Humanoid-v5
-	$(MAKE) train-eval model=entrpohigh env=InvertedDoublePendulum-v5
-	$(MAKE) train-eval model=entrpohigh env=Pendulum-v1
+	$(MAKE) eval model=entrpohigh env=Ant-v5
+	$(MAKE) eval model=entrpohigh env=Humanoid-v5
+	$(MAKE) eval model=entrpohigh env=InvertedDoublePendulum-v5
+	$(MAKE) eval model=entrpohigh env=Pendulum-v1
 
-	$(MAKE) train-eval model=entrpolow env=Ant-v5
-	$(MAKE) train-eval model=entrpolow env=Humanoid-v5
-	$(MAKE) train-eval model=entrpolow env=InvertedDoublePendulum-v5
-	$(MAKE) train-eval model=entrpolow env=Pendulum-v1
+	$(MAKE) eval model=entrpolow env=Ant-v5
+	$(MAKE) eval model=entrpolow env=Humanoid-v5
+	$(MAKE) eval model=entrpolow env=InvertedDoublePendulum-v5
+	$(MAKE) eval model=entrpolow env=Pendulum-v1
 
-	$(MAKE) train-eval model=trpo env=Ant-v5
-	$(MAKE) train-eval model=trpo env=Humanoid-v5
-	$(MAKE) train-eval model=trpo env=InvertedDoublePendulum-v5
-	$(MAKE) train-eval model=trpo env=Pendulum-v1
+	$(MAKE) eval model=entrpo env=Ant-v5
+	$(MAKE) eval model=entrpo env=Humanoid-v5
+	$(MAKE) eval model=entrpo env=InvertedDoublePendulum-v5
+	$(MAKE) eval model=entrpo env=Pendulum-v1
 
-	$(MAKE) train-eval model=gentrpo env=Ant-v5
-	$(MAKE) train-eval model=gentrpo env=Humanoid-v5
-	$(MAKE) train-eval model=gentrpo env=InvertedDoublePendulum-v5
-	$(MAKE) train-eval model=gentrpo env=Pendulum-v1
+	$(MAKE) eval model=gentrpo env=Ant-v5
+	$(MAKE) eval model=gentrpo env=Humanoid-v5
+	$(MAKE) eval model=gentrpo env=InvertedDoublePendulum-v5
+	$(MAKE) eval model=gentrpo env=Pendulum-v1
