@@ -71,7 +71,7 @@ def plot_all_from_csv(csv_path, results_dir, filter_envs=None, filter_models=Non
         run_file = row["File"]
         if os.path.exists(run_file):
           run_data = pd.read_csv(run_file)
-          run_data.set_index("Timesteps", inplace=True)
+          run_data.set_index("Episodes", inplace=True)
           aggregated_df = pd.concat([aggregated_df, run_data["Reward"]], axis=1)
 
       if not aggregated_df.empty:
@@ -133,7 +133,7 @@ def group_paths_by_env(paths):
 def resample_to_fixed_points(run_data, num_points, common_timesteps):
   normalized_timesteps = (run_data.index - run_data.index.min()) / (run_data.index.max() - run_data.index.min())
   interpolated_rewards = np.interp(common_timesteps, normalized_timesteps, run_data["Reward"])
-  return pd.DataFrame({"Timesteps": common_timesteps, "Reward": interpolated_rewards})
+  return pd.DataFrame({"Episodes": common_timesteps, "Reward": interpolated_rewards})
 
 
 def plot_learning_stability_cv(grouped, results_dir, num_points):
@@ -159,7 +159,7 @@ def plot_learning_stability_cv(grouped, results_dir, num_points):
       if os.path.exists(file_path):
         model = os.path.basename(os.path.dirname(os.path.dirname(file_path)))  # Extract model name
         run_data = pd.read_csv(file_path)
-        run_data.set_index("Timesteps", inplace=True)
+        run_data.set_index("Episodes", inplace=True)
 
         # Resample rewards for consistent comparison
         resampled_data = resample_to_fixed_points(run_data, num_points, common_timesteps)
@@ -230,7 +230,7 @@ def plot_learning_stability(grouped, results_dir, num_points):
       if os.path.exists(file_path):
         model = os.path.basename(os.path.dirname(os.path.dirname(file_path)))  # Extract model name
         run_data = pd.read_csv(file_path)
-        run_data.set_index("Timesteps", inplace=True)
+        run_data.set_index("Episodes", inplace=True)
 
         if run_data.empty or "Reward" not in run_data:
           continue  # Skip empty or invalid files
@@ -315,7 +315,7 @@ def plot_rewards_sd_and_reject_outliers(grouped, results_dir, num_points, outlie
       if os.path.exists(file_path):
         model = os.path.basename(os.path.dirname(os.path.dirname(file_path)))
         run_data = pd.read_csv(file_path)
-        run_data.set_index("Timesteps", inplace=True)
+        run_data.set_index("Episodes", inplace=True)
 
         resampled_data = resample_to_fixed_points(run_data, num_points, common_timesteps)
 
@@ -406,7 +406,7 @@ def plot_sample_efficiency(grouped, results_dir, filter_envs=None, filter_models
         run_data = pd.read_csv(file_path)
 
         # Filter data to only timesteps within the budget
-        within_budget = run_data[run_data["Timesteps"] <= timestep_budget]
+        within_budget = run_data[run_data["Episodes"] <= timestep_budget]
 
         # Count episodes within the budget
         num_episodes = len(within_budget)
@@ -471,7 +471,7 @@ def plot_sample_efficiency_combined(grouped, results_dir, filter_envs=None, filt
         run_data = pd.read_csv(file_path)
 
         # Filter data to only timesteps within the budget
-        within_budget = run_data[run_data["Timesteps"] <= timestep_budget]
+        within_budget = run_data[run_data["Episodes"] <= timestep_budget]
 
         # Count episodes within the budget
         num_episodes = len(within_budget)
@@ -508,55 +508,63 @@ def plot_sample_efficiency_combined(grouped, results_dir, filter_envs=None, filt
   print(plot_path)
 
 
-import os
-
-import numpy as np
-import pandas as pd
-
-
 def generate_latex_comparison_table(grouped, results_dir, filename="model_comparison.tex"):
-  """
-    Generate a LaTeX-friendly full-width comparison table for AI models based on their reward statistics.
-    The table places models as rows and environments as columns, with mean ± std values.
-
-    Parameters:
-    grouped (dict): Dictionary mapping environments to lists of file paths containing model evaluation data.
-    results_dir (str): Directory to save the LaTeX table.
-    filename (str): Name of the output LaTeX file.
-
-    Returns:
-    None: Saves the LaTeX table to a file.
-    """
   model_stats = {}
 
   for env, paths in grouped.items():
+    aggregated_runs = []
+
     for file_path in sorted(paths):
       if os.path.exists(file_path):
         model = os.path.basename(os.path.dirname(os.path.dirname(file_path)))  # Extract model name
         run_data = pd.read_csv(file_path)
 
-        if "Reward" not in run_data or run_data.empty:
-          continue  # Skip files without rewards
+        if "Reward" not in run_data or "Episodes" not in run_data or run_data.empty:
+          continue  # Skip files without required columns
 
-        rewards = run_data["Reward"]
-        mean_reward = np.mean(rewards)
-        std_reward = np.std(rewards)
-        max_reward = np.max(rewards)
+        run_data["Model"] = model  # Add model identifier for later grouping
+        aggregated_runs.append(run_data)
 
-        # Format as mean ± std for LaTeX
-        stats_str = f"{mean_reward:.2f} $\\pm$ {std_reward:.2f}"
+    if not aggregated_runs:
+      continue  # Skip if no valid runs were found
 
-        if model not in model_stats:
-          model_stats[model] = {}
-        model_stats[model][env] = stats_str
+    all_runs_df = pd.concat(aggregated_runs, ignore_index=True)
 
-  # Create a DataFrame with models as rows and environments as columns
-  df = pd.DataFrame(model_stats).T.fillna("N/A")
+    for model in all_runs_df["Model"].unique():
+      model_data = all_runs_df[all_runs_df["Model"] == model]
+
+      # Get the episode where the maximum reward was recorded
+      max_reward_idx = model_data["Reward"].idxmax()
+      max_reward = model_data.loc[max_reward_idx, "Reward"]
+      episode_at_max = model_data.loc[max_reward_idx, "Episodes"]
+
+      # Compute mean and std over all runs at the episode where max reward occurred
+      run_data_at_max = model_data[model_data["Episodes"] == episode_at_max]
+      count_at_max = len(run_data_at_max)
+      mean_at_max = run_data_at_max["Reward"].mean()
+      std_at_max = run_data_at_max["Reward"].std() if count_at_max > 1 else 0.0
+
+      # Format using multi-line LaTeX cell layout with proper escaping
+      stats_str = (
+        r"$\begin{array}{c} "
+        f"{max_reward:.2f}M \\\\ "
+        f"{mean_at_max:.2f}\\mu \\pm {std_at_max:.2f}\\sigma \\\\ "
+        f"{episode_at_max}E, {count_at_max}R "
+        r"\end{array}$"
+      )
+
+      if model not in model_stats:
+        model_stats[model] = {}
+      model_stats[model][env] = stats_str
+
+  # Create DataFrame with models as rows and environments as columns
+  df = pd.DataFrame(model_stats).T.fillna(r"$\begin{array}{c} N/A \end{array}$")
   df.index.name = "Model"
   df.columns.name = "Environment"
 
-  # Generate LaTeX table with full-width and proper formatting
-  latex_table = df.to_latex(index=True, escape=False, column_format="|l|" + "c|" * len(df.columns))
+  # Generate LaTeX table with proper formatting for readability
+  col_format = "|l|" + "p{6cm}|" * len(df.columns)  # Adjust column width as needed
+  latex_table = df.to_latex(index=True, escape=False, column_format=col_format)
 
   # Save to file
   os.makedirs(results_dir, exist_ok=True)
@@ -564,7 +572,40 @@ def generate_latex_comparison_table(grouped, results_dir, filename="model_compar
   with open(table_path, "w") as f:
     f.write(latex_table)
 
-  print(table_path)
+  print(f"LaTeX table saved at: {table_path}")
+
+
+def save_flattened_data_to_csv(grouped, results_dir, filename="raw_data.csv"):
+  flattened_data = []
+
+  for env, paths in grouped.items():
+    for file_path in sorted(paths):
+      if os.path.exists(file_path):
+        model = os.path.basename(os.path.dirname(os.path.dirname(file_path)))  # Extract model name
+        run_data = pd.read_csv(file_path)
+
+        if run_data.empty:
+          continue  # Skip empty files
+
+        # Add metadata columns
+        run_data["Environment"] = env
+        run_data["Model"] = model
+
+        # Append to the flattened data
+        flattened_data.append(run_data)
+
+  if not flattened_data:
+    print("No data found to save.")
+    return
+
+  # Combine all data into a single DataFrame
+  flattened_df = pd.concat(flattened_data, ignore_index=True)
+
+  # Save as CSV
+  os.makedirs(results_dir, exist_ok=True)
+  csv_path = os.path.join(results_dir, filename)
+  flattened_df.to_csv(csv_path, index=False)
+  print(f"Flattened data saved to: {csv_path}")
 
 
 def plot(env_path, results_dir, num_points, filter_envs=None, filter_models=None):
@@ -585,6 +626,7 @@ def plot(env_path, results_dir, num_points, filter_envs=None, filter_models=None
   plot_learning_stability_cv(grouped, results_dir, num_points=num_points)
   plot_sample_efficiency_combined(grouped, results_dir)
   generate_latex_comparison_table(grouped, results_dir)
+  save_flattened_data_to_csv(grouped, results_dir)
 
   plot_all_from_csv("results/results.csv", results_dir, filter_envs=filter_envs, filter_models=filter_models)
 

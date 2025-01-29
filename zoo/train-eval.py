@@ -84,13 +84,20 @@ def evaluate_training(algo, env, device, optimize_hyperparameters, conf_file, n_
       print(f"Warning: Log path not found for {algo} run {run}. Skipping.")
       continue
     rewards = exp_manager.training_rewards
-    timesteps = list(range(1, len(rewards) + 1))
+    episodes = list(range(1, len(rewards) + 1))
     if len(rewards) == 0:
-      print(f"Warning: No timesteps or rewards logged for {algo} on {env}, run {run + 1}. Skipping.")
+      print(f"Warning: No episodes or rewards logged for {algo} on {env}, run {run + 1}. Skipping.")
       continue
     run_data_file = os.path.join(save_path, f"run_{run + 1}_data.csv")
-    run_data = pd.DataFrame({"Timesteps": timesteps, "Reward": rewards})
+    run_data = pd.DataFrame({"Episodes": episodes, "Reward": rewards})
     run_data.to_csv(run_data_file, index=False)
+
+    training_data = exp_manager.training_data
+    if training_data is not None:
+      data_file = os.path.join(save_path, f"run_{run + 1}_episodes.csv")
+      training_data = pd.DataFrame(training_data)
+      training_data.to_csv(os.path.join(data_file), index=False)
+
     print(f"Run data saved to {run_data_file}")
     mean_reward = mean(rewards)
     std_reward = stdev(rewards)
@@ -103,6 +110,8 @@ def evaluate_training(algo, env, device, optimize_hyperparameters, conf_file, n_
         if cumulative_mean >= reward_threshold:
           sample_complexity = i
           break
+
+    # Save summary metrics to CSV
     run_metrics = {
       "Model": algo,
       "Env": env,
@@ -121,11 +130,10 @@ def evaluate_training(algo, env, device, optimize_hyperparameters, conf_file, n_
       run_df.to_csv(csv_file, index=False)
     print(f"Summary metrics for run {run + 1} saved to {csv_file}")
 
-
-
   filter_envs = None
   filter_models = None
   plot(".eval", ".assets", 20000, filter_envs=filter_envs, filter_models=filter_models)
+
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()

@@ -989,8 +989,9 @@ class EvalExperimentManager(ExperimentManager):
     if len(self.callbacks) > 0:
       kwargs["callback"] = self.callbacks
 
-    # Variables to store training rewards and timesteps
+    # Variables to store training rewards and episodes
     self.training_rewards = []
+    self.training_data = []
 
     try:
       # Custom callback to log rewards at the end of each episode
@@ -1000,6 +1001,10 @@ class EvalExperimentManager(ExperimentManager):
         # Extract episode rewards from 'infos'
         episode_rewards = [info["episode"]["r"] for info in infos if "episode" in info]
         self.training_rewards.extend(episode_rewards)
+
+        episodes = [info["episode"] for info in infos if "episode" in info]
+        self.training_data.extend(episodes)
+
         return True
 
       # Use the custom reward logger
