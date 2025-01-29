@@ -1,0 +1,96 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage[margin=1in]{geometry}
+
+\usepackage{float}  % <-- Added to fix [H] errors
+\usepackage{adjustbox}  % <-- Allows resizing wide tables
+
+\begin{document}
+
+\title{Generated Model Performance Report}
+\author{Simon Green}
+\date{\today}
+\maketitle
+
+\section*{Results and Model Comparison} 
+
+This report presents the performance evaluation of six reinforcement learning models: EnTRPO, GenTRPO, TRPO, PPO, and TRPOR. The comparison is based on reward statistics across different environments. We present the data but do not draw any conclusions from it in this report.
+
+\subsection*{Model Performance Table}
+
+The table below summarizes the performance of different models in terms of mean and standard deviation of rewards, along with maximum and minimum rewards recorded during training. A higher mean reward indicates better average performance, while a lower standard deviation suggests more stability.
+
+\bigskip
+
+\begin{center}
+  \input{.assets/model_comparison.tex}
+\end{center}
+\
+\bigskip
+
+\section*{Performance Analysis Through Plots}
+
+To gain deeper insights into the models' behavior, the following plots provide visualizations of various performance aspects.
+
+\subsection*{Learning Stability}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{.assets/learning_stability.png}
+    \caption{Learning Stability for Different Models}
+\end{figure}
+
+Learning stability measures how consistent a model's performance is over time. A smoother and more steadily increasing reward curve indicates that the model is learning in a reliable and predictable manner. Models with high variance in their learning curves may be struggling with instability or sensitivity to hyperparameters.
+
+\subsection*{Learning Stability (Coefficient of Variation)}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{.assets/learning_stability_cv.png}
+    \caption{Learning Stability (Coefficient of Variation)}
+\end{figure}
+
+The coefficient of variation (CV) provides a normalized measure of learning stability. A lower CV indicates that the model's performance is less volatile, meaning it generalizes better across different training runs. High CV values suggest inconsistent learning, which could be due to stochasticity in training or sensitivity to random seeds.
+
+\subsection*{Sample Efficiency}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{.assets/sample_efficiency.png}
+    \caption{Sample Efficiency Across Models}
+\end{figure}
+
+Sample efficiency refers to how quickly a model improves given a limited number of training episodes. Models that reach higher rewards with fewer episodes are considered more sample-efficient. This metric is crucial in real-world applications where data collection is expensive or time-consuming.
+
+\subsection*{Combined Sample Efficiency Results}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{.assets/sample_efficiency_combined.png}
+    \caption{Combined Sample Efficiency Results}
+\end{figure}
+
+This combined sample efficiency plot compares models across all environments, showing which algorithms consistently require fewer interactions to achieve optimal performance. A model with consistently high sample efficiency is preferable for scenarios where training costs are high.
+
+\subsection*{Resampled Rewards and Outlier Removal}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{.assets/resampled_outlier.png}
+    \caption{Resampled Rewards with Outlier Removal}
+\end{figure}
+
+This plot visualizes the reward distributions after applying smoothing and outlier removal techniques. The presence of large spikes or dips in rewards can indicate unstable learning or catastrophic forgetting. Cleaning the data helps highlight true performance trends and removes misleading fluctuations.
+
+\subsection*{Raw Data}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{.assets/raw_data.png}
+    \caption{Raw Reward Data for Different Models}
+\end{figure}
+
+Since the plots apply resampling and smoothing to compare the models on the same episode scale and make the plots less noisy with data points distribution, the raw data plot shows the actual reward values recorded during training. We can observe that the trajectories will less episodes consumed more timesteps per episodes.
+
+\end{document}
+ 

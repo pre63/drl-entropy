@@ -1,0 +1,71 @@
+Ant-v5:
+  trial_number: 158
+  value: 1241.9234722
+  params:
+    n_steps: 2048.0
+    gamma: 0.999
+    learning_rate: 0.00045781721516444703
+    batch_size: 128.0
+    n_critic_updates: 25.0
+    cg_max_steps: 30.0
+    target_kl: 0.05
+    truncation_threshold: 10.0
+    n_value_networks: 5.0
+    net_arch: medium
+    activation_fn: relu
+    n_quantiles: 25.0
+    n_timesteps: 500000.0
+    n_envs: 10.0
+  comment: 'Best trial value: 1241.9234722, params: {''n_steps'': 2048, ''gamma'':
+    0.999, ''learning_rate'': 0.00045781721516444703, ''batch_size'': 128, ''n_critic_updates'':
+    25, ''cg_max_steps'': 30, ''target_kl'': 0.05, ''truncation_threshold'': 10, ''n_value_networks'':
+    5, ''net_arch'': ''medium'', ''activation_fn'': ''relu'', ''n_quantiles'': 25,
+    ''n_timesteps'': 500000, ''n_envs'': 10}'
+
+Humanoid-v5:
+  trial_number: 296
+  value: 711.6013316000001
+  params:
+    n_steps: 512.0
+    gamma: 0.98
+    learning_rate: 0.0007850220924511517
+    batch_size: 512.0
+    n_critic_updates: 30.0
+    cg_max_steps: 5.0
+    target_kl: 0.03
+    truncation_threshold: 20.0
+    n_value_networks: 7.0
+    net_arch: large
+    activation_fn: relu
+    n_quantiles: 50.0
+    n_timesteps: 700000.0
+    n_envs: 2.0
+  comment: 'Best trial value: 711.6013316000001, params: {''n_steps'': 512, ''gamma'':
+    0.98, ''learning_rate'': 0.0007850220924511517, ''batch_size'': 512, ''n_critic_updates'':
+    30, ''cg_max_steps'': 5, ''target_kl'': 0.03, ''truncation_threshold'': 20, ''n_value_networks'':
+    7, ''net_arch'': ''large'', ''activation_fn'': ''relu'', ''n_quantiles'': 50,
+    ''n_timesteps'': 700000, ''n_envs'': 2}'
+
+InvertedDoublePendulum-v5:
+  trial_number: 131
+  value: 9359.9386256
+  params:
+    n_steps: 1024.0
+    gamma: 0.995
+    learning_rate: 0.0038240054814221523
+    batch_size: 64.0
+    n_critic_updates: 20.0
+    cg_max_steps: 30.0
+    target_kl: 0.01
+    truncation_threshold: 20.0
+    n_value_networks: 3.0
+    net_arch: large
+    activation_fn: tanh
+    n_quantiles: 10.0
+    n_timesteps: 900000.0
+    n_envs: 6.0
+  comment: 'Best trial value: 9359.9386256, params: {''n_steps'': 1024, ''gamma'':
+    0.995, ''learning_rate'': 0.0038240054814221523, ''batch_size'': 64, ''n_critic_updates'':
+    20, ''cg_max_steps'': 30, ''target_kl'': 0.01, ''truncation_threshold'': 20, ''n_value_networks'':
+    3, ''net_arch'': ''large'', ''activation_fn'': ''tanh'', ''n_quantiles'': 10,
+    ''n_timesteps'': 900000, ''n_envs'': 6}'

@@ -82,7 +82,7 @@ train:
 	@mkdir -p .logs
 	@mkdir -p .optuna-zoo
 	@mkdir -p ".optuna-zoo/$(model)_$(env)"
-	@. .venv/bin/activate; PYTHONPATH=. python -u zoo/train.py --model=$(model) --env=$(env) --optimize=$(optimize) --n_jobs=$(n_jobs) --trials=$(trials) 2>&1 | tee -a .logs/zoo-$(model)-$(env)-$(shell date +"%Y%m%d").log
+	@. .venv/bin/activate; PYTHONPATH=. python -u Zoo/Train.py --model=$(model) --env=$(env) --optimize=$(optimize) --n_jobs=$(n_jobs) --trials=$(trials) 2>&1 | tee -a .logs/zoo-$(model)-$(env)-$(shell date +"%Y%m%d").log
 
 nightly:
 	@$(MAKE) fix
@@ -102,11 +102,11 @@ nightly:
 
 train-eval:
 	@echo "Will evaluate model $(model) on environment $(env)"
-	@. .venv/bin/activate; PYTHONPATH=. python -u zoo/train-eval.py --n_timesteps=$(n_eval_timesteps) --model=$(model) --env=$(env) 2>&1 | tee -a .logs/eval-$(model)-$(env)-$(shell date +"%Y%m%d").log
+	@. .venv/bin/activate; PYTHONPATH=. python -u Zoo/Eval.py --n_timesteps=$(n_eval_timesteps) --model=$(model) --env=$(env) 2>&1 | tee -a .logs/eval-$(model)-$(env)-$(shell date +"%Y%m%d").log
 
-plot:
+report:
 	@$(MAKE) fix
-	@. .venv/bin/activate; PYTHONPATH=. python -u zoo/train_eval_plot.py
+	@. .venv/bin/activate; PYTHONPATH=. python -u Zoo/Report.py
 
 list:
 	@# List all zoo models and environments combinations
