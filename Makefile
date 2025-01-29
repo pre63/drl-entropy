@@ -5,11 +5,15 @@ OS := $(shell uname -s)
 n_jobs=10 # Default number of jobs to run in parallel
 envs=10 # Default number of environments to train on
 model=trpo # Default model to train
+
 optimize=False # Default to not optimize hyperparameters
 trials=1000 # Default number of trials for hyperparameter optimization
+
 n_timesteps=0 # Default number of timesteps to train for
 n_eval_timesteps=1000000 # Default number of timesteps to evaluate for
+
 env=Humanoid-v5 # Default environment to train on
+
 configs=configs.txt # Default configuration file
 
 zoology=entrpo trpor trpo entrpohigh entrpolow
@@ -80,17 +84,6 @@ train:
 	@mkdir -p ".optuna-zoo/$(model)_$(env)"
 	@. .venv/bin/activate; PYTHONPATH=. python -u zoo/train.py --model=$(model) --env=$(env) --optimize=$(optimize) --n_jobs=$(n_jobs) --trials=$(trials) 2>&1 | tee -a .logs/zoo-$(model)-$(env)-$(shell date +"%Y%m%d").log
 
-train-zoo:
-	@echo "Will train all models in zoo"
-	@mkdir -p .logs
-	@mkdir -p .optuna-zoo
-	@mkdir -p .logs/tensorboard
-	@for env in $(zoologyenvs); do \
-		for model in $(zoology); do \
-			$(MAKE) train model=$$model env=$$env optimize=True || true; \
-		done; \
-	done
-
 nightly:
 	@$(MAKE) fix
 	@while true; do \
@@ -110,14 +103,6 @@ nightly:
 train-eval:
 	@echo "Will evaluate model $(model) on environment $(env)"
 	@. .venv/bin/activate; PYTHONPATH=. python -u zoo/train-eval.py --n_timesteps=$(n_eval_timesteps) --model=$(model) --env=$(env) 2>&1 | tee -a .logs/eval-$(model)-$(env)-$(shell date +"%Y%m%d").log
-
-train-eval-all:
-	@echo "Will evaluate all models in zoo"
-	@for model in $(zoology); do \
-		for env in $(zoologyenvs); do \
-			$(MAKE) train-eval model=$$model env=$$env || true; \
-		done; \
-	done
 
 plot:
 	@$(MAKE) fix

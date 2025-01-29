@@ -1,4 +1,0 @@
-trpor: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5
-trpoho: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5
-trpoh: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5
-trpoq2: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5
