@@ -238,6 +238,7 @@ class ExperimentManager:
     self.best_save_path = f".results/{self.algo}.yml"
 
     self.n_timesteps = n_timesteps
+    self.evaluating = False
 
   def setup_experiment(self) -> Optional[Tuple[BaseAlgorithm, Dict[str, Any]]]:
     """
