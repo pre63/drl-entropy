@@ -4,7 +4,9 @@ __pycache__
 
 .venv
 .logs
-.eval
+.eval/**/*monitor.csv
+.eval/**/*.yml
+.eval/**/*.zip
 .eval1
 .eval2
 .vscode

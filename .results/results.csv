@@ -1030,3 +1030,7 @@ entrpohigh,Ant-v5,5,1474.3752236366272,1197,606.1454525313901,633.1687269188651,
 entrpohigh,Ant-v5,6,1469.7246968746185,2467,304.92323984792256,509.3185626815859,.eval/entrpohigh/Ant-v5_6/run_6_data.csv,.eval/entrpohigh/Ant-v5_6
 entrpohigh,Ant-v5,7,1564.0463218688965,inf,-10.36123075413734,74.36955219201714,.eval/entrpohigh/Ant-v5_7/run_7_data.csv,.eval/entrpohigh/Ant-v5_7
 entrpohigh,Ant-v5,8,1491.5765516757965,inf,156.08772070135103,418.18974324956866,.eval/entrpohigh/Ant-v5_8/run_8_data.csv,.eval/entrpohigh/Ant-v5_8
+entrpohigh,Ant-v5,9,1569.9408843517303,inf,172.69478366701597,383.21233785953933,.eval/entrpohigh/Ant-v5_9/run_9_data.csv,.eval/entrpohigh/Ant-v5_9
+entrpohigh,Ant-v5,10,1516.875212430954,716,789.6408091972003,742.6025435692451,.eval/entrpohigh/Ant-v5_10/run_10_data.csv,.eval/entrpohigh/Ant-v5_10
+entrpohigh,Humanoid-v5,1,474.27263712882996,inf,293.26385990532617,108.16360689343097,.eval/entrpohigh/Humanoid-v5_1/run_1_data.csv,.eval/entrpohigh/Humanoid-v5_1
+entrpohigh,Humanoid-v5,2,480.093425989151,inf,297.14599281735354,112.96697106899809,.eval/entrpohigh/Humanoid-v5_2/run_2_data.csv,.eval/entrpohigh/Humanoid-v5_2

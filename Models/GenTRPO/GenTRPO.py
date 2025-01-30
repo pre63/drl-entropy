@@ -21,18 +21,18 @@ class ForwardDynamicsModel(nn.Module):
     self.action_dim = action_space.shape[0]  # Continuous action space
 
     self.encoder = nn.Sequential(
-        nn.Linear(self.state_dim, hidden_dim),
-        nn.ReLU(),
-        nn.Linear(hidden_dim, hidden_dim),
-        nn.ReLU(),
+      nn.Linear(self.state_dim, hidden_dim),
+      nn.ReLU(),
+      nn.Linear(hidden_dim, hidden_dim),
+      nn.ReLU(),
     )
 
     self.forward_model = nn.Sequential(
-        nn.Linear(hidden_dim + self.action_dim, hidden_dim),
-        nn.ReLU(),
-        nn.Linear(hidden_dim, hidden_dim),
-        nn.ReLU(),
-        nn.Linear(hidden_dim, hidden_dim),
+      nn.Linear(hidden_dim + self.action_dim, hidden_dim),
+      nn.ReLU(),
+      nn.Linear(hidden_dim, hidden_dim),
+      nn.ReLU(),
+      nn.Linear(hidden_dim, hidden_dim),
     )
 
   def forward(self, state, action):
@@ -88,7 +88,7 @@ class GenerativeReplayBuffer:
     self.synthetic_buffer.extend(synthetic_transitions)
 
     # Trim synthetic buffer if over capacity
-    self.synthetic_buffer = self.synthetic_buffer[-self.synthetic_capacity:]
+    self.synthetic_buffer = self.synthetic_buffer[-self.synthetic_capacity :]
 
   def sample(self, num_samples):
     real_sample_size = num_samples // 2
@@ -137,17 +137,14 @@ class GenTRPO(TRPO):
     self.batch_size = batch_size
     self.entropy_coeff = entropy_coeff
 
-    self.forward_dynamics_model = ForwardDynamicsModel(
-        observation_space=self.observation_space,
-        action_space=self.action_space
-    ).to(self.device)
+    self.forward_dynamics_model = ForwardDynamicsModel(observation_space=self.observation_space, action_space=self.action_space).to(self.device)
 
     self.replay_buffer = GenerativeReplayBuffer(
-        real_capacity=buffer_capacity,
-        synthetic_capacity=buffer_capacity,
-        relevance_function=self._compute_relevance,
-        generative_model=self.policy,
-        batch_size=batch_size,
+      real_capacity=buffer_capacity,
+      synthetic_capacity=buffer_capacity,
+      relevance_function=self._compute_relevance,
+      generative_model=self.policy,
+      batch_size=batch_size,
     )
 
   def _compute_relevance(self, transition):
@@ -175,11 +172,11 @@ class GenTRPO(TRPO):
       old_log_prob = rollout_data.old_log_prob
 
       transition = (
-          observations.cpu().numpy(),
-          actions.cpu().numpy(),
-          returns.cpu().numpy(),
-          advantages.cpu().numpy(),
-          old_log_prob.cpu().numpy(),
+        observations.cpu().numpy(),
+        actions.cpu().numpy(),
+        returns.cpu().numpy(),
+        advantages.cpu().numpy(),
+        old_log_prob.cpu().numpy(),
       )
       self.replay_buffer.add_real(transition)
 
@@ -190,7 +187,7 @@ class GenTRPO(TRPO):
     avg_entropy = entropy_mean.item()
 
     num_replay_samples = compute_sampling_parameters_gradual_linear(
-        entropy=avg_entropy, entropy_coeff=self.entropy_coeff, min_samples=0, max_samples=self.batch_size
+      entropy=avg_entropy, entropy_coeff=self.entropy_coeff, min_samples=0, max_samples=self.batch_size
     )
 
     if num_replay_samples > 0:
@@ -245,8 +242,8 @@ def sample_gentrpo_params(trial, n_actions, n_envs, additional_args):
   # Neural network architecture selection
   net_arch_type = trial.suggest_categorical("net_arch", ["small", "medium"])
   net_arch = {
-      "small": dict(pi=[64, 64], vf=[64, 64]),
-      "medium": dict(pi=[256, 256], vf=[256, 256]),
+    "small": dict(pi=[64, 64], vf=[64, 64]),
+    "medium": dict(pi=[256, 256], vf=[256, 256]),
   }[net_arch_type]
 
   # Activation function selection
@@ -268,24 +265,24 @@ def sample_gentrpo_params(trial, n_actions, n_envs, additional_args):
 
   # Returning the sampled hyperparameters as a dictionary
   return {
-      "policy": "MlpPolicy",
-      "n_timesteps": n_timesteps,
-      "n_envs": n_envs,
-      "epsilon": epsilon,
-      "entropy_coeff": entropy_coeff,
-      "n_steps": n_steps,
-      "batch_size": batch_size,
-      "gamma": gamma,
-      "cg_max_steps": cg_max_steps,
-      "n_critic_updates": n_critic_updates,
-      "target_kl": target_kl,
-      "learning_rate": learning_rate,
-      "gae_lambda": gae_lambda,
-      "buffer_capacity": buffer_capacity,
-      "policy_kwargs": dict(
-          net_arch=net_arch,
-          activation_fn=activation_fn,
-          ortho_init=orthogonal_init,
-      ),
-      **additional_args,
+    "policy": "MlpPolicy",
+    "n_timesteps": n_timesteps,
+    "n_envs": n_envs,
+    "epsilon": epsilon,
+    "entropy_coeff": entropy_coeff,
+    "n_steps": n_steps,
+    "batch_size": batch_size,
+    "gamma": gamma,
+    "cg_max_steps": cg_max_steps,
+    "n_critic_updates": n_critic_updates,
+    "target_kl": target_kl,
+    "learning_rate": learning_rate,
+    "gae_lambda": gae_lambda,
+    "buffer_capacity": buffer_capacity,
+    "policy_kwargs": dict(
+      net_arch=net_arch,
+      activation_fn=activation_fn,
+      ortho_init=orthogonal_init,
+    ),
+    **additional_args,
   }

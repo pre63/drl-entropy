@@ -560,11 +560,16 @@ def generate_latex_comparison_table(grouped, results_dir, filename="model_compar
   col_format = "|l|" + "p{6cm}|" * len(df.columns)  # Adjust column width as needed
   latex_table = df.to_latex(index=True, escape=False, column_format=col_format)
 
+  lines = latex_table.split("\n")
+  header, rows, footer = lines[:4], lines[4:-2], lines[-2:]
+  rows_with_hlines = [row + r" \\ \hline" for row in rows if row.strip()]  # Add \hline after each row
+  latex_table_with_hlines = "\n".join(header + rows_with_hlines + footer)
+
   # Save to file
   os.makedirs(results_dir, exist_ok=True)
   table_path = os.path.join(results_dir, filename)
   with open(table_path, "w") as f:
-    f.write(latex_table)
+    f.write(latex_table_with_hlines)
 
   print(table_path)
 
