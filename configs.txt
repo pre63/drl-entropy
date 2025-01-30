@@ -1,4 +1,3 @@
-ppo: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5 Pendulum-v1
 trpo: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5 Pendulum-v1
 trpor: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5 Pendulum-v1
 entrpohigh: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5
@@ -19,3 +18,4 @@ entrpohigh: RocketLander-v0
 entrpolow: RocketLander-v0
 ppo: RocketLander-v0
 entrpo: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5
+ppo: Ant-v5 Humanoid-v5 InvertedDoublePendulum-v5 Pendulum-v1
