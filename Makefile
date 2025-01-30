@@ -78,7 +78,7 @@ clean:
 	@rm -rf .venv
 
 train:
-	@echo "Will train model $(model) on environment $(env) and we will optimize hyperparameters: $(optimize)"
+	@echo "Will train model $(model) on environment $(env) and we will optimize hyperparameters: $(optimize), for $(trials) trials."
 	@mkdir -p .logs
 	@mkdir -p .optuna-zoo
 	@mkdir -p ".optuna-zoo/$(model)_$(env)"

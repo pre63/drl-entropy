@@ -46,7 +46,7 @@ if __name__ == "__main__":
   parser.add_argument("--device", type=str, default="cpu")
   parser.add_argument("--optimize", type=bool, default=False)
   parser.add_argument("--conf_file", type=str, default=None)
-  parser.add_argument("--trials", type=int, default=40)
+  parser.add_argument("--trials", type=int, default=160)
   parser.add_argument("--n_jobs", type=int, default=10)
   parser.add_argument("--n_timesteps", type=int, default=0)
 
