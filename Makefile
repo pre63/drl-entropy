@@ -7,7 +7,7 @@ envs=10 # Default number of environments to train on
 model=trpo # Default model to train
 
 optimize=False # Default to not optimize hyperparameters
-trials=1000 # Default number of trials for hyperparameter optimization
+trials=160 # Default number of trials for hyperparameter optimization
 
 n_timesteps=0 # Default number of timesteps to train for
 n_eval_timesteps=1000000 # Default number of timesteps to evaluate for
