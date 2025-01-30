@@ -1,4 +1,3 @@
-entrpo: InvertedDoublePendulum-v5
 trpo: InvertedDoublePendulum-v5
 trpor: Pendulum-v1
 entrpo: Pendulum-v1
