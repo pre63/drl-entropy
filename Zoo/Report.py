@@ -9,6 +9,9 @@ import numpy as np
 import pandas as pd
 import yaml
 
+line_styles = ["-", "--", "-.", ":"]
+markers = [".", ",", "o", "v", "^", "<", ">", "1", "2", "3", "4", "8", "s", "p", "*", "h", "H", "+", "x", "D", "d", "|", "_"]
+
 
 def downsample_data_with_smoothing(timesteps, rewards, max_points=1000, window_size=500):
 
@@ -48,7 +51,6 @@ def plot_all_from_csv(csv_path, results_dir, filter_envs=None, filter_models=Non
   results_df = pd.read_csv(csv_path)
   grouped = results_df.groupby("Env")
   n_envs = len(grouped)
-  line_styles = ["-", "--", "-.", ":"]
 
   # Predefine style and marker mappings for consistent ordering
   all_models = sorted(results_df["Model"].unique())
@@ -140,8 +142,7 @@ def plot_learning_stability_cv(grouped, results_dir, num_points):
 
   # Define consistent styles and markers
   all_models = sorted(set(model for paths in grouped.values() for path in paths for model in [os.path.basename(os.path.dirname(os.path.dirname(path)))]))
-  line_styles = ["-", "--", "-.", ":"]
-  markers = ["o", "s", "^", "D"]
+
   style_mapping = {model: line_styles[i % len(line_styles)] for i, model in enumerate(all_models)}
   marker_mapping = {model: markers[i % len(markers)] for i, model in enumerate(all_models)}
 
@@ -211,8 +212,7 @@ def plot_learning_stability(grouped, results_dir, num_points):
   axes = axes.flatten()
 
   all_models = sorted(set(model for paths in grouped.values() for path in paths for model in [os.path.basename(os.path.dirname(os.path.dirname(path)))]))
-  line_styles = ["-", "--", "-.", ":"]
-  markers = ["o", "s", "^", "D"]
+
   style_mapping = {model: line_styles[i % len(line_styles)] for i, model in enumerate(all_models)}
   marker_mapping = {model: markers[i % len(markers)] for i, model in enumerate(all_models)}
 
@@ -294,8 +294,7 @@ def plot_rewards_sd_and_reject_outliers(grouped, results_dir, num_points, outlie
 
   # Define styles and markers for consistent mapping
   all_models = sorted(set(model for paths in grouped.values() for path in paths for model in [os.path.basename(os.path.dirname(os.path.dirname(path)))]))
-  line_styles = ["-", "--", "-.", ":"]
-  markers = ["o", "s", "^", "D"]
+
   style_mapping = {model: line_styles[i % len(line_styles)] for i, model in enumerate(all_models)}
   marker_mapping = {model: markers[i % len(markers)] for i, model in enumerate(all_models)}
   max_points = 1000
@@ -383,8 +382,7 @@ def plot_sample_efficiency(grouped, results_dir, filter_envs=None, filter_models
 
   # Define consistent styles and markers
   all_models = sorted(set(model for paths in grouped.values() for path in paths for model in [os.path.basename(os.path.dirname(os.path.dirname(path)))]))
-  line_styles = ["-", "--", "-.", ":"]
-  markers = ["o", "s", "^", "D"]
+
   style_mapping = {model: line_styles[i % len(line_styles)] for i, model in enumerate(all_models)}
   marker_mapping = {model: markers[i % len(markers)] for i, model in enumerate(all_models)}
 
@@ -440,8 +438,7 @@ def plot_sample_efficiency_combined(grouped, results_dir, filter_envs=None, filt
 
   # Define consistent styles and markers
   all_models = sorted(set(model for paths in grouped.values() for path in paths for model in [os.path.basename(os.path.dirname(os.path.dirname(path)))]))
-  line_styles = ["-", "--", "-.", ":"]
-  markers = ["o", "s", "^", "D"]
+
   style_mapping = {model: line_styles[i % len(line_styles)] for i, model in enumerate(all_models)}
   marker_mapping = {model: markers[i % len(markers)] for i, model in enumerate(all_models)}
 
