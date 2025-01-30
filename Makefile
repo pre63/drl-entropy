@@ -125,13 +125,13 @@ list:
 
 
 eval-all:
-	$(MAKE) eval model=trpor env=Ant-v5
-	$(MAKE) eval model=trpor env=Humanoid-v5
-	$(MAKE) eval model=trpor env=InvertedDoublePendulum-v5
-	$(MAKE) eval model=trpor env=Pendulum-v1
+	#$(MAKE) eval model=trpor env=Ant-v5
+	#$(MAKE) eval model=trpor env=Humanoid-v5
+	#$(MAKE) eval model=trpor env=InvertedDoublePendulum-v5
+	#$(MAKE) eval model=trpor env=Pendulum-v1
 
-	$(MAKE) eval model=ppo env=Ant-v5
-	$(MAKE) eval model=ppo env=Humanoid-v5
+	#$(MAKE) eval model=ppo env=Ant-v5
+	#$(MAKE) eval model=ppo env=Humanoid-v5
 	$(MAKE) eval model=ppo env=InvertedDoublePendulum-v5
 	$(MAKE) eval model=ppo env=Pendulum-v1
 

@@ -49,14 +49,10 @@ def plot_all_from_csv(csv_path, results_dir, filter_envs=None, filter_models=Non
   grouped = results_df.groupby("Env")
   n_envs = len(grouped)
   line_styles = ["-", "--", "-.", ":"]
-  markers = ["o", "s", "^", "D"]
-  max_points = 1000
-  marker_interval = max(1, max_points // 25)
 
   # Predefine style and marker mappings for consistent ordering
   all_models = sorted(results_df["Model"].unique())
   style_mapping = {model: line_styles[i % len(line_styles)] for i, model in enumerate(all_models)}
-  marker_mapping = {model: markers[i % len(markers)] for i, model in enumerate(all_models)}
 
   n_cols = (n_envs + 1) // 2
   fig, axes = plt.subplots(2, n_cols, figsize=(12 * n_cols, 10), dpi=150)
@@ -81,7 +77,6 @@ def plot_all_from_csv(csv_path, results_dir, filter_envs=None, filter_models=Non
         timesteps = mean_returns.index
 
         line_style = style_mapping[model]
-        marker = marker_mapping[model]
 
         ax.fill_between(
           timesteps,
@@ -89,14 +84,13 @@ def plot_all_from_csv(csv_path, results_dir, filter_envs=None, filter_models=Non
           mean_returns + std_returns,
           alpha=0.2,
         )
+
         ax.plot(
           timesteps,
           mean_returns,
           label=f"{model}",
           linewidth=1.5,
           linestyle=line_style,
-          marker=marker,
-          markevery=marker_interval,
         )
 
     ax.set_title(env)
@@ -572,7 +566,7 @@ def generate_latex_comparison_table(grouped, results_dir, filename="model_compar
   with open(table_path, "w") as f:
     f.write(latex_table)
 
-  print(f"LaTeX table saved at: {table_path}")
+  print(table_path)
 
 
 def save_flattened_data_to_csv(grouped, results_dir, filename="raw_data.csv"):
@@ -605,7 +599,7 @@ def save_flattened_data_to_csv(grouped, results_dir, filename="raw_data.csv"):
   os.makedirs(results_dir, exist_ok=True)
   csv_path = os.path.join(results_dir, filename)
   flattened_df.to_csv(csv_path, index=False)
-  print(f"Flattened data saved to: {csv_path}")
+  print(csv_path)
 
 
 def plot(env_path, results_dir, num_points, filter_envs=None, filter_models=None):
