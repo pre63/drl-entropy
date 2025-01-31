@@ -1,4 +1,3 @@
-trpor: Pendulum-v1
 entrpo: Pendulum-v1
 entrpohigh: Ant-v5
 entrpohigh: InvertedDoublePendulum-v5
