@@ -283,11 +283,6 @@ def sample_trpor_params(trial, n_actions, n_envs, additional_args):
 
   # Replay buffer capacity and reward threshold for buffer clearing
 
-  # Strategy:
-  # EnTRPO: replay all untill buffer clears
-  # HIGH: replay when the entropy exceeeds a threshold
-  # LOW: replay when the entropy is below a threshold
-
   epsilon = trial.suggest_float("epsilon", 0.1, 0.9, step=0.05)
 
   orthogonal_init = trial.suggest_categorical("orthogonal_init", [True, False])

@@ -39,7 +39,7 @@ def configure(**params):
     "seed": -1,
     "vec_env": "dummy",
     "device": "auto",
-    "n_trials": 500,
+    "n_trials": 160,
     "max_total_trials": None,
     "optimize_hyperparameters": False,
     "no_optim_plots": False,
