@@ -49,3 +49,54 @@ Ant-v5:
     CategoricalDistribution(choices=(True, False)), ''n_timesteps'': IntDistribution(high=1000000,
     log=False, low=100000, step=100000), ''n_envs'': CategoricalDistribution(choices=(2,
     4, 6, 8, 10))}, _trial_id=115'
+InvertedDoublePendulum-v5:
+  trial_number: 36
+  value: 109.31240619999998
+  params:
+    n_steps: 8
+    gamma: 0.9
+    learning_rate: 0.5577162742441328
+    n_critic_updates: 5
+    cg_max_steps: 25
+    target_kl: 0.005
+    gae_lambda: 0.99
+    batch_size: 512
+    net_arch: small
+    activation_fn: tanh
+    ent_coef: 0.0008
+    buffer_capacity: 85000
+    reward_threshold: 200
+    replay_strategy_threshold: -8.575111765854137
+    epsilon: 0.9
+    use_per: 0
+    orthogonal_init: 0
+    n_timesteps: 200000
+    n_envs: 4
+  comment: 'Best trial details: _number=36, state=2, _values=[109.31240619999998],
+    _datetime_start=2025-02-02 11:53:46.107800, datetime_complete=2025-02-02 13:57:07.698129,
+    _params={''n_steps'': 8, ''gamma'': 0.9, ''learning_rate'': 0.5577162742441328,
+    ''n_critic_updates'': 5, ''cg_max_steps'': 25, ''target_kl'': 0.005, ''gae_lambda'':
+    0.99, ''batch_size'': 512, ''net_arch'': ''small'', ''activation_fn'': ''tanh'',
+    ''ent_coef'': 0.0008, ''buffer_capacity'': 85000, ''reward_threshold'': 200.0,
+    ''replay_strategy_threshold'': -8.575111765854137, ''epsilon'': 0.9, ''use_per'':
+    False, ''orthogonal_init'': False, ''n_timesteps'': 200000, ''n_envs'': 4}, _user_attrs={},
+    _system_attrs={''completed_rung_0'': 109.31240619999998}, intermediate_values={1:
+    109.31240619999998}, _distributions={''n_steps'': CategoricalDistribution(choices=(8,
+    16, 32, 64, 128, 256, 512, 1024, 2048)), ''gamma'': CategoricalDistribution(choices=(0.8,
+    0.85, 0.9, 0.95, 0.99)), ''learning_rate'': FloatDistribution(high=1.0, log=True,
+    low=1e-05, step=None), ''n_critic_updates'': CategoricalDistribution(choices=(5,
+    10, 20, 25, 30)), ''cg_max_steps'': CategoricalDistribution(choices=(5, 10, 20,
+    25, 30)), ''target_kl'': CategoricalDistribution(choices=(0.1, 0.05, 0.03, 0.02,
+    0.01, 0.005, 0.001)), ''gae_lambda'': CategoricalDistribution(choices=(0.8, 0.9,
+    0.92, 0.95, 0.98, 0.99, 1.0)), ''batch_size'': CategoricalDistribution(choices=(8,
+    16, 32, 64, 128, 256, 512, 1024)), ''net_arch'': CategoricalDistribution(choices=(''small'',
+    ''medium'')), ''activation_fn'': CategoricalDistribution(choices=(''tanh'', ''relu'')),
+    ''ent_coef'': FloatDistribution(high=0.001, log=False, low=0.0, step=0.0001),
+    ''buffer_capacity'': IntDistribution(high=100000, log=False, low=1000, step=1000),
+    ''reward_threshold'': FloatDistribution(high=500.0, log=False, low=200.0, step=50.0),
+    ''replay_strategy_threshold'': FloatDistribution(high=10.0, log=False, low=-10.0,
+    step=None), ''epsilon'': FloatDistribution(high=0.9, log=False, low=0.1, step=0.05),
+    ''use_per'': CategoricalDistribution(choices=(True, False)), ''orthogonal_init'':
+    CategoricalDistribution(choices=(True, False)), ''n_timesteps'': IntDistribution(high=1000000,
+    log=False, low=100000, step=100000), ''n_envs'': CategoricalDistribution(choices=(2,
+    4, 6, 8, 10))}, _trial_id=36'
