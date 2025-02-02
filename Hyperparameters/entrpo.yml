@@ -64,8 +64,6 @@ Humanoid-v5:
   activation_fn: tanh
   n_envs: 8
 
-
-
 # Tuned
 InvertedDoublePendulum-v5:
   policy: "MlpPolicy"

@@ -51,7 +51,8 @@ def load_reward_threshold(conf_file, env):
     config = yaml.safe_load(file)
   if env in config and "reward_threshold" in config[env]:
     return config[env]["reward_threshold"]
-  raise ValueError(f"Reward threshold not found for environment: {env}")
+  
+  return None
 
 
 def evaluate_training(algo, env, device, optimize_hyperparameters, conf_file, n_trials, n_timesteps, n_jobs):
