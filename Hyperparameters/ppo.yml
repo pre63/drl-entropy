@@ -31,59 +31,56 @@ LunarLanderContinuous-v3:
 
 Ant-v5:
   policy: "MlpPolicy"
-  n_timesteps: 1000000
-  reward_threshold: 1000
-  batch_size: 128
+  batch_size: 64
   n_steps: 256
-  gamma: 0.95
-  learning_rate: 0.0007291778429655199
-  ent_coef: 1.9036008616760693e-08
+  gamma: 0.9
+  learning_rate: 0.011345042877629868
+  ent_coef: 0.0006300346375901035
   clip_range: 0.3
-  n_epochs: 10
-  gae_lambda: 1.0
-  max_grad_norm: 0.5
-  vf_coef: 0.8262092832719824
+  n_epochs: 1
+  gae_lambda: 0.99
+  max_grad_norm: 0.3
+  vf_coef: 0.9467710647343072
   net_arch: small
   activation_fn: relu
-  n_envs: 8
+  n_timesteps: 100000
+  n_envs: 10
 
 # Tuned
 Humanoid-v5:
   policy: "MlpPolicy"
-  n_timesteps: 100000
   batch_size: 32
-  n_steps: 1024
+  n_steps: 16
   gamma: 0.9999
-  learning_rate: 5.952941145071963e-05
-  ent_coef: 0.09916620755875631
-  clip_range: 0.1
-  n_epochs: 5
-  gae_lambda: 0.9
-  max_grad_norm: 0.8
-  vf_coef: 0.6478550290553781
+  learning_rate: 0.0006183509029833883
+  ent_coef: 4.222709699945666e-06
+  clip_range: 0.3
+  n_epochs: 1
+  gae_lambda: 0.99
+  max_grad_norm: 0.9
+  vf_coef: 0.35158850327788066
   net_arch: medium
   activation_fn: tanh
-  reward_threshold: 450
-  n_envs: 8
+  n_timesteps: 400000
+  n_envs: 10
 
 # Tuned
 InvertedDoublePendulum-v5:
   policy: "MlpPolicy"
-  n_timesteps: 100000
-  batch_size: 8
+  batch_size: 256
   n_steps: 512
-  gamma: 0.99
-  learning_rate: 0.0002076880765596658
-  ent_coef: 0.0022800737277672723
-  clip_range: 0.4
-  n_epochs: 5
+  gamma: 0.95
+  learning_rate: 0.008853701642334575
+  ent_coef: 2.5370668529088744e-08
+  clip_range: 0.1
+  n_epochs: 10
   gae_lambda: 0.8
-  max_grad_norm: 0.7
-  vf_coef: 0.8335472464784038
-  net_arch: medium
+  max_grad_norm: 0.3
+  vf_coef: 0.6300195360697247
+  net_arch: tiny
   activation_fn: tanh
-  reward_threshold: 410
-  n_envs: 8
+  n_timesteps: 100000
+  n_envs: 4
 
 RocketLander-v0:
   policy: "MlpPolicy"

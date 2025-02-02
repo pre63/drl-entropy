@@ -130,32 +130,32 @@ eval-all:
 	#$(MAKE) eval model=trpor env=InvertedDoublePendulum-v5
 	#$(MAKE) eval model=trpor env=Pendulum-v1
 
-	#$(MAKE) eval model=ppo env=Ant-v5
-	#$(MAKE) eval model=ppo env=Humanoid-v5
+	$(MAKE) eval model=ppo env=Ant-v5
+	$(MAKE) eval model=ppo env=Humanoid-v5
 	$(MAKE) eval model=ppo env=InvertedDoublePendulum-v5
-	$(MAKE) eval model=ppo env=Pendulum-v1
+	# $(MAKE) eval model=ppo env=Pendulum-v1
 
-	$(MAKE) eval model=trpo env=Ant-v5
-	$(MAKE) eval model=trpo env=Humanoid-v5
-	$(MAKE) eval model=trpo env=InvertedDoublePendulum-v5
-	$(MAKE) eval model=trpo env=Pendulum-v1
+	# $(MAKE) eval model=trpo env=Ant-v5
+	# $(MAKE) eval model=trpo env=Humanoid-v5
+	# $(MAKE) eval model=trpo env=InvertedDoublePendulum-v5
+	# $(MAKE) eval model=trpo env=Pendulum-v1
 
 	$(MAKE) eval model=entrpohigh env=Ant-v5
-	$(MAKE) eval model=entrpohigh env=Humanoid-v5
-	$(MAKE) eval model=entrpohigh env=InvertedDoublePendulum-v5
-	$(MAKE) eval model=entrpohigh env=Pendulum-v1
+	# $(MAKE) eval model=entrpohigh env=Humanoid-v5
+	# $(MAKE) eval model=entrpohigh env=InvertedDoublePendulum-v5
+	# $(MAKE) eval model=entrpohigh env=Pendulum-v1
 
-	$(MAKE) eval model=entrpolow env=Ant-v5
-	$(MAKE) eval model=entrpolow env=Humanoid-v5
-	$(MAKE) eval model=entrpolow env=InvertedDoublePendulum-v5
-	$(MAKE) eval model=entrpolow env=Pendulum-v1
+	# $(MAKE) eval model=entrpolow env=Ant-v5
+	# $(MAKE) eval model=entrpolow env=Humanoid-v5
+	# $(MAKE) eval model=entrpolow env=InvertedDoublePendulum-v5
+	# $(MAKE) eval model=entrpolow env=Pendulum-v1
 
-	$(MAKE) eval model=entrpo env=Ant-v5
-	$(MAKE) eval model=entrpo env=Humanoid-v5
+	# $(MAKE) eval model=entrpo env=Ant-v5
+	# $(MAKE) eval model=entrpo env=Humanoid-v5
 	$(MAKE) eval model=entrpo env=InvertedDoublePendulum-v5
-	$(MAKE) eval model=entrpo env=Pendulum-v1
+	# $(MAKE) eval model=entrpo env=Pendulum-v1
 
-	$(MAKE) eval model=gentrpo env=Ant-v5
-	$(MAKE) eval model=gentrpo env=Humanoid-v5
-	$(MAKE) eval model=gentrpo env=InvertedDoublePendulum-v5
-	$(MAKE) eval model=gentrpo env=Pendulum-v1
+	# $(MAKE) eval model=gentrpo env=Ant-v5
+	# $(MAKE) eval model=gentrpo env=Humanoid-v5
+	# $(MAKE) eval model=gentrpo env=InvertedDoublePendulum-v5
+	# $(MAKE) eval model=gentrpo env=Pendulum-v1

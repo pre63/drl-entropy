@@ -69,23 +69,25 @@ Humanoid-v5:
 # Tuned
 InvertedDoublePendulum-v5:
   policy: "MlpPolicy"
-  n_timesteps: 100000
-  n_steps: 2048
+  n_steps: 128
   gamma: 0.99
-  learning_rate: 0.089689672362115
+  learning_rate: 0.0006311544569794092
   n_critic_updates: 10
-  cg_max_steps: 20
-  target_kl: 0.01
-  gae_lambda: 0.95
-  batch_size: 1024
-  net_arch: medium
-  activation_fn: tanh
-  ent_coef: 0.0006000000000000001
-  buffer_capacity: 84000
-  reward_threshold: 400
-  replay_strategy_threshold: 7.361296528960423
-  epsilon: 0.35
-  n_envs: 8
+  cg_max_steps: 25
+  target_kl: 0.005
+  gae_lambda: 1
+  batch_size: 32
+  net_arch: small
+  activation_fn: relu
+  ent_coef: 0.0009000000000000001
+  buffer_capacity: 35000
+  reward_threshold: 500
+  replay_strategy_threshold: -1.3755325643060332
+  epsilon: 0.25
+  use_per: 1
+  orthogonal_init: 1
+  n_timesteps: 100000
+  n_envs: 2
 
 # Tuned
 RocketLander-v0:

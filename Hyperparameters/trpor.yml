@@ -1,21 +1,20 @@
 Pendulum-v1:
   policy: 'MlpPolicy'
-  reward_threshold: -3.0
-  n_steps: 1024
-  gamma: 0.95
-  learning_rate: 1.9474089130206888e-05
-  n_critic_updates: 20
-  cg_max_steps: 30
-  target_kl: 0.02
+  n_steps: 256
+  gamma: 0.85
+  learning_rate: 0.00723791205999544
+  n_critic_updates: 25
+  cg_max_steps: 5
+  target_kl: 0.1
   gae_lambda: 0.95
-  batch_size: 256
+  batch_size: 1024
   net_arch: medium
   activation_fn: relu
-  ent_coef: 0.0009000000000000001
-  epsilon: 0.2
-  orthogonal_init: 1
-  n_timesteps: 400000
-  n_envs: 4
+  ent_coef: 0.0005
+  epsilon: 0.8
+  orthogonal_init: 0
+  n_timesteps: 700000
+  n_envs: 8
 
 #Tuned
 LunarLanderContinuous-v3:
@@ -38,7 +37,6 @@ LunarLanderContinuous-v3:
 # Tuned
 Ant-v5:
   policy: 'MlpPolicy'
-  reward_threshold: 1000
   n_steps: 128
   gamma: 0.95
   learning_rate: 0.0005263233376590863

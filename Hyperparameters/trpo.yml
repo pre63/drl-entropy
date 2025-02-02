@@ -30,19 +30,24 @@ LunarLanderContinuous-v3:
 # Tuned
 Ant-v5:
   policy: 'MlpPolicy'
-  n_timesteps: 100000
-  reward_threshold: 1000
-  batch_size: 16
-  n_steps: 32
-  gamma: 0.9
-  learning_rate: 0.00011660060746654879
-  n_critic_updates: 5
+  batch_size: 512
+  n_steps: 2048
+  gamma: 0.99
+  learning_rate: 0.0013931381527875178
+  line_search_shrinking_factor: 0.9
+  n_critic_updates: 20
   cg_max_steps: 30
-  target_kl: 0.001
-  gae_lambda: 0.92
-  net_arch: small
+  cg_damping: 0.01
+  target_kl: 0.05
+  gae_lambda: 0.8
+  net_arch: medium
+  log_std_init: -2.32457966159704
+  sde_sample_freq: 256
+  ortho_init: 1
   activation_fn: relu
-  n_envs: 2
+  lr_schedule: linear
+  n_timesteps: 600000
+  n_envs: 6
 
 # Tuned
 Humanoid-v5:
@@ -64,18 +69,23 @@ Humanoid-v5:
 # Tuned
 InvertedDoublePendulum-v5:
   policy: 'MlpPolicy'
-  n_timesteps: 100000
-  reward_threshold: 410
-  batch_size: 256
-  n_steps: 512
-  gamma: 0.95
-  learning_rate: 0.002726187365030899
-  n_critic_updates: 5
-  cg_max_steps: 25
-  target_kl: 0.03
-  gae_lambda: 0.99
+  batch_size: 512
+  n_steps: 128
+  gamma: 0.995
+  learning_rate: 0.000641801789987054
+  line_search_shrinking_factor: 0.8
+  n_critic_updates: 20
+  cg_max_steps: 20
+  cg_damping: 0.2
+  target_kl: 0.005
+  gae_lambda: 0.8
   net_arch: medium
+  log_std_init: -1.1442557317275153
+  sde_sample_freq: 64
+  ortho_init: 0
   activation_fn: relu
+  lr_schedule: constant
+  n_timesteps: 200000
   n_envs: 8
 
 # Tuned
