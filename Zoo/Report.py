@@ -554,7 +554,7 @@ def generate_latex_comparison_table(grouped, results_dir, filename="model_compar
   df.columns.name = "Environment"
 
   # Generate LaTeX table with proper formatting for readability
-  col_format = "|l|" + "p{6cm}|" * len(df.columns)  # Adjust column width as needed
+  col_format = "|l|" + "p{3.2cm}|" * len(df.columns)  # Adjust column width as needed
   latex_table = df.to_latex(index=True, escape=False, column_format=col_format)
 
   lines = latex_table.split("\n")

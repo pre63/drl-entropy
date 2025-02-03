@@ -1,0 +1,23 @@
+Pendulum-v1:
+  policy: "MlpPolicy"
+  n_timesteps: 100000
+
+LunarLanderContinuous-v3:
+  policy: "MlpPolicy"
+  n_timesteps: 100000
+
+Ant-v5:
+  policy: "MlpPolicy"
+  n_timesteps: 100000
+
+Humanoid-v5:
+  policy: "MlpPolicy"
+  n_timesteps: 100000
+
+InvertedDoublePendulum-v5:
+  policy: "MlpPolicy"
+  n_timesteps: 100000
+
+RocketLander-v0:
+  policy: "MlpPolicy"
+  n_timesteps: 100000

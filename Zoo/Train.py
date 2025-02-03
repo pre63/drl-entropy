@@ -11,6 +11,7 @@ from Models.Experimental.TRPOQ.TRPOQ2 import TRPOQ2, sample_trpoq2_params
 from Models.Experimental.TRPOQ.TRPOQH import TRPOQH, TRPOQHO, sample_trpoqh_params, sample_trpoqho_params
 from Models.GenTRPO.GenTRPO import GenTRPO, sample_gentrpo_params
 from Models.SB3 import PPO, TRPO, sample_ppo_params, sample_trpo_params
+from Models.TRPOER.TRPOER import TRPOER, sample_trpoer_params
 from Models.TRPOR.TRPOR import TRPOR, sample_trpor_params
 from Zoo.Configure import configure
 
@@ -27,6 +28,7 @@ models = {
   "trpo": {"model": TRPO, "sample": sample_trpo_params},
   "ppo": {"model": PPO, "sample": sample_ppo_params},
   "gentrpo": {"model": GenTRPO, "sample": sample_gentrpo_params},
+  "trpoer": {"model": TRPOER, "sample": sample_trpoer_params},
 }
 
 for model_name, value in models.items():
@@ -54,8 +56,8 @@ if __name__ == "__main__":
   model = params.model
   conf_file = params.conf_file
 
-  if conf_file is None and os.path.exists(f"Hyperparameters/{model.lower()}.yml"):
-    conf_file = f"Hyperparameters/{model.lower()}.yml"
+  if conf_file is None and os.path.exists(f".hyperparameters/{model.lower()}.yml"):
+    conf_file = f".hyperparameters/{model.lower()}.yml"
 
   configure(
     algo=params.model,

@@ -16,6 +16,7 @@ from Models.Experimental.TRPOQ.TRPOQ2 import TRPOQ2, sample_trpoq2_params
 from Models.Experimental.TRPOQ.TRPOQH import TRPOQH, TRPOQHO, sample_trpoqh_params, sample_trpoqho_params
 from Models.GenTRPO.GenTRPO import GenTRPO, sample_gentrpo_params
 from Models.SB3 import PPO, TRPO
+from Models.TRPOER.TRPOER import TRPOER, sample_trpoer_params
 from Models.TRPOR.TRPOR import TRPOR, sample_trpor_params
 from Zoo.Configure import configure
 from Zoo.Report import plot
@@ -33,6 +34,7 @@ models = {
   "trpo": {"model": TRPO},
   "ppo": {"model": PPO},
   "gentrpo": {"model": GenTRPO, "sample": sample_gentrpo_params},
+  "trpoer": {"model": TRPOER, "sample": sample_trpoer_params},
 }
 
 for model_name, value in models.items():
@@ -51,7 +53,7 @@ def load_reward_threshold(conf_file, env):
     config = yaml.safe_load(file)
   if env in config and "reward_threshold" in config[env]:
     return config[env]["reward_threshold"]
-  
+
   return None
 
 
@@ -151,7 +153,7 @@ if __name__ == "__main__":
 
   # Set default configuration file path if not provided
   if params.conf_file is None:
-    default_conf_path = f"Hyperparameters/{params.model.lower()}.yml"
+    default_conf_path = f".hyperparameters/{params.model.lower()}.yml"
     if os.path.exists(default_conf_path):
       params.conf_file = default_conf_path
     else:
