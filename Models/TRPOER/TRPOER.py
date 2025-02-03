@@ -34,14 +34,14 @@ def compute_sampling_parameters_gradual_linear(entropy, sampling_coef, min_sampl
   if sampling_coef > 0:
 
     # Gradual scaling with max samples at zero entropy for positive coefficients
-    factor = 1 - np.abs(entropy * (1 / (abs(sampling_coef) * 10)))
+    factor = 1 - np.abs(entropy * (1 / (abs(sampling_coef + 1e6) * 10)))
 
     # Gradual slope adjustment
     samples = samples_range * factor
   else:
 
     # Gradual scaling with min samples at zero entropy for negative coefficients
-    factor = np.abs(entropy * (1 / (abs(sampling_coef) * 10)))
+    factor = np.abs(entropy * (1 / (abs(sampling_coef + 1e6) * 10)))
 
     # Gradual slope adjustment
     samples = samples_range * factor
@@ -256,13 +256,14 @@ def sample_trpoer_params(trial, n_actions, n_envs, additional_args):
   target_kl = trial.suggest_categorical("target_kl", [0.1, 0.05, 0.03, 0.02, 0.01, 0.005, 0.001])
   gae_lambda = trial.suggest_categorical("gae_lambda", [0.8, 0.9, 0.92, 0.95, 0.98, 0.99, 1.0])
 
-  batch_size = trial.suggest_categorical("batch_size", [8, 16, 32, 64, 128, 256, 512, 1024, 2048])
+  batch_size = trial.suggest_categorical("batch_size", [256, 512, 1024, 2048])
 
   # Neural network architecture selection
-  net_arch_type = trial.suggest_categorical("net_arch", ["small", "medium"])
+  net_arch_type = trial.suggest_categorical("net_arch", ["small", "medium", "large"])
   net_arch = {
     "small": dict(pi=[64, 64], vf=[64, 64]),
     "medium": dict(pi=[256, 256], vf=[256, 256]),
+    "large": dict(pi=[400, 300], vf=[400, 300]),
   }[net_arch_type]
 
   # Activation function selection
@@ -274,7 +275,7 @@ def sample_trpoer_params(trial, n_actions, n_envs, additional_args):
   sampling_coef = trial.suggest_float("sampling_coef", -1, 1, step=0.01)
 
   # Replay buffer capacity and reward threshold for buffer clearing
-  buffer_capacity = trial.suggest_int("buffer_capacity", 1000, 100000, step=1000)
+  buffer_capacity = trial.suggest_int("buffer_capacity", 10000, 100000, step=1000)
 
   epsilon = trial.suggest_float("epsilon", 0.1, 0.9, step=0.05)
 
