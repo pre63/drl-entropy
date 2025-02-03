@@ -1,7 +1,24 @@
 Pendulum-v1:
   policy: "MlpPolicy"
-  n_timesteps: 100000
-  reward_threshold: -3
+  n_steps: 64
+  gamma: 0.9
+  learning_rate: 0.004587560343239131
+  n_critic_updates: 10
+  cg_max_steps: 5
+  target_kl: 0.02
+  gae_lambda: 0.95
+  batch_size: 64
+  net_arch: small
+  activation_fn: relu
+  ent_coef: 0.0005
+  buffer_capacity: 61000
+  reward_threshold: 350
+  replay_strategy_threshold: 9.971485245676096
+  epsilon: 0.35
+  use_per: False
+  orthogonal_init: 0
+  n_timesteps: 200000
+  n_envs: 10
 
 # Tuned
 LunarLanderContinuous-v3:
@@ -42,7 +59,7 @@ Ant-v5:
   reward_threshold: 300
   replay_strategy_threshold: -2.918898840377884
   epsilon: 0.4
-  use_per: 1
+  use_per: False
   orthogonal_init: 0
   n_timesteps: 1000000
   n_envs: 8
@@ -63,6 +80,7 @@ Humanoid-v5:
   net_arch: small
   activation_fn: tanh
   n_envs: 8
+  use_per: False
 
 # Tuned
 InvertedDoublePendulum-v5:
@@ -82,7 +100,7 @@ InvertedDoublePendulum-v5:
   reward_threshold: 500
   replay_strategy_threshold: -1.3755325643060332
   epsilon: 0.25
-  use_per: 1
+  use_per: False
   orthogonal_init: 1
   n_timesteps: 100000
   n_envs: 2

@@ -8,6 +8,7 @@ model=trpo # Default model to train
 
 optimize=False # Default to not optimize hyperparameters
 trials=160 # Default number of trials for hyperparameter optimization
+max_trials=160 # Default maximum number of trials for hyperparameter optimization
 
 n_timesteps=0 # Default number of timesteps to train for
 n_eval_timesteps=1000000 # Default number of timesteps to evaluate for
@@ -82,7 +83,7 @@ train:
 	@mkdir -p .logs
 	@mkdir -p .optuna-zoo
 	@mkdir -p ".optuna-zoo/$(model)_$(env)"
-	@. .venv/bin/activate; PYTHONPATH=. python -u Zoo/Train.py --model=$(model) --env=$(env) --optimize=$(optimize) --n_jobs=$(n_jobs) --trials=$(trials) 2>&1 | tee -a .logs/zoo-$(model)-$(env)-$(shell date +"%Y%m%d").log
+	@. .venv/bin/activate; PYTHONPATH=. python -u Zoo/Train.py --model=$(model) --env=$(env) --optimize=$(optimize) --n_jobs=$(n_jobs) --trials=$(trials) --max_trials=$(max_trials) 2>&1 | tee -a .logs/zoo-$(model)-$(env)-$(shell date +"%Y%m%d").log
 
 nightly:
 	@$(MAKE) fix
@@ -125,14 +126,19 @@ list:
 
 
 eval-all:
+	# $(MAKE) eval model=trpoer env=Ant-v5
+	$(MAKE) eval model=trpoer env=Humanoid-v5
+	$(MAKE) eval model=trpoer env=InvertedDoublePendulum-v5
+	# $(MAKE) eval model=trpoer env=Pendulum-v1
+
 	#$(MAKE) eval model=trpor env=Ant-v5
 	#$(MAKE) eval model=trpor env=Humanoid-v5
 	#$(MAKE) eval model=trpor env=InvertedDoublePendulum-v5
 	#$(MAKE) eval model=trpor env=Pendulum-v1
 
-	$(MAKE) eval model=ppo env=Ant-v5
-	$(MAKE) eval model=ppo env=Humanoid-v5
-	$(MAKE) eval model=ppo env=InvertedDoublePendulum-v5
+	# $(MAKE) eval model=ppo env=Ant-v5
+	# $(MAKE) eval model=ppo env=Humanoid-v5
+	# $(MAKE) eval model=ppo env=InvertedDoublePendulum-v5
 	# $(MAKE) eval model=ppo env=Pendulum-v1
 
 	# $(MAKE) eval model=trpo env=Ant-v5
@@ -140,7 +146,7 @@ eval-all:
 	# $(MAKE) eval model=trpo env=InvertedDoublePendulum-v5
 	# $(MAKE) eval model=trpo env=Pendulum-v1
 
-	$(MAKE) eval model=entrpohigh env=Ant-v5
+	# $(MAKE) eval model=entrpohigh env=Ant-v5
 	# $(MAKE) eval model=entrpohigh env=Humanoid-v5
 	# $(MAKE) eval model=entrpohigh env=InvertedDoublePendulum-v5
 	# $(MAKE) eval model=entrpohigh env=Pendulum-v1
@@ -148,12 +154,14 @@ eval-all:
 	# $(MAKE) eval model=entrpolow env=Ant-v5
 	# $(MAKE) eval model=entrpolow env=Humanoid-v5
 	# $(MAKE) eval model=entrpolow env=InvertedDoublePendulum-v5
+	# $(MAKE) eval model=ppo env=Humanoid-v5
+	# $(MAKE) eval model=ppo env=InvertedDoublePendulum-v5
 	# $(MAKE) eval model=entrpolow env=Pendulum-v1
 
-	# $(MAKE) eval model=entrpo env=Ant-v5
-	# $(MAKE) eval model=entrpo env=Humanoid-v5
+	$(MAKE) eval model=entrpo env=Ant-v5
+	$(MAKE) eval model=entrpo env=Humanoid-v5
 	$(MAKE) eval model=entrpo env=InvertedDoublePendulum-v5
-	# $(MAKE) eval model=entrpo env=Pendulum-v1
+	$(MAKE) eval model=entrpo env=Pendulum-v1
 
 	# $(MAKE) eval model=gentrpo env=Ant-v5
 	# $(MAKE) eval model=gentrpo env=Humanoid-v5

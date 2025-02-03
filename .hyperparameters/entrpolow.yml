@@ -27,7 +27,7 @@ Ant-v5:
   reward_threshold: 400.0
   replay_strategy_threshold: 2.488286128489621
   epsilon: 0.75
-  use_per: True
+  use_per: False
   orthogonal_init: False
   n_envs: 8
 
