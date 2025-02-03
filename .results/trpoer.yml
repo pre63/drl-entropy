@@ -1,35 +1,36 @@
 Ant-v5:
-  trial_number: 33
-  value: 1067.005081
+  trial_number: 68
+  value: 2252.2282554000003
   params:
-    n_steps: 2048
+    n_steps: 1024
     gamma: 0.99
-    learning_rate: 0.026481240536625435
+    learning_rate: 0.02447080350120756
     n_critic_updates: 25
-    cg_max_steps: 30
-    target_kl: 0.02
+    cg_max_steps: 20
+    target_kl: 0.05
     gae_lambda: 0.95
-    batch_size: 512
-    net_arch: small
+    batch_size: 256
+    net_arch: medium
     activation_fn: relu
-    entropy_coef: -0.89
-    sampling_coef: 0.8300000000000001
-    buffer_capacity: 99000
-    epsilon: 0.2
-    orthogonal_init: 1
+    entropy_coef: -0.020000000000000018
+    sampling_coef: 0.6000000000000001
+    buffer_capacity: 6000
+    epsilon: 0.7000000000000001
+    orthogonal_init: 0
     n_timesteps: 800000
     n_envs: 10
     normalize_advantage: 1
-    buffer_alpha: 0.8207311087663014
-  comment: 'Best trial details: _number=33, state=1, _values=[1067.005081], _datetime_start=2025-02-02
-    13:41:32.991107, datetime_complete=2025-02-02 14:27:59.699568, _params={''n_steps'':
-    2048, ''gamma'': 0.99, ''learning_rate'': 0.026481240536625435, ''n_critic_updates'':
-    25, ''cg_max_steps'': 30, ''target_kl'': 0.02, ''gae_lambda'': 0.95, ''batch_size'':
-    512, ''net_arch'': ''small'', ''activation_fn'': ''relu'', ''entropy_coef'': -0.89,
-    ''sampling_coef'': 0.8300000000000001, ''buffer_capacity'': 99000, ''epsilon'':
-    0.2, ''orthogonal_init'': True, ''n_timesteps'': 800000, ''n_envs'': 10, ''normalize_advantage'':
-    True, ''buffer_alpha'': 0.8207311087663014}, _user_attrs={}, _system_attrs={''completed_rung_0'':
-    1034.2111636}, intermediate_values={1: 1034.2111636, 2: 1067.005081}, _distributions={''n_steps'':
+    buffer_alpha: 0.3441201858758436
+  comment: 'Best trial details: _number=68, state=1, _values=[2252.2282554000003],
+    _datetime_start=2025-02-03 07:33:06.203658, datetime_complete=2025-02-03 08:30:50.393003,
+    _params={''n_steps'': 1024, ''gamma'': 0.99, ''learning_rate'': 0.02447080350120756,
+    ''n_critic_updates'': 25, ''cg_max_steps'': 20, ''target_kl'': 0.05, ''gae_lambda'':
+    0.95, ''batch_size'': 256, ''net_arch'': ''medium'', ''activation_fn'': ''relu'',
+    ''entropy_coef'': -0.020000000000000018, ''sampling_coef'': 0.6000000000000001,
+    ''buffer_capacity'': 6000, ''epsilon'': 0.7000000000000001, ''orthogonal_init'':
+    False, ''n_timesteps'': 800000, ''n_envs'': 10, ''normalize_advantage'': True,
+    ''buffer_alpha'': 0.3441201858758436}, _user_attrs={}, _system_attrs={''completed_rung_0'':
+    1061.9177524}, intermediate_values={1: 1061.9177524, 2: 2252.2282554000003}, _distributions={''n_steps'':
     CategoricalDistribution(choices=(8, 16, 32, 64, 128, 256, 512, 1024, 2048)), ''gamma'':
     CategoricalDistribution(choices=(0.8, 0.85, 0.9, 0.95, 0.99)), ''learning_rate'':
     FloatDistribution(high=1.0, log=True, low=1e-05, step=None), ''n_critic_updates'':
@@ -47,4 +48,4 @@ Ant-v5:
     log=False, low=100000, step=100000), ''n_envs'': CategoricalDistribution(choices=(2,
     4, 6, 8, 10)), ''normalize_advantage'': CategoricalDistribution(choices=(True,
     False)), ''buffer_alpha'': FloatDistribution(high=1.0, log=True, low=0.1, step=None)},
-    _trial_id=33'
+    _trial_id=68'
