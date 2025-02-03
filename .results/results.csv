@@ -1112,3 +1112,13 @@ entrpo,InvertedDoublePendulum-v5,7,173.37445759773254,inf,287.64714940301866,121
 entrpo,InvertedDoublePendulum-v5,8,178.13637471199036,inf,291.5777483180914,1209.3595155711914,.eval/entrpo/InvertedDoublePendulum-v5_8/run_8_data.csv,.eval/entrpo/InvertedDoublePendulum-v5_8
 entrpo,InvertedDoublePendulum-v5,9,179.32194757461548,inf,285.71251312204475,1201.3127411471685,.eval/entrpo/InvertedDoublePendulum-v5_9/run_9_data.csv,.eval/entrpo/InvertedDoublePendulum-v5_9
 entrpo,InvertedDoublePendulum-v5,10,187.64320254325867,inf,294.2999544303289,1233.2763504847924,.eval/entrpo/InvertedDoublePendulum-v5_10/run_10_data.csv,.eval/entrpo/InvertedDoublePendulum-v5_10
+ppo,Ant-v5,1,1578.8224642276764,inf,-37.573261539248094,80.7020011103236,.eval/ppo/Ant-v5_1/run_1_data.csv,.eval/ppo/Ant-v5_1
+ppo,Ant-v5,2,1535.7225844860077,inf,-31.229091058067105,78.77932531558794,.eval/ppo/Ant-v5_2/run_2_data.csv,.eval/ppo/Ant-v5_2
+ppo,Ant-v5,3,1587.2682530879974,inf,-36.1638068950411,78.81461758830369,.eval/ppo/Ant-v5_3/run_3_data.csv,.eval/ppo/Ant-v5_3
+ppo,Ant-v5,4,1467.9779887199402,inf,-38.2426411992762,84.23235212270508,.eval/ppo/Ant-v5_4/run_4_data.csv,.eval/ppo/Ant-v5_4
+ppo,Ant-v5,5,1362.0429031848907,inf,-29.544037142543484,54.023191987551456,.eval/ppo/Ant-v5_5/run_5_data.csv,.eval/ppo/Ant-v5_5
+ppo,Ant-v5,6,1397.0036969184875,inf,-35.67329598730632,57.22097852436557,.eval/ppo/Ant-v5_6/run_6_data.csv,.eval/ppo/Ant-v5_6
+ppo,Ant-v5,7,1441.268756866455,inf,-41.31061351450785,89.37736945396458,.eval/ppo/Ant-v5_7/run_7_data.csv,.eval/ppo/Ant-v5_7
+ppo,Ant-v5,8,1338.8560059070587,inf,-31.36977490162633,91.06115363310985,.eval/ppo/Ant-v5_8/run_8_data.csv,.eval/ppo/Ant-v5_8
+ppo,Ant-v5,9,1380.241323709488,inf,-30.64075755259804,66.12716080766121,.eval/ppo/Ant-v5_9/run_9_data.csv,.eval/ppo/Ant-v5_9
+ppo,Ant-v5,10,1348.0829524993896,inf,-34.7721197209837,59.24852823937869,.eval/ppo/Ant-v5_10/run_10_data.csv,.eval/ppo/Ant-v5_10
