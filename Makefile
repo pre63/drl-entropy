@@ -126,10 +126,10 @@ list:
 
 
 eval-all:
-	# $(MAKE) eval model=trpoer env=Ant-v5
+	$(MAKE) eval model=trpoer env=Ant-v5
 	$(MAKE) eval model=trpoer env=Humanoid-v5
 	$(MAKE) eval model=trpoer env=InvertedDoublePendulum-v5
-	# $(MAKE) eval model=trpoer env=Pendulum-v1
+	$(MAKE) eval model=trpoer env=Pendulum-v1
 
 	#$(MAKE) eval model=trpor env=Ant-v5
 	#$(MAKE) eval model=trpor env=Humanoid-v5
@@ -158,10 +158,10 @@ eval-all:
 	# $(MAKE) eval model=ppo env=InvertedDoublePendulum-v5
 	# $(MAKE) eval model=entrpolow env=Pendulum-v1
 
-	$(MAKE) eval model=entrpo env=Ant-v5
-	$(MAKE) eval model=entrpo env=Humanoid-v5
-	$(MAKE) eval model=entrpo env=InvertedDoublePendulum-v5
-	$(MAKE) eval model=entrpo env=Pendulum-v1
+	# $(MAKE) eval model=entrpo env=Ant-v5
+	# $(MAKE) eval model=entrpo env=Humanoid-v5
+	# $(MAKE) eval model=entrpo env=InvertedDoublePendulum-v5
+	# $(MAKE) eval model=entrpo env=Pendulum-v1
 
 	# $(MAKE) eval model=gentrpo env=Ant-v5
 	# $(MAKE) eval model=gentrpo env=Humanoid-v5

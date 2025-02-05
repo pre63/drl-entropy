@@ -1,6 +1,24 @@
 Pendulum-v1:
   policy: "MlpPolicy"
-  n_timesteps: 100000
+  n_steps: 1024
+  gamma: 0.99
+  learning_rate: 0.14444743075224273
+  n_critic_updates: 20
+  cg_max_steps: 25
+  target_kl: 0.005
+  gae_lambda: 0.8
+  batch_size: 256
+  net_arch: large
+  activation_fn: tanh
+  entropy_coef: -0.7
+  sampling_coef: -0.6799999999999999
+  buffer_capacity: 36000
+  epsilon: 0.85
+  orthogonal_init: 0
+  n_timesteps: 800000
+  n_envs: 2
+  normalize_advantage: 0
+  buffer_alpha: 0.8287087040518522
 
 LunarLanderContinuous-v3:
   policy: "MlpPolicy"
@@ -8,7 +26,26 @@ LunarLanderContinuous-v3:
 
 Ant-v5:
   policy: "MlpPolicy"
-  n_timesteps: 100000
+  n_steps: 128
+  gamma: 0.99
+  learning_rate: 0.0036433160603024767
+  n_critic_updates: 10
+  cg_max_steps: 30
+  target_kl: 0.001
+  gae_lambda: 0.98
+  batch_size: 256
+  net_arch: medium
+  activation_fn: relu
+  entropy_coef: -0.53
+  sampling_coef: -0.92
+  buffer_capacity: 41000
+  epsilon: 0.5
+  orthogonal_init: True
+  n_timesteps: 1000000
+  n_envs: 6
+  normalize_advantage: False
+  buffer_alpha: 0.6352519916275072
+
 
 Humanoid-v5:
   policy: "MlpPolicy"
