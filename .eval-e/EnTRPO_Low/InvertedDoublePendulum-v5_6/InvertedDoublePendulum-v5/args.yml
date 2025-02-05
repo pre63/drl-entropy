@@ -1,0 +1,92 @@
+!!python/object/apply:collections.OrderedDict
+- - - algo
+    - entrpolow
+  - - conf_file
+    - Hyperparameters/entrpolow.yml
+  - - device
+    - cpu
+  - - env
+    - InvertedDoublePendulum-v5
+  - - env_kwargs
+    - {}
+  - - eval_env_kwargs
+    - {}
+  - - eval_episodes
+    - 5
+  - - eval_freq
+    - 25000
+  - - gym_packages
+    - []
+  - - hyperparams
+    - {}
+  - - log_folder
+    - .eval
+  - - log_interval
+    - -1
+  - - max_total_trials
+    - null
+  - - n_eval_envs
+    - 10
+  - - n_evaluations
+    - null
+  - - n_jobs
+    - 10
+  - - n_startup_trials
+    - 10
+  - - n_timesteps
+    - 1000000
+  - - n_trials
+    - 40
+  - - no_optim_plots
+    - false
+  - - num_threads
+    - -1
+  - - optimization_log_path
+    - null
+  - - optimize_hyperparameters
+    - false
+  - - progress
+    - false
+  - - pruner
+    - halving
+  - - sampler
+    - tpe
+  - - save_freq
+    - -1
+  - - save_replay_buffer
+    - false
+  - - seed
+    - 3866428135
+  - - storage
+    - !!python/object:optuna.storages.journal._storage.JournalStorage
+      _backend: !!python/object:optuna.storages.journal._file.JournalFileBackend
+        _file_path: .optuna-zoo/entrpolow_InvertedDoublePendulum-v5/storage
+        _lock: !!python/object:optuna.storages.journal._file.JournalFileSymlinkLock
+          _lock_file: .optuna-zoo/entrpolow_InvertedDoublePendulum-v5/storage.lock
+          _lock_target_file: .optuna-zoo/entrpolow_InvertedDoublePendulum-v5/storage
+        _log_number_offset:
+          0: 0
+  - - study_name
+    - entrpolow_InvertedDoublePendulum-v5_study
+  - - tensorboard_log
+    - .logs/tensorboard/InvertedDoublePendulum-v5__entrpolow__3866428135__1738282498
+  - - track
+    - true
+  - - train_eval
+    - true
+  - - trained_agent
+    - ''
+  - - truncate_last_trajectory
+    - true
+  - - uuid
+    - false
+  - - vec_env
+    - dummy
+  - - verbose
+    - 0
+  - - wandb_entity
+    - null
+  - - wandb_project_name
+    - sb3
+  - - wandb_tags
+    - []

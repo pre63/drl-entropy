@@ -1,0 +1,41 @@
+!!python/object/apply:collections.OrderedDict
+- - - activation_fn
+    - tanh
+  - - batch_size
+    - 256
+  - - buffer_alpha
+    - 0.8287087040518522
+  - - buffer_capacity
+    - 36000
+  - - cg_max_steps
+    - 25
+  - - entropy_coef
+    - -0.7
+  - - epsilon
+    - 0.85
+  - - gae_lambda
+    - 0.8
+  - - gamma
+    - 0.99
+  - - learning_rate
+    - 0.14444743075224273
+  - - n_critic_updates
+    - 20
+  - - n_envs
+    - 2
+  - - n_steps
+    - 1024
+  - - n_timesteps
+    - 800000
+  - - net_arch
+    - large
+  - - normalize_advantage
+    - 0
+  - - orthogonal_init
+    - 0
+  - - policy
+    - MlpPolicy
+  - - sampling_coef
+    - -0.6799999999999999
+  - - target_kl
+    - 0.005

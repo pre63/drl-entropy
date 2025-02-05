@@ -1269,3 +1269,5 @@ trpoer,Humanoid-v5,5,822.0242130756378,inf,319.57093878341436,99.71539220186408,
 trpoer,Humanoid-v5,6,684.1023101806641,inf,118.24002191683256,37.538298121239706,.eval/trpoer/Humanoid-v5_7/run_6_data.csv,.eval/trpoer/Humanoid-v5_7
 trpoer,Humanoid-v5,7,797.0333421230316,inf,222.409440419693,64.01916336550582,.eval/trpoer/Humanoid-v5_8/run_7_data.csv,.eval/trpoer/Humanoid-v5_8
 trpoer,Humanoid-v5,8,840.6762518882751,inf,328.0957866903707,86.79795243676621,.eval/trpoer/Humanoid-v5_9/run_8_data.csv,.eval/trpoer/Humanoid-v5_9
+trpoer,Ant-v5,1,364.4254004955292,inf,388.91863352768416,530.7762056611441,.eval/trpoer/Ant-v5_1/run_1_data.csv,.eval/trpoer/Ant-v5_1
+trpoer,Ant-v5,2,389.2778298854828,inf,370.5615233897638,490.45445111399334,.eval/trpoer/Ant-v5_2/run_2_data.csv,.eval/trpoer/Ant-v5_2
