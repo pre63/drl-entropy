@@ -7,6 +7,7 @@ __pycache__
 .eval/**/*monitor.csv
 .eval/**/*.yml
 .eval/**/*.zip
+.eva*/**/*monitor.csv
 .eval1
 .eval2
 .vscode

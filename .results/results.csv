@@ -1271,3 +1271,7 @@ trpoer,Humanoid-v5,7,797.0333421230316,inf,222.409440419693,64.01916336550582,.e
 trpoer,Humanoid-v5,8,840.6762518882751,inf,328.0957866903707,86.79795243676621,.eval/trpoer/Humanoid-v5_9/run_8_data.csv,.eval/trpoer/Humanoid-v5_9
 trpoer,Ant-v5,1,364.4254004955292,inf,388.91863352768416,530.7762056611441,.eval/trpoer/Ant-v5_1/run_1_data.csv,.eval/trpoer/Ant-v5_1
 trpoer,Ant-v5,2,389.2778298854828,inf,370.5615233897638,490.45445111399334,.eval/trpoer/Ant-v5_2/run_2_data.csv,.eval/trpoer/Ant-v5_2
+trpoer,Ant-v5,3,487.1467719078064,inf,334.1978123326886,461.8697102548432,.eval/trpoer/Ant-v5_3/run_3_data.csv,.eval/trpoer/Ant-v5_3
+ppo,Humanoid-v5,1,591.3132522106171,inf,292.65516135933285,107.50287387057199,.eval/ppo/Humanoid-v5_1/run_1_data.csv,.eval/ppo/Humanoid-v5_1
+trpoer,Ant-v5,4,497.1445722579956,inf,326.12829349872646,422.0576565356849,.eval/trpoer/Ant-v5_4/run_4_data.csv,.eval/trpoer/Ant-v5_4
+ppo,Humanoid-v5,2,586.3575236797333,inf,305.97503721027033,108.4097358939289,.eval/ppo/Humanoid-v5_2/run_2_data.csv,.eval/ppo/Humanoid-v5_2

@@ -2,9 +2,10 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage[margin=1in]{geometry}
-
-\usepackage{float}  % <-- Added to fix [H] errors
-\usepackage{adjustbox}  % <-- Allows resizing wide tables
+\usepackage{float}  
+\usepackage{adjustbox}  
+\usepackage{amsmath}
+\usepackage{cite}
 
 \begin{document}
 
@@ -13,13 +14,42 @@
 \date{\today}
 \maketitle
 
-\section*{Results and Model Comparison} 
+\section{Results and Model Comparison} 
 
-This report presents the performance evaluation of six reinforcement learning models: EnTRPO, GenTRPO, TRPO, PPO, and TRPOR. The comparison is based on reward statistics across different environments. We present the data but do not draw any conclusions from it in this report.
+This report presents the performance evaluation of four reinforcement learning models: TRPO, PPO, TRPOER, and TRPOR. These models are implemented using \textbf{Stable Baselines3} and utilize \textbf{mini-batch gradient descent} for optimization, ensuring efficient and stable updates during training. The entropy calculations guiding the models are based on the entropy of each batch, which influences regularization and experience replay mechanisms. 
+
+
+\subsection{TRPO (Trust Region Policy Optimization)}
+
+Originally proposed by Schulman et al. \cite{schulman2015trust}, TRPO is a policy gradient method that constrains updates using a trust region to ensure stability in training.
+
+\subsection{PPO (Proximal Policy Optimization)}
+
+Introduced by Schulman et al. \cite{schulman2017proximal}, PPO improves upon TRPO by using a clipped surrogate objective to ensure efficient and stable policy updates.
+
+\subsection{TRPOR (TRPO with Entropy Regularization)}
+
+This model extends TRPO by introducing entropy regularization only in the policy objective. The entropy coefficient hyperparameter guides the degree of regularization, ensuring a balance between exploration and exploitation. The entropy guiding this model is computed at the batch level, dynamically adjusting policy updates.
+
+\subsection{TRPOER (TRPO with Entropy Regularized Experience Replay)}
+
+This model extends TRPO by incorporating entropy-based experience replay and an additional policy entropy regularization term. It utilizes a prioritized experience replay buffer sampled according to batch entropy values and a hyperparameter coefficient. The method enables bidirectional adaptive sampling, adjusting both the number and direction of sampled experiences to optimize learning. The adaptive sampling function is formulated as:
+
+\begin{equation}
+    S = \text{clip} \left( \left( M - m \right) \times 
+    \begin{cases}
+        1 - \left| \frac{H}{| \lambda + \epsilon |} \right|, & \lambda > 0 \\
+        \left| \frac{H}{| \lambda + \epsilon |} \right|, & \lambda < 0
+    \end{cases}
+    + m, \; m, \; M \right)
+\end{equation}
+
+where \( S \) is the number of samples, \( H \) represents batch entropy, \( \lambda \) is the sampling coefficient, and \( M, m \) are the maximum and minimum sample limits.
+
 
 \subsection*{Model Performance Table}
 
-The table below summarizes the performance of different models in terms of mean and standard deviation of rewards, along with maximum and minimum rewards recorded during training. A higher mean reward indicates better average performance, while a lower standard deviation suggests more stability.
+The table below summarizes the models' performance in terms of mean and standard deviation of rewards, along with maximum and minimum rewards recorded during training. A higher mean reward suggests better overall performance, while lower standard deviation indicates increased stability.
 
 \bigskip
 
@@ -29,9 +59,9 @@ The table below summarizes the performance of different models in terms of mean 
 \
 \bigskip
 
-\section*{Performance Analysis Through Plots}
+\section{Performance Analysis Through Plots}
 
-To gain deeper insights into the models' behavior, the following plots provide visualizations of various performance aspects.
+The following plots visualize different aspects of model performance.
 
 \subsection*{Learning Stability}
 
@@ -41,7 +71,7 @@ To gain deeper insights into the models' behavior, the following plots provide v
     \caption{Learning Stability for Different Models}
 \end{figure}
 
-Learning stability measures how consistent a model's performance is over time. A smoother and more steadily increasing reward curve indicates that the model is learning in a reliable and predictable manner. Models with high variance in their learning curves may be struggling with instability or sensitivity to hyperparameters.
+Learning stability is evaluated based on the smoothness of the reward curve. A more stable learning process exhibits a steadily increasing reward trajectory, whereas high variance suggests instability due to sensitivity to hyperparameters.
 
 \subsection*{Learning Stability (Coefficient of Variation)}
 
@@ -51,7 +81,7 @@ Learning stability measures how consistent a model's performance is over time. A
     \caption{Learning Stability (Coefficient of Variation)}
 \end{figure}
 
-The coefficient of variation (CV) provides a normalized measure of learning stability. A lower CV indicates that the model's performance is less volatile, meaning it generalizes better across different training runs. High CV values suggest inconsistent learning, which could be due to stochasticity in training or sensitivity to random seeds.
+The coefficient of variation (CV) provides a normalized measure of stability. A lower CV signifies less volatile performance, whereas a higher CV indicates inconsistency due to randomness in training.
 
 \subsection*{Sample Efficiency}
 
@@ -61,7 +91,7 @@ The coefficient of variation (CV) provides a normalized measure of learning stab
     \caption{Sample Efficiency Across Models}
 \end{figure}
 
-Sample efficiency refers to how quickly a model improves given a limited number of training episodes. Models that reach higher rewards with fewer episodes are considered more sample-efficient. This metric is crucial in real-world applications where data collection is expensive or time-consuming.
+Sample efficiency measures how quickly a model improves with limited training episodes. Higher sample efficiency is desirable, especially in data-scarce scenarios.
 
 \subsection*{Combined Sample Efficiency Results}
 
@@ -71,7 +101,7 @@ Sample efficiency refers to how quickly a model improves given a limited number 
     \caption{Combined Sample Efficiency Results}
 \end{figure}
 
-This combined sample efficiency plot compares models across all environments, showing which algorithms consistently require fewer interactions to achieve optimal performance. A model with consistently high sample efficiency is preferable for scenarios where training costs are high.
+The combined sample efficiency plot aggregates results across all environments, showing how different models perform in terms of data efficiency.
 
 \subsection*{Resampled Rewards and Outlier Removal}
 
@@ -81,16 +111,21 @@ This combined sample efficiency plot compares models across all environments, sh
     \caption{Resampled Rewards with Outlier Removal}
 \end{figure}
 
-This plot visualizes the reward distributions after applying smoothing and outlier removal techniques. The presence of large spikes or dips in rewards can indicate unstable learning or catastrophic forgetting. Cleaning the data helps highlight true performance trends and removes misleading fluctuations.
+This plot presents reward distributions after applying smoothing and outlier removal techniques, filtering out misleading fluctuations.
 
 \subsection*{Raw Data}
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{.assets/raw_data.png}
     \caption{Raw Reward Data for Different Models}
 \end{figure}
 
-Since the plots apply resampling and smoothing to compare the models on the same episode scale and make the plots less noisy with data points distribution, the raw data plot shows the actual reward values recorded during training. We can observe that the trajectories will less episodes consumed more timesteps per episodes.
+The raw data plot displays the recorded reward values without any smoothing. It provides insights into the actual training process and variability in rewards.
+
+\begin{thebibliography}{9}
+\bibitem{schulman2015trust} J. Schulman, S. Levine, P. Abbeel, M. Jordan, and P. Moritz, "Trust Region Policy Optimization," \textit{International Conference on Machine Learning (ICML)}, 2015.
+\bibitem{schulman2017proximal} J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov, "Proximal Policy Optimization Algorithms," \textit{arXiv preprint arXiv:1707.06347}, 2017.
+\end{thebibliography}
 
 \end{document}
- 
