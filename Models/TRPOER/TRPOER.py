@@ -248,70 +248,70 @@ class TRPOER(TRPO):
 
 def sample_trpoer_params(trial, n_actions, n_envs, additional_args):
   # Sampling core hyperparameters
-  n_steps = trial.suggest_categorical("n_steps", [8, 16, 32, 64, 128, 256, 512, 1024, 2048])
-  gamma = trial.suggest_categorical("gamma", [0.8, 0.85, 0.9, 0.95, 0.99])
+  #n_steps = trial.suggest_categorical("n_steps", [8, 16, 32, 64, 128, 256, 512, 1024, 2048])
+  #gamma = trial.suggest_categorical("gamma", [0.8, 0.85, 0.9, 0.95, 0.99])
   learning_rate = trial.suggest_float("learning_rate", 1e-5, 1, log=True)
-  n_critic_updates = trial.suggest_categorical("n_critic_updates", [5, 10, 20, 25, 30])
-  cg_max_steps = trial.suggest_categorical("cg_max_steps", [5, 10, 20, 25, 30])
-  target_kl = trial.suggest_categorical("target_kl", [0.1, 0.05, 0.03, 0.02, 0.01, 0.005, 0.001])
-  gae_lambda = trial.suggest_categorical("gae_lambda", [0.8, 0.9, 0.92, 0.95, 0.98, 0.99, 1.0])
+  #n_critic_updates = trial.suggest_categorical("n_critic_updates", [5, 10, 20, 25, 30])
+  #cg_max_steps = trial.suggest_categorical("cg_max_steps", [5, 10, 20, 25, 30])
+  #target_kl = trial.suggest_categorical("target_kl", [0.1, 0.05, 0.03, 0.02, 0.01, 0.005, 0.001])
+  #gae_lambda = trial.suggest_categorical("gae_lambda", [0.8, 0.9, 0.92, 0.95, 0.98, 0.99, 1.0])
 
-  batch_size = trial.suggest_categorical("batch_size", [256, 512, 1024, 2048])
+  #batch_size = trial.suggest_categorical("batch_size", [256, 512, 1024, 2048])
 
   # Neural network architecture selection
-  net_arch_type = trial.suggest_categorical("net_arch", ["small", "medium", "large"])
-  net_arch = {
-    "small": dict(pi=[64, 64], vf=[64, 64]),
-    "medium": dict(pi=[256, 256], vf=[256, 256]),
-    "large": dict(pi=[400, 300], vf=[400, 300]),
-  }[net_arch_type]
+  #net_arch_type = trial.suggest_categorical("net_arch", ["small", "medium", "large"])
+  #net_arch = {
+  #  "small": dict(pi=[64, 64], vf=[64, 64]),
+  #  "medium": dict(pi=[256, 256], vf=[256, 256]),
+  #  "large": dict(pi=[400, 300], vf=[400, 300]),
+  #}[net_arch_type]
 
   # Activation function selection
-  activation_fn_name = trial.suggest_categorical("activation_fn", ["tanh", "relu"])
-  activation_fn = {"tanh": nn.Tanh, "relu": nn.ReLU}[activation_fn_name]
+  #activation_fn_name = trial.suggest_categorical("activation_fn", ["tanh", "relu"])
+  #activation_fn = {"tanh": nn.Tanh, "relu": nn.ReLU}[activation_fn_name]
 
   # Entropy coefficient for regularization
   entropy_coef = trial.suggest_float("entropy_coef", -1, 1, step=0.01)
   sampling_coef = trial.suggest_float("sampling_coef", -1, 1, step=0.01)
 
   # Replay buffer capacity and reward threshold for buffer clearing
-  buffer_capacity = trial.suggest_int("buffer_capacity", 10000, 100000, step=1000)
+  #buffer_capacity = trial.suggest_int("buffer_capacity", 10000, 100000, step=1000)
 
-  epsilon = trial.suggest_float("epsilon", 0.1, 0.9, step=0.05)
+  #epsilon = trial.suggest_float("epsilon", 0.1, 0.9, step=0.05)
 
-  orthogonal_init = trial.suggest_categorical("orthogonal_init", [True, False])
+  #orthogonal_init = trial.suggest_categorical("orthogonal_init", [True, False])
 
-  n_timesteps = trial.suggest_int("n_timesteps", 100000, 1000000, step=100000)
+  #n_timesteps = trial.suggest_int("n_timesteps", 100000, 1000000, step=100000)
   n_envs_choice = [2, 4, 6, 8, 10]
-  n_envs = trial.suggest_categorical("n_envs", n_envs_choice)
+  #n_envs = trial.suggest_categorical("n_envs", n_envs_choice)
 
-  normalized_advantage = trial.suggest_categorical("normalize_advantage", [True, False])
+  #normalized_advantage = trial.suggest_categorical("normalize_advantage", [True, False])
 
   buffer_alpha = trial.suggest_float("buffer_alpha", 0.1, 1, log=True)
 
   # Returning the sampled hyperparameters as a dictionary
   return {
-    "policy": "MlpPolicy",
-    "n_timesteps": n_timesteps,
-    "n_envs": n_envs,
-    "epsilon": epsilon,
+    # "policy": "MlpPolicy",
+    # "n_timesteps": n_timesteps,
+    # "n_envs": n_envs,
+    # "epsilon": epsilon,
     "entropy_coef": entropy_coef,
     "sampling_coef": sampling_coef,
-    "n_steps": n_steps,
-    "batch_size": batch_size,
-    "gamma": gamma,
-    "cg_max_steps": cg_max_steps,
-    "n_critic_updates": n_critic_updates,
-    "target_kl": target_kl,
+    # "n_steps": n_steps,
+    # "batch_size": batch_size,
+    # "gamma": gamma,
+    # "cg_max_steps": cg_max_steps,
+    # "n_critic_updates": n_critic_updates,
+    # "target_kl": target_kl,
     "learning_rate": learning_rate,
-    "gae_lambda": gae_lambda,
-    "buffer_capacity": buffer_capacity,
-    "policy_kwargs": dict(
-      net_arch=net_arch,
-      activation_fn=activation_fn,
-      ortho_init=orthogonal_init,
-    ),
-    "normalize_advantage": normalized_advantage,
+    # "gae_lambda": gae_lambda,
+    # "buffer_capacity": buffer_capacity,
+    # "policy_kwargs": dict(
+    #   net_arch=net_arch,
+    #   activation_fn=activation_fn,
+    #   ortho_init=orthogonal_init,
+    # ),
+    # "normalize_advantage": normalized_advantage,
     "buffer_alpha": buffer_alpha,
-    **additional_args,
+    # **additional_args,
   }
