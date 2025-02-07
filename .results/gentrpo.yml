@@ -1,31 +1,31 @@
 Ant-v5:
-  trial_number: 7
-  value: -1607.5760672000001
+  trial_number: 18
+  value: 998.4417738
   params:
-    n_steps: 256
+    n_steps: 1024
     gamma: 0.99
-    learning_rate: 0.01874878775494178
-    n_critic_updates: 30
-    cg_max_steps: 20
-    target_kl: 0.001
-    gae_lambda: 1
+    learning_rate: 9.74947264009094e-05
+    n_critic_updates: 20
+    cg_max_steps: 10
+    target_kl: 0.01
+    gae_lambda: 0.99
     batch_size: 128
-    net_arch: medium
-    activation_fn: relu
-    entropy_coeff: -0.69
-    buffer_capacity: 22000
-    epsilon: 0.5
-    orthogonal_init: 0
+    net_arch: small
+    activation_fn: tanh
+    entropy_coeff: -0.27
+    buffer_capacity: 2000
+    epsilon: 0.25
+    orthogonal_init: 1
     n_timesteps: 400000
-    n_envs: 6
-  comment: 'Best trial details: _number=7, state=2, _values=[-1607.5760672000001],
-    _datetime_start=2025-02-05 07:30:03.493475, datetime_complete=2025-02-05 07:31:01.889812,
-    _params={''n_steps'': 256, ''gamma'': 0.99, ''learning_rate'': 0.01874878775494178,
-    ''n_critic_updates'': 30, ''cg_max_steps'': 20, ''target_kl'': 0.001, ''gae_lambda'':
-    1.0, ''batch_size'': 128, ''net_arch'': ''medium'', ''activation_fn'': ''relu'',
-    ''entropy_coeff'': -0.69, ''buffer_capacity'': 22000, ''epsilon'': 0.5, ''orthogonal_init'':
-    False, ''n_timesteps'': 400000, ''n_envs'': 6}, _user_attrs={}, _system_attrs={''completed_rung_0'':
-    -1607.5760672000001}, intermediate_values={1: -1607.5760672000001}, _distributions={''n_steps'':
+    n_envs: 2
+  comment: 'Best trial details: _number=18, state=1, _values=[998.4417738], _datetime_start=2025-02-05
+    10:06:08.460095, datetime_complete=2025-02-05 10:18:20.980165, _params={''n_steps'':
+    1024, ''gamma'': 0.99, ''learning_rate'': 9.74947264009094e-05, ''n_critic_updates'':
+    20, ''cg_max_steps'': 10, ''target_kl'': 0.01, ''gae_lambda'': 0.99, ''batch_size'':
+    128, ''net_arch'': ''small'', ''activation_fn'': ''tanh'', ''entropy_coeff'':
+    -0.27, ''buffer_capacity'': 2000, ''epsilon'': 0.25, ''orthogonal_init'': True,
+    ''n_timesteps'': 400000, ''n_envs'': 2}, _user_attrs={}, _system_attrs={''completed_rung_0'':
+    996.8103152}, intermediate_values={1: 996.8103152, 2: 998.4417738}, _distributions={''n_steps'':
     CategoricalDistribution(choices=(8, 16, 32, 64, 128, 256, 512, 1024, 2048)), ''gamma'':
     CategoricalDistribution(choices=(0.8, 0.85, 0.9, 0.95, 0.99)), ''learning_rate'':
     FloatDistribution(high=1.0, log=True, low=1e-05, step=None), ''n_critic_updates'':
@@ -40,7 +40,8 @@ Ant-v5:
     ''epsilon'': FloatDistribution(high=0.9, log=False, low=0.1, step=0.05), ''orthogonal_init'':
     CategoricalDistribution(choices=(True, False)), ''n_timesteps'': IntDistribution(high=1000000,
     log=False, low=100000, step=100000), ''n_envs'': CategoricalDistribution(choices=(2,
-    4, 6, 8, 10))}, _trial_id=7'
+    4, 6, 8, 10))}, _trial_id=18'
+
 Humanoid-v5:
   trial_number: 110
   value: 253.0646324
