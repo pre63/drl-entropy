@@ -167,3 +167,10 @@ eval-all:
 	# $(MAKE) eval model=gentrpo env=Humanoid-v5
 	# $(MAKE) eval model=gentrpo env=InvertedDoublePendulum-v5
 	# $(MAKE) eval model=gentrpo env=Pendulum-v1
+
+
+trpoer:
+	make train model=trpoer env=Humanoid-v5 envs=1 n_jobs=4
+	make train model=trpoer env=Ant-v5 envs=1 n_jobs=4
+	make train model=trpoer env=InvertedDoublePendulum-v5 envs=1 n_jobs=4
+	make train model=trpoer env=Pendulum-v1 envs=1 n_jobs=4

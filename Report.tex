@@ -9,10 +9,15 @@
 
 \begin{document}
 
-\title{Generated Model Performance Report}
+\title{Model Performance Report}
 \author{Simon Green}
 \date{\today}
 \maketitle
+
+\begin{center}
+
+  {\it Results are updated in realtime from the evaluations.}
+\end{center}
 
 \section{Results and Model Comparison} 
 
@@ -27,26 +32,45 @@ Originally proposed by Schulman et al. \cite{schulman2017trustregionpolicyoptimi
 
 Introduced by Schulman et al. \cite{schulman2017proximalpolicyoptimizationalgorithms}, PPO improves upon TRPO by using a clipped surrogate objective to ensure efficient and stable policy updates.
 
+\subsection{EnTRPO (Entropy Regularized TRPO)}
+
+The EnTRPO model extends TRPO by incorporating an entropy regularization term in the policy objective and adds a replay buffer with a specific 97.5\% reward buffer reset logic \cite{roostaie2021entrpotrustregionpolicy}. While we do not present evaluations for this model we include it int he discussion since it was used to inform some of the design decisions fo other models evalauted. In the paper the author does nto discuss if the buffer is prioritized or not. Nor is coudl we find any implementation of resutls for this model.
+
 \subsection{TRPOR (TRPO with Entropy Regularization)}
 
 This model extends TRPO by introducing entropy regularization only in the policy objective. The entropy coefficient hyperparameter guides the degree of regularization, ensuring a balance between exploration and exploitation. The entropy guiding this model is computed at the batch level, dynamically adjusting policy updates.
 
-\subsection{TRPOER (TRPO with Entropy Regularized Experience Replay)}
-
-This model extends TRPO by incorporating entropy-based experience replay and an additional policy entropy regularization term. It utilizes a prioritized experience replay buffer sampled according to batch entropy values and a hyperparameter coefficient. The method enables bidirectional adaptive sampling, adjusting both the number and direction of sampled experiences to optimize learning. The adaptive sampling function is formulated as:
-
-\begin{equation}
-    S = \text{clip} \left( \left( M - m \right) \times 
-    \begin{cases}
-        1 - \left| \frac{H}{| \lambda + \epsilon |} \right|, & \lambda > 0 \\
-        \left| \frac{H}{| \lambda + \epsilon |} \right|, & \lambda < 0
-    \end{cases}
-    + m, \; m, \; M \right)
-\end{equation}
-
-where \( S \) is the number of samples, \( H \) represents batch entropy, \( \lambda \) is the sampling coefficient, and \( M, m \) are the maximum and minimum sample limits.
 
 %----------------------------------------------------------
+
+
+\subsection{TRPOER (TRPO with Entropy Regularized Experience Replay)}
+
+This model extends TRPO by incorporating entropy-based experience replay along with an additional policy entropy regularization term. In TRPOER, a prioritized experience replay buffer is employed where experiences are sampled according to the entropy of the current mini-batch, modulated by a hyperparameter coefficient. This bidirectional adaptive sampling mechanism adjusts both the number and the direction of sampled experiences to optimize learning. The adaptive sampling function is formulated as follows:
+
+\begin{equation}
+S(H, \kappa) =
+\begin{cases}
+S_{\max}, & \text{if } \sigma(H) \geq \lvert \kappa \rvert, \quad \kappa \geq 0 \\
+S_{\min}, & \text{if } \sigma(H) < \lvert \kappa \rvert, \quad \kappa \geq 0 \\
+S_{\max}, & \text{if } \sigma(H) \leq \lvert \kappa \rvert, \quad \kappa < 0 \\
+S_{\min}, & \text{if } \sigma(H) > \lvert \kappa \rvert, \quad \kappa < 0
+\end{cases}
+\end{equation}
+
+\noindent where \( S(H, \kappa) \) represents the number of replay samples drawn based on entropy \( H \) of the mini-batch, and \( \kappa \) is the sampling coefficient acting as an adaptive cutoff threshold. The function \( \sigma(H) \) normalizes entropy into the range \( [0,1] \) using a sigmoid transformation:
+
+\begin{equation}
+\sigma(H) = \frac{1}{1 + e^{-H}}
+\end{equation}
+
+\noindent ensuring bounded entropy-driven prioritization. For \( \kappa > 0 \), sampling is triggered when the normalized entropy \( \sigma(H) \) {\it exceeds} the threshold \( \lvert \kappa \rvert \), whereas for \( \kappa < 0 \), sampling is triggered when \( \sigma(H) \) {\it falls below} the threshold. This bidirectional gating mechanism enables adaptive experience replay that dynamically adjusts to policy entropy variations during training.
+
+The underlying hypothesis for TRPOER originates from previous experiments with modified TRPO variants (namely, EnTRPOLow and EnTRPOHigh). In those experiments, the replay buffer was sampled based solely on mini-batch entropy, without directly incorporating an entropy term into the policy objective. Although these variants sometimes outperformed standard TRPO in certain environments, their performance was inconsistent. This observation motivated the development of an adaptive sampling strategy—controlled by the sampling coefficient \( \kappa \)—that dynamically adjusts the replay mechanism to achieve robust performance across diverse scenarios. We also observed that the EnTRPO model with Prioritized Experience Replay (PER) outperformed the EnTRPO without, hence motivating the use of prioritized experience replay in TRPOER.
+
+
+%----------------------------------------------------------
+
 
 \subsection{GenTRPO (Generative Experience Replay Trust Region Policy Optimization with Entropy Regularization)}
 
@@ -61,6 +85,7 @@ The generative component of GenTRPO relies on a forward dynamics model inspired 
 \end{equation}
 
 where \( g(h(s), a) \) is the predicted latent state, \( h(s') \) is the true latent state, and \( \| \cdot \| \) represents the Euclidean norm. This error quantifies how accurately the forward dynamics model predicts the latent state transitions. It is used to compute intrinsic motivation, encouraging the agent to explore transitions that are harder to predict, thereby fostering exploration  \cite{wang2024prioritizedgenerativereplay}.
+
 
 
 %----------------------------------------------------------

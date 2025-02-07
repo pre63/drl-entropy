@@ -44,39 +44,26 @@ class ForwardDynamicsModel(nn.Module):
     return h_s, pred_h_next
 
 
-def compute_sampling_parameters_gradual_linear(entropy, sampling_coef, min_samples=0, max_samples=10000):
+def sampling_strategy(entropy, sampling_coef, min_samples=0, max_samples=10000):
   """
-    Computes the number of samples to draw based on entropy and binary coefficient behavior,
-    ensuring a more gradual slope for linear adjustment for both positive and negative coefficients.
-
+    Computes the number of samples to draw using a linear interpolation with a dampened slope. A positive sampling_coef
+    produces maximum samples at high entropy while a negative sampling_coef produces maximum samples at low entropy.
+    This is achieved by applying a damping factor to the linear term, based on the affine transformation principle.
+    The mapping is defined as:
+      factor = 0.5 + sampling_coef * 0.5 * (entropy - 0.5)
+      samples = min_samples + (max_samples - min_samples) * factor
     Args:
-        entropy: Scalar or array representing the entropy of observations (unnormalized).
-        sampling_coef: Scalar in range [-1, 1], non-zero, that determines max/min behavior.
-        min_samples: Minimum number of samples.
-        max_samples: Maximum number of samples.
-
+        entropy: A scalar or array-like value representing normalized entropy in [0, 1].
+        sampling_coef: A scalar in [-1, 1] that directs the behavior.
+        min_samples: The minimum number of samples.
+        max_samples: The maximum number of samples.
     Returns:
-        Number of samples to draw.
+        An integer number of samples within [min_samples, max_samples].
     """
   samples_range = max_samples - min_samples
-
-  if sampling_coef > 0:
-
-    # Gradual scaling with max samples at zero entropy for positive coefficients
-    factor = 1 - np.abs(entropy * (1 / (abs(sampling_coef + 1e6) * 10)))
-
-    # Gradual slope adjustment
-    samples = samples_range * factor
-  else:
-
-    # Gradual scaling with min samples at zero entropy for negative coefficients
-    factor = np.abs(entropy * (1 / (abs(sampling_coef + 1e6) * 10)))
-
-    # Gradual slope adjustment
-    samples = samples_range * factor
-
-  # Ensure samples stay within the min and max bounds
-  return int(np.clip(samples + min_samples, min_samples, max_samples))
+  factor = 0.5 + sampling_coef * 0.5 * (entropy - 0.5)
+  samples = min_samples + samples_range * factor
+  return int(np.clip(samples, min_samples, max_samples))
 
 
 class GenerativeReplayBuffer:
@@ -202,9 +189,7 @@ class GenTRPO(TRPO):
     entropy_mean = old_distribution.entropy().mean()
     avg_entropy = entropy_mean.item()
 
-    num_replay_samples = compute_sampling_parameters_gradual_linear(
-      entropy=avg_entropy, sampling_coef=self.entropy_coeff, min_samples=0, max_samples=self.batch_size
-    )
+    num_replay_samples = sampling_strategy(entropy=avg_entropy, sampling_coef=self.entropy_coeff, min_samples=0, max_samples=self.batch_size)
 
     # Concatenate the new on-policy samples with replay samples if any
     # (just a single batch as an example; you can adapt as needed)
