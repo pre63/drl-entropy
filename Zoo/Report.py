@@ -535,7 +535,7 @@ def generate_latex_comparison_table(grouped, results_dir, filename="model_compar
       mean_at_max = run_data_at_max["Reward"].mean()
       std_at_max = run_data_at_max["Reward"].std() if count_at_max > 1 else 0.0
 
-      # Format using multi-line LaTeX cell layout with proper escaping
+      # Format using multi-line LaTeX cell layout with new lines properly structured
       stats_str = (
         r"$\begin{array}{c} "
         f"{max_reward:.2f}M \\\\ "
@@ -550,16 +550,15 @@ def generate_latex_comparison_table(grouped, results_dir, filename="model_compar
 
   # Create DataFrame with models as rows and environments as columns
   df = pd.DataFrame(model_stats).T.fillna(r"$\begin{array}{c} N/A \end{array}$")
-  df.index.name = "Model"
-  df.columns.name = "Environment"
 
   # Generate LaTeX table with proper formatting for readability
   col_format = "|l|" + "p{3.2cm}|" * len(df.columns)  # Adjust column width as needed
   latex_table = df.to_latex(index=True, escape=False, column_format=col_format)
 
+  # Process table lines to insert horizontal lines properly
   lines = latex_table.split("\n")
   header, rows, footer = lines[:4], lines[4:-2], lines[-2:]
-  rows_with_hlines = [row + r" \\ \hline" for row in rows if row.strip()]  # Add \hline after each row
+  rows_with_hlines = [row + r"  \hline" if row.strip() else row for row in rows]  # Add \hline after each row
   latex_table_with_hlines = "\n".join(header + rows_with_hlines + footer)
 
   # Save to file

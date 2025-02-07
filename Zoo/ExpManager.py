@@ -942,7 +942,7 @@ class ExperimentManager:
         print(f"    {key}: {value}")
     except ValueError:
       print("No trials completed")
-      
+
     report_name = f"report_{self.env_name}_{self.n_trials}-trials-{self.n_timesteps}" f"-{self.sampler}-{self.pruner}_{int(time.time())}"
 
     log_path = os.path.join(self.log_folder, self.algo, report_name)

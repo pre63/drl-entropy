@@ -79,13 +79,6 @@ def compute_sampling_parameters_gradual_linear(entropy, sampling_coef, min_sampl
   return int(np.clip(samples + min_samples, min_samples, max_samples))
 
 
-import random
-
-import numpy as np
-import torch as th
-from torch import nn
-
-
 class GenerativeReplayBuffer:
   def __init__(self, real_capacity, synthetic_capacity, relevance_function, generative_model, batch_size):
     self.real_capacity = real_capacity
