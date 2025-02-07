@@ -1,2 +1,2 @@
-trpoer: Humanoid-v5 Ant-v5 InvertedDoublePendulum-v5 Pendulum-v1
 gentrpo: Humanoid-v5 Ant-v5 InvertedDoublePendulum-v5 Pendulum-v1
+trpoer: Humanoid-v5 Ant-v5 InvertedDoublePendulum-v5 Pendulum-v1
