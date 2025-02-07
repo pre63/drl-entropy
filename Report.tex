@@ -56,11 +56,12 @@ In the GenTRPO framework, the experiences used for policy updates are sampled fr
 
 The generative component of GenTRPO relies on a forward dynamics model inspired by the intrinsic curiosity module \cite{pathak2017curiositydrivenexplorationselfsupervisedprediction}. The forward dynamics model comprises an encoder and a dynamics predictor. The encoder maps raw states \( s \) into a compact latent space representation \( h(s) \), capturing the essential features of the environment. The dynamics predictor then takes the latent state \( h(s) \) and action \( a \) as input and predicts the next latent state \( h(s') \), effectively modeling the transition function \( P(s' | s, a) \). The error of this model, expressed as 
 
-\[
-\mathcal{F}(s, a, s', r) = \frac{1}{2} \| g(h(s), a) - h(s') \|^2,
-\]
+\begin{equation}
+  \mathcal{F}(s, a, s', r) = \frac{1}{2} \left\| g(h(s), a) - h(s') \right\|^2
+\end{equation}
 
-is used to compute intrinsic motivation, encouraging the agent to explore transitions that are harder to predict. This model-based generative approach aligns with the principles of prioritized generative replay \cite{wang2024prioritizedgenerativereplay} which emphasizes the utility of compact latent representations and predictive models for efficient learning and transfer. By combining this generative strategy with TRPO, GenTRPO improves both exploration and policy optimization in reinforcement learning tasks.
+where \( g(h(s), a) \) is the predicted latent state, \( h(s') \) is the true latent state, and \( \| \cdot \| \) represents the Euclidean norm. This error quantifies how accurately the forward dynamics model predicts the latent state transitions. It is used to compute intrinsic motivation, encouraging the agent to explore transitions that are harder to predict, thereby fostering exploration  \cite{wang2024prioritizedgenerativereplay}.
+
 
 %----------------------------------------------------------
 
@@ -77,6 +78,16 @@ The table below summarizes the models' performance in terms of mean and standard
 \section{Performance Analysis Through Plots}
 
 The following plots visualize different aspects of model performance.
+
+\subsection*{Resampled Rewards and Outlier Removal}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{.assets/resampled_outlier.png}
+    \caption{Resampled Rewards with Outlier Removal}
+\end{figure}
+
+This plot presents reward distributions after applying smoothing and outlier removal techniques, filtering out misleading fluctuations.
 
 \subsection*{Learning Stability}
 
@@ -117,16 +128,6 @@ Sample efficiency measures how quickly a model improves with limited training ep
 \end{figure}
 
 The combined sample efficiency plot aggregates results across all environments, showing how different models perform in terms of data efficiency.
-
-\subsection*{Resampled Rewards and Outlier Removal}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\textwidth]{.assets/resampled_outlier.png}
-    \caption{Resampled Rewards with Outlier Removal}
-\end{figure}
-
-This plot presents reward distributions after applying smoothing and outlier removal techniques, filtering out misleading fluctuations.
 
 \subsection*{Raw Data}
 
