@@ -1,45 +1,65 @@
-\documentclass{article}
+\documentclass{svproc}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage[margin=1in]{geometry}
-\usepackage{float}  
-\usepackage{adjustbox}  
+\usepackage{float}
+\usepackage{adjustbox}
 \usepackage{amsmath}
 \usepackage{cite}
+\usepackage{orcidlink}
 
 \begin{document}
 
 \title{Model Performance Report}
-\author{Simon Green}
+
+\author{Simon Green\inst{1}, Abdulrahman Altahhan\inst{2}}
+
+\institute{
+    School of Computing, University of Leeds, UK \\
+    \inst{1} MSc, Artificial Intelligence \orcidlink{0009-0000-3537-6890} \\
+    \inst{2} Senior Teaching Fellow in Artificial Intelligence \orcidlink{0000-0003-1133-7744} \\
+    \email{\{od21sg, a.altahhan\}@leeds.ac.uk}
+}
+
 \date{\today}
+
 \maketitle
 
 \begin{center}
-
   {\it Results are updated in realtime from the evaluations.}
 \end{center}
 
-\section{Results and Model Comparison} 
+%----------------------------------------------------------
 
-This report presents the performance evaluation of four reinforcement learning models: TRPO, PPO, TRPOER, and TRPOR. These models are implemented using \textbf{Stable Baselines3} and utilize \textbf{mini-batch gradient descent} for optimization, ensuring efficient and stable updates during training. The entropy calculations guiding the models are based on the entropy of each batch, which influences regularization and experience replay mechanisms. 
+\section{Results and Model Comparison}
 
+This report presents the performance evaluation of four reinforcement learning models: GenTRPO, TRPOER, and TRPOR. These models are implemented using \textbf{Stable Baselines3} and utilize \textbf{mini-batch gradient descent} approach. We benchmark against TRPO and PPO \cite{schulman2017trustregionpolicyoptimization, schulman2017proximalpolicyoptimizationalgorithms}. The entropy calculations guiding the models are based on the entropy of each mini-batch.
 
-\subsection{TRPO (Trust Region Policy Optimization)}
+%----------------------------------------------------------
 
-Originally proposed by Schulman et al. \cite{schulman2017trustregionpolicyoptimization}, TRPO is a policy gradient method that constrains updates using a trust region to ensure stability in training.
+\subsection{EnTRPO (Trust Region Policy Optimization Method with Entropy Regularization)}
 
-\subsection{PPO (Proximal Policy Optimization)}
+The EnTRPO model extends TRPO by incorporating an entropy regularization term in the policy objective and adds a replay buffer with a specific 97.5\% reward buffer reset logic \cite{roostaie2021entrpotrustregionpolicy}. While we do not present evaluations for this model, we include it in the discussion since it was used to inform some of the design decisions for other models evaluated. In the paper, the author does not discuss whether the replay buffer is prioritized or not, nor could we find any implementation or results for this model.
 
-Introduced by Schulman et al. \cite{schulman2017proximalpolicyoptimizationalgorithms}, PPO improves upon TRPO by using a clipped surrogate objective to ensure efficient and stable policy updates.
-
-\subsection{EnTRPO (Entropy Regularized TRPO)}
-
-The EnTRPO model extends TRPO by incorporating an entropy regularization term in the policy objective and adds a replay buffer with a specific 97.5\% reward buffer reset logic \cite{roostaie2021entrpotrustregionpolicy}. While we do not present evaluations for this model we include it int he discussion since it was used to inform some of the design decisions fo other models evalauted. In the paper the author does nto discuss if the buffer is prioritized or not. Nor is coudl we find any implementation of resutls for this model.
+%----------------------------------------------------------
 
 \subsection{TRPOR (TRPO with Entropy Regularization)}
 
-This model extends TRPO by introducing entropy regularization only in the policy objective. The entropy coefficient hyperparameter guides the degree of regularization, ensuring a balance between exploration and exploitation. The entropy guiding this model is computed at the batch level, dynamically adjusting policy updates.
+This model extends TRPO by introducing entropy regularization only in the policy objective. The entropy coefficient hyperparameter guides the degree of regularization, ensuring a balance between exploration and exploitation. The entropy guiding this model is computed at the batch level, dynamically adjusting policy updates. The policy objective with entropy regularization is as follows:
 
+\begin{equation}
+J(\theta) = \operatorname{E}_{s,\, a \sim \pi_{\theta_{\text{old}}}}
+\left[
+\frac{\pi_\theta(a \mid s)}{\pi_{\theta_{\text{old}}}(a \mid s)}\, A(s,a)
+\right]
++ \beta\, \operatorname{E}_{s \sim \rho^\pi}
+\left[
+H\left(\pi_\theta(\cdot \mid s)\right)
+\right]
+\end{equation}
+
+\noindent
+where \(\theta\) is the current policy parameter vector, \(\theta_{\text{old}}\) is the previous policy parameter vector, \(\pi_\theta(a \mid s)\) and \(\pi_{\theta_{\text{old}}}(a \mid s)\) are the current and old policy probabilities, \(A(s,a)\) is the advantage function, \(\rho^\pi\) is the state distribution under the current policy, \(\beta\) is the entropy regularization coefficient, and \(H\left(\pi_\theta(\cdot \mid s)\right)\) is the entropy of the policy at state \(s\).
 
 %----------------------------------------------------------
 
@@ -66,7 +86,7 @@ S_{\min}, & \text{if } \sigma(H) > \lvert \kappa \rvert, \quad \kappa < 0
 
 \noindent ensuring bounded entropy-driven prioritization. For \( \kappa > 0 \), sampling is triggered when the normalized entropy \( \sigma(H) \) {\it exceeds} the threshold \( \lvert \kappa \rvert \), whereas for \( \kappa < 0 \), sampling is triggered when \( \sigma(H) \) {\it falls below} the threshold. This bidirectional gating mechanism enables adaptive experience replay that dynamically adjusts to policy entropy variations during training.
 
-The underlying hypothesis for TRPOER originates from previous experiments with modified TRPO variants (namely, EnTRPOLow and EnTRPOHigh). In those experiments, the replay buffer was sampled based solely on mini-batch entropy, without directly incorporating an entropy term into the policy objective. Although these variants sometimes outperformed standard TRPO in certain environments, their performance was inconsistent. This observation motivated the development of an adaptive sampling strategy—controlled by the sampling coefficient \( \kappa \)—that dynamically adjusts the replay mechanism to achieve robust performance across diverse scenarios. We also observed that the EnTRPO model with Prioritized Experience Replay (PER) outperformed the EnTRPO without, hence motivating the use of prioritized experience replay in TRPOER.
+The underlying hypothesis for TRPOER originates from previous experiments with modified EnTRPO variants (namely, EnTRPOLow and EnTRPOHigh). In those experiments, only the replay buffer was sampled, without directly incorporating an entropy term into the policy objective. Although these variants sometimes outperformed standard TRPO in certain environments, their performance was inconsistent. This observation motivated the development of an adaptive sampling strategy—controlled by the sampling coefficient \( \kappa \)—that dynamically adjusts the replay mechanism to achieve robust performance across diverse scenarios. We also observed that the EnTRPO model with Prioritized Experience Replay (PER) outperformed the EnTRPO without, hence motivating the use of prioritized experience replay in TRPOER.
 
 
 %----------------------------------------------------------
@@ -74,7 +94,7 @@ The underlying hypothesis for TRPOER originates from previous experiments with m
 
 \subsection{GenTRPO (Generative Experience Replay Trust Region Policy Optimization with Entropy Regularization)}
 
-Quite a mouth full, we'll find a better name. The GenTRPO algorithm extends the Trust Region Policy Optimization with Entropy Regularization (TRPOER) framework \cite{schulman2017proximalpolicyoptimizationalgorithms,schulman2017trustregionpolicyoptimization} by incorporating a generative model to augment the experience replay buffer. The key idea is to leverage synthetic experiences generated by a forward dynamics model to complement real experiences, thereby improving exploration and sample efficiency. 
+Quite a mouth full, we'll find a better name. The GenTRPO algorithm extends the Trust Region Policy Optimization with Entropy Regularization (TRPOER) framework \cite{schulman2017proximalpolicyoptimizationalgorithms,schulman2017trustregionpolicyoptimization} by incorporating a generative model to augment the experience replay buffer. The key idea is to leverage synthetic experiences generated by a forward dynamics model to complement real experiences, thereby improving exploration and sample efficiency \cite{pathak2017curiositydrivenexplorationselfsupervisedprediction}. 
 
 In the GenTRPO framework, the experiences used for policy updates are sampled from a replay buffer. The sampling strategy ensures that half of the samples in each batch are real experiences collected from the environment, while the other half are generated by the forward dynamics model. This combination of real and synthetic data balances model fidelity with exploratory richness, enabling the policy to generalize effectively while maintaining stability during optimization.
 
@@ -104,7 +124,7 @@ The table below summarizes the models' performance in terms of mean and standard
 
 The following plots visualize different aspects of model performance.
 
-\subsection*{Resampled Rewards and Outlier Removal}
+\subsection{Resampled Rewards and Outlier Removal}
 
 \begin{figure}[H]
     \centering
@@ -114,7 +134,7 @@ The following plots visualize different aspects of model performance.
 
 This plot presents reward distributions after applying smoothing and outlier removal techniques, filtering out misleading fluctuations.
 
-\subsection*{Learning Stability}
+\subsection{Learning Stability}
 
 \begin{figure}[H]
     \centering
@@ -124,7 +144,7 @@ This plot presents reward distributions after applying smoothing and outlier rem
 
 Learning stability is evaluated based on the smoothness of the reward curve. A more stable learning process exhibits a steadily increasing reward trajectory, whereas high variance suggests instability due to sensitivity to hyperparameters.
 
-\subsection*{Learning Stability (Coefficient of Variation)}
+\subsection{Learning Stability (Coefficient of Variation)}
 
 \begin{figure}[H]
     \centering
@@ -134,7 +154,7 @@ Learning stability is evaluated based on the smoothness of the reward curve. A m
 
 The coefficient of variation (CV) provides a normalized measure of stability. A lower CV signifies less volatile performance, whereas a higher CV indicates inconsistency due to randomness in training.
 
-\subsection*{Sample Efficiency}
+\subsection{Sample Efficiency}
 
 \begin{figure}[H]
     \centering
@@ -144,7 +164,7 @@ The coefficient of variation (CV) provides a normalized measure of stability. A 
 
 Sample efficiency measures how quickly a model improves with limited training episodes. Higher sample efficiency is desirable, especially in data-scarce scenarios.
 
-\subsection*{Combined Sample Efficiency Results}
+\subsection{Combined Sample Efficiency Results}
 
 \begin{figure}[H]
     \centering
@@ -154,7 +174,7 @@ Sample efficiency measures how quickly a model improves with limited training ep
 
 The combined sample efficiency plot aggregates results across all environments, showing how different models perform in terms of data efficiency.
 
-\subsection*{Raw Data}
+\subsection{Raw Data}
 
 \begin{figure}[H]
     \centering
