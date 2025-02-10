@@ -1,34 +1,34 @@
 Humanoid-v5:
-  trial_number: 29
-  value: 265.7659506
+  trial_number: 167
+  value: 475.48099460000003
   params:
-    n_steps: 16
-    gamma: 0.95
-    learning_rate: 2.9946855191338956e-05
-    n_critic_updates: 25
-    cg_max_steps: 25
-    target_kl: 0.01
-    gae_lambda: 1
+    n_steps: 1024
+    gamma: 0.99
+    learning_rate: 0.013485234610800579
+    n_critic_updates: 20
+    cg_max_steps: 10
+    target_kl: 0.1
+    gae_lambda: 0.95
     batch_size: 2048
-    net_arch: medium
+    net_arch: small
     activation_fn: relu
-    entropy_coef: -0.42000000000000004
-    sampling_coef: -0.12
-    buffer_capacity: 31000
+    entropy_coef: 0.3400000000000001
+    sampling_coef: -0.59
+    buffer_capacity: 78000
     epsilon: 0.4
     orthogonal_init: 0
-    n_timesteps: 100000
+    n_timesteps: 700000
     n_envs: 8
-    normalize_advantage: 1
-  comment: 'Best trial details: _number=29, state=1, _values=[265.7659506], _datetime_start=2025-02-07
-    10:41:12.781895, datetime_complete=2025-02-07 11:13:23.508603, _params={''n_steps'':
-    16, ''gamma'': 0.95, ''learning_rate'': 2.9946855191338956e-05, ''n_critic_updates'':
-    25, ''cg_max_steps'': 25, ''target_kl'': 0.01, ''gae_lambda'': 1.0, ''batch_size'':
-    2048, ''net_arch'': ''medium'', ''activation_fn'': ''relu'', ''entropy_coef'':
-    -0.42000000000000004, ''sampling_coef'': -0.12, ''buffer_capacity'': 31000, ''epsilon'':
-    0.4, ''orthogonal_init'': False, ''n_timesteps'': 100000, ''n_envs'': 8, ''normalize_advantage'':
-    True}, _user_attrs={}, _system_attrs={''completed_rung_0'': 206.56581580000002},
-    intermediate_values={1: 206.56581580000002, 2: 265.7659506}, _distributions={''n_steps'':
+    normalize_advantage: 0
+  comment: 'Best trial details: _number=167, state=1, _values=[475.48099460000003],
+    _datetime_start=2025-02-08 21:52:07.334255, datetime_complete=2025-02-09 16:27:17.908315,
+    _params={''n_steps'': 1024, ''gamma'': 0.99, ''learning_rate'': 0.013485234610800579,
+    ''n_critic_updates'': 20, ''cg_max_steps'': 10, ''target_kl'': 0.1, ''gae_lambda'':
+    0.95, ''batch_size'': 2048, ''net_arch'': ''small'', ''activation_fn'': ''relu'',
+    ''entropy_coef'': 0.3400000000000001, ''sampling_coef'': -0.59, ''buffer_capacity'':
+    78000, ''epsilon'': 0.4, ''orthogonal_init'': False, ''n_timesteps'': 700000,
+    ''n_envs'': 8, ''normalize_advantage'': False}, _user_attrs={}, _system_attrs={''completed_rung_0'':
+    481.1875632}, intermediate_values={1: 481.1875632, 2: 475.48099460000003}, _distributions={''n_steps'':
     CategoricalDistribution(choices=(8, 16, 32, 64, 128, 256, 512, 1024, 2048)), ''gamma'':
     CategoricalDistribution(choices=(0.8, 0.85, 0.9, 0.95, 0.99)), ''learning_rate'':
     FloatDistribution(high=1.0, log=True, low=1e-05, step=None), ''n_critic_updates'':
@@ -45,4 +45,4 @@ Humanoid-v5:
     CategoricalDistribution(choices=(True, False)), ''n_timesteps'': IntDistribution(high=1000000,
     log=False, low=100000, step=100000), ''n_envs'': CategoricalDistribution(choices=(2,
     4, 6, 8, 10)), ''normalize_advantage'': CategoricalDistribution(choices=(True,
-    False))}, _trial_id=29'
+    False))}, _trial_id=167'
