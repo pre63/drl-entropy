@@ -31,3 +31,5 @@ results/results.png
 *.toc
 *.fdb_latexmk
 *.fls
+
+.noise

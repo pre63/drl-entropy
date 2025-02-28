@@ -103,7 +103,7 @@ The generative component of GenTRPO relies on a forward dynamics model inspired 
 \begin{equation}
   \mathcal{F}(s, a, s', r) = \frac{1}{2} \left\| g(h(s), a) - h(s') \right\|^2
 \end{equation}
-
+\noindent
 where \( g(h(s), a) \) is the predicted latent state, \( h(s') \) is the true latent state, and \( \| \cdot \| \) represents the Euclidean norm. This error quantifies how accurately the forward dynamics model predicts the latent state transitions. It is used to compute intrinsic motivation, encouraging the agent to explore transitions that are harder to predict, thereby fostering exploration  \cite{wang2024prioritizedgenerativereplay}.
 
 

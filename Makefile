@@ -174,3 +174,6 @@ trpoer:
 	make train model=trpoer env=Ant-v5 envs=1 n_jobs=4
 	make train model=trpoer env=InvertedDoublePendulum-v5 envs=1 n_jobs=4
 	make train model=trpoer env=Pendulum-v1 envs=1 n_jobs=4
+
+noise:
+	@. .venv/bin/activate; python -m Environments.Noise
